@@ -1,15 +1,19 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { KeyboardHandler } from "../../utils/KeyboardHandler";
 import { drawText } from "../../utils/draw";
+import { useSetRecoilState } from "recoil";
+import { cursorState } from "../../recoil";
+import { Cursor } from "../cursor";
 
 const isTimeCheck = false;
 
-const marginX = 40;
-const marginY = 40;
+export const marginX = 40;
+export const marginY = 40;
 
 export function Editor() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const setCursor = useSetRecoilState(cursorState);
 
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const keyboardHandler = useMemo(() => new KeyboardHandler(), []);
 
   const draw = useCallback(() => {
@@ -33,6 +37,7 @@ export function Editor() {
       marginX,
       marginY,
       defaultFontSize,
+      setCursor,
     });
 
     const end = performance.now();
@@ -54,22 +59,14 @@ export function Editor() {
   }, [draw]);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        gap: 12,
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
+    <div style={{ position: "relative" }}>
+      <Cursor defaultFontSize={keyboardHandler.defaultFontSize} />
       <canvas
-        width={1000}
-        height={1500}
+        width={794}
+        height={1124}
         ref={canvasRef}
         style={{ cursor: "text", border: "1px solid black", outline: "none" }}
       />
-      <button onClick={() => keyboardHandler.console()}>console</button>
     </div>
   );
 }

@@ -1,63 +1,58 @@
-interface CursorPosition {
-  page: number;
-  index: number;
-}
+// interface CursorPosition {
+//   page: number;
+//   index: number;
+// }
 
 export interface TextFragment {
   text: string;
   fontSize: number;
-  isSelect?: boolean;
+  isSelect: boolean;
 }
 
-export class KeyboardHandler extends EventTarget {
-  defaultFontSize = 16;
+export class KeyboardHandler {
+  defaultFontSize = 18;
 
-  textArr: (TextFragment | "enter")[] = [];
-  cursorPosition: CursorPosition = { page: 1, index: 0 };
+  textArr: TextFragment[] = [];
+  cursorIndex: number = 0;
+  // cursorPosition: CursorPosition = { page: 1, index: 0 };
 
   console() {
     console.log(this.textArr);
-    console.log(this.cursorPosition);
+    console.log(this.cursorIndex);
   }
 
   addText(text: string) {
-    // const { index } = this.cursorPosition;
-
-    const lineText = this.textArr;
-
     const newText: TextFragment = {
       text,
       fontSize: this.defaultFontSize,
       isSelect: false,
     };
 
-    lineText.push(newText);
+    this.textArr.push(newText);
 
-    this.cursorPosition.index++;
+    this.cursorIndex++;
   }
 
   deleteText() {
-    const { index } = this.cursorPosition;
+    if (this.cursorIndex === 0) return;
 
-    if (index === 0) return;
+    this.textArr.splice(this.cursorIndex - 1, this.cursorIndex);
 
-    const lineText = this.textArr;
+    if (this.textArr.length === 0) {
+      this.notifyTextCleared();
+    }
 
-    lineText.splice(index - 1, index);
-
-    this.cursorPosition.index--;
-  }
-
-  changeEvent() {
-    this.dispatchEvent(new Event("textChange", {}));
+    this.cursorIndex--;
   }
 
   enter() {
-    const lineText = this.textArr;
+    this.textArr.push({
+      text: "\n",
+      fontSize: this.defaultFontSize,
+      isSelect: false,
+    });
 
-    lineText.push("enter");
-
-    this.cursorPosition.index++;
+    this.cursorIndex++;
   }
 
   setBarPosition() {}
@@ -90,5 +85,9 @@ export class KeyboardHandler extends EventTarget {
           break;
       }
     }
+  }
+
+  notifyTextCleared() {
+    window.dispatchEvent(new Event("notifyTextCleared", {}));
   }
 }
