@@ -60,7 +60,6 @@ export class CanvasDataManager {
   setCursor(cursor: Cursor) {
     this._setCursor(cursor);
   }
-
   setLineTexts(
     endIndex: number,
     lineTexts: Map<number, LineText[]>,
@@ -81,15 +80,16 @@ export class CanvasDataManager {
 
     lineTexts.set(pageIndex, currentPageText);
 
-    y += maxFontSize * 1.48;
-    x = this.marginX;
-    lineText = [];
-    maxFontSize = this.editorDataManager.defaultFontSize;
-
-    if (y + maxFontSize * 1.48 > this.canvasHeight - this.marginY) {
-      pageIndex++;
-      y = this.marginY;
-    }
+    return {
+      x: this.marginX,
+      y: y + maxFontSize * 1.48,
+      lineText: [],
+      maxFontSize: this.editorDataManager.defaultFontSize,
+      pageIndex:
+        y + maxFontSize * 1.48 > this.canvasHeight - this.marginY
+          ? pageIndex + 1
+          : pageIndex,
+    };
   }
 
   getCanvasData(): Map<number, LineText[]> | undefined {

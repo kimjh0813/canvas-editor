@@ -9,6 +9,8 @@ import { CanvasDataManager } from "../../utils/CanvasDataManager";
 const isTimeCheck = true;
 const defaultFontSize = 100;
 
+// 지금 class구조, canvasDataManager setLineTexts와 같은 함수, pageSize, cursorPosition 처럼 setState를 넘기냐 혹은 eventListener로 관리
+
 export function Editor() {
   const setCursor = useSetRecoilState(cursorState);
 
