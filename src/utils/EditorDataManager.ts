@@ -1,58 +1,58 @@
-// interface CursorPosition {
-//   page: number;
-//   index: number;
-// }
+import { TextFragment } from "../types/editor";
 
-export interface TextFragment {
-  text: string;
-  fontSize: number;
-  isSelect: boolean;
-}
+export class EditorDataManager {
+  private _textArr: TextFragment[];
+  private _cursorIndex: number;
+  private _defaultFontSize: number;
 
-export class KeyboardHandler {
-  defaultFontSize = 18;
+  constructor(defaultFontSize: number) {
+    this._defaultFontSize = defaultFontSize;
+    this._textArr = [];
+    this._cursorIndex = 0;
+  }
 
-  textArr: TextFragment[] = [];
-  cursorIndex: number = 0;
-  // cursorPosition: CursorPosition = { page: 1, index: 0 };
-
-  console() {
-    console.log(this.textArr);
-    console.log(this.cursorIndex);
+  public get textArr(): TextFragment[] {
+    return this._textArr;
+  }
+  public get cursorIndex(): number {
+    return this._cursorIndex;
+  }
+  public get defaultFontSize(): number {
+    return this._defaultFontSize;
   }
 
   addText(text: string) {
-    const newText: TextFragment = {
+    const newText = {
       text,
-      fontSize: this.defaultFontSize,
+      fontSize: this._defaultFontSize,
       isSelect: false,
     };
 
-    this.textArr.push(newText);
+    this._textArr.splice(this._cursorIndex, 0, newText);
 
-    this.cursorIndex++;
+    this._cursorIndex++;
   }
 
   deleteText() {
-    if (this.cursorIndex === 0) return;
+    if (this._cursorIndex === 0) return;
 
-    this.textArr.splice(this.cursorIndex - 1, this.cursorIndex);
+    this._textArr.splice(this._cursorIndex - 1, this._cursorIndex);
 
-    if (this.textArr.length === 0) {
+    if (this._textArr.length === 0) {
       this.notifyTextCleared();
     }
 
-    this.cursorIndex--;
+    this._cursorIndex--;
   }
 
   enter() {
-    this.textArr.push({
+    this._textArr.push({
       text: "\n",
-      fontSize: this.defaultFontSize,
+      fontSize: this._defaultFontSize,
       isSelect: false,
     });
 
-    this.cursorIndex++;
+    this._cursorIndex++;
   }
 
   setBarPosition() {}

@@ -10,9 +10,10 @@ export const Cursor = styled.div<{
   $y: number;
   $fontSize: number;
   $isBlinking: boolean;
+  $pageIndex: number;
 }>`
   position: absolute;
-  top: ${({ $y }) => `${$y + 1}px`};
+  top: ${({ $y, $pageIndex }) => `${$pageIndex * (1123 + 20) + $y + 1}px`};
   left: ${({ $x }) => `${$x + 1}px`};
   width: 2px;
   background-color: black;

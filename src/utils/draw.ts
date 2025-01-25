@@ -1,96 +1,58 @@
-import { SetterOrUpdater } from "recoil";
-import { TextFragment } from "./KeyboardHandler";
-import { Cursor } from "../recoil";
+import { CanvasDataManager } from "./CanvasDataManager";
+import { LineText } from "../types/editor";
 
 interface DrawTextParams {
-  ctx: CanvasRenderingContext2D;
-  textArr: TextFragment[];
-  canvasWidth: number;
-  marginX: number;
-  marginY: number;
-  defaultFontSize: number;
-  setCursor: SetterOrUpdater<Cursor | undefined>;
+  canvasDataManager: CanvasDataManager;
+  canvasRefs: React.MutableRefObject<(HTMLCanvasElement | null)[]>;
 }
 
-export function drawText({
-  ctx,
-  textArr,
-  canvasWidth,
-  marginX,
-  marginY,
-  defaultFontSize,
-  setCursor,
-}: DrawTextParams) {
-  let x = marginX;
-  let y = marginY;
-  let lineTexts: TextFragment[] = [];
-  let maxFontSize = defaultFontSize;
+export function drawText({ canvasDataManager, canvasRefs }: DrawTextParams) {
+  const lineTexts = canvasDataManager.getCanvasData();
 
-  for (let i = 0; i < textArr.length; i++) {
-    const t = textArr[i];
+  if (!lineTexts) return;
 
-    const { text, fontSize } = t;
+  const canvasArr = canvasRefs.current;
 
-    if (maxFontSize < fontSize) maxFontSize = fontSize;
+  for (const canvas of canvasArr) {
+    const ctx = canvas?.getContext("2d");
 
-    ctx.font = `500 ${fontSize}px Arial`;
-    const textWidth = ctx.measureText(text).width;
-    const currentWidth = x + marginX + textWidth;
+    if (!ctx || !canvas) break;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
 
-    const isLastText = i === textArr.length - 1;
+  for (const [page, value] of lineTexts) {
+    for (let i = 0; i < value.length; i++) {
+      const canvas = canvasArr[page];
+      const ctx = canvas?.getContext("2d");
 
-    if (currentWidth > canvasWidth && t.text !== "\n") {
-      drawLine({ ctx, lineTexts, maxFontSize, marginX, y });
+      if (!ctx) return;
 
-      y += maxFontSize * 1.48;
-      x = marginX;
-      lineTexts = [];
-      maxFontSize = defaultFontSize;
-    }
-
-    lineTexts.push(t);
-    x += textWidth;
-
-    if (t.text === "\n") {
-      drawLine({ ctx, lineTexts, maxFontSize, marginX, y });
-
-      y += maxFontSize * 1.48;
-      x = marginX;
-      lineTexts = [];
-      maxFontSize = defaultFontSize;
-    }
-
-    if (isLastText) {
-      setCursor({ x, y, fontSize });
-      drawLine({ ctx, lineTexts, maxFontSize, marginX, y });
+      drawLine({ ctx, lineTexts: value[i] });
     }
   }
 }
 
 interface DrawLineParams {
   ctx: CanvasRenderingContext2D;
-  lineTexts: TextFragment[];
-  maxFontSize: number;
-  marginX: number;
-  y: number;
+  lineTexts: LineText;
 }
-function drawLine({ lineTexts, marginX, maxFontSize, ctx, y }: DrawLineParams) {
-  let lineX = marginX;
+function drawLine({ lineTexts, ctx }: DrawLineParams) {
+  let lineX = lineTexts.x;
 
-  for (let i = 0; i < lineTexts.length; i++) {
-    const lineText = lineTexts[i];
+  for (let i = 0; i < lineTexts.text.length; i++) {
+    const lineText = lineTexts.text[i];
     ctx.font = `500 ${lineText.fontSize}px Arial`;
 
     const textWidth = ctx.measureText(lineText.text).width;
-    const textHeight = maxFontSize;
+    const textHeight = lineTexts.maxFontSize;
 
     if (lineText.isSelect) {
       ctx.fillStyle = "rgba(30, 144, 255, 0.15)";
-      ctx.fillRect(lineX, y, textWidth, textHeight * 1.48);
+      ctx.fillRect(lineX, lineTexts.y, textWidth, textHeight * 1.48);
     }
 
     ctx.fillStyle = "black";
-    ctx.fillText(lineText.text, lineX, y + textHeight);
+    ctx.fillText(lineText.text, lineX, lineTexts.y + textHeight);
 
     lineX += textWidth;
   }

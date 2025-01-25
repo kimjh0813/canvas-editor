@@ -1,43 +1,42 @@
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import { KeyboardHandler } from "../../utils/KeyboardHandler";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { EditorDataManager } from "../../utils/EditorDataManager";
 import { drawText } from "../../utils/draw";
 import { useSetRecoilState } from "recoil";
 import { cursorState } from "../../recoil";
 import { Cursor } from "../cursor";
+import { CanvasDataManager } from "../../utils/CanvasDataManager";
 
-const isTimeCheck = false;
-
-export const marginX = 40;
-export const marginY = 40;
+const isTimeCheck = true;
+const defaultFontSize = 100;
 
 export function Editor() {
   const setCursor = useSetRecoilState(cursorState);
 
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const keyboardHandler = useMemo(() => new KeyboardHandler(), []);
+  const [pageSize, setPageSize] = useState<number>(0);
+  const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
+
+  const editorDataManager = useMemo(
+    () => new EditorDataManager(defaultFontSize),
+    []
+  );
+
+  const canvasDataManager = useMemo(() => {
+    const handler = new CanvasDataManager(
+      editorDataManager,
+      setPageSize,
+      setCursor
+    );
+    setPageSize(handler.pageSize);
+
+    return handler;
+  }, []);
 
   const draw = useCallback(() => {
     const start = performance.now();
 
-    const canvas = canvasRef.current;
-    const ctx = canvas?.getContext("2d");
-
-    if (!canvas || !ctx) return;
-
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const { textArr, defaultFontSize } = keyboardHandler;
-
-    if (textArr.length < 0) return;
-
     drawText({
-      ctx,
-      textArr,
-      canvasWidth: canvas.width,
-      marginX,
-      marginY,
-      defaultFontSize,
-      setCursor,
+      canvasDataManager,
+      canvasRefs,
     });
 
     const end = performance.now();
@@ -47,7 +46,7 @@ export function Editor() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      keyboardHandler.keyDown(event);
+      editorDataManager.keyDown(event);
       draw();
     };
 
@@ -58,15 +57,37 @@ export function Editor() {
     };
   }, [draw]);
 
+  useEffect(() => {
+    draw();
+  }, [pageSize]);
+
   return (
-    <div style={{ position: "relative" }}>
-      <Cursor defaultFontSize={keyboardHandler.defaultFontSize} />
-      <canvas
-        width={794}
-        height={1124}
-        ref={canvasRef}
-        style={{ cursor: "text", border: "1px solid black", outline: "none" }}
+    <div
+      style={{
+        position: "relative",
+        display: "flex",
+        flexDirection: "column",
+        gap: "20px",
+      }}
+    >
+      <Cursor
+        defaultFontSize={editorDataManager.defaultFontSize}
+        marginX={canvasDataManager.marginX}
+        marginY={canvasDataManager.marginY}
       />
+      {[...Array(pageSize)].map((_, index) => (
+        <div key={index} style={{ outline: "1px solid #c7c7c7" }}>
+          <canvas
+            width={794}
+            height={1123}
+            ref={(el) => (canvasRefs.current[index] = el)}
+            style={{
+              cursor: "text",
+              outline: "none",
+            }}
+          />
+        </div>
+      ))}
     </div>
   );
 }
