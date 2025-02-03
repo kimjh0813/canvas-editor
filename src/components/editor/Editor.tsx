@@ -6,10 +6,10 @@ import { cursorState } from "../../recoil";
 import { Cursor } from "../cursor";
 import { CanvasDataManager } from "../../utils/CanvasDataManager";
 
-const isTimeCheck = true;
-const defaultFontSize = 100;
+const isTimeCheck = false;
+const defaultFontSize = 40;
 
-// 지금 class구조, canvasDataManager setLineTexts와 같은 함수, pageSize, cursorPosition 처럼 setState를 넘기냐 혹은 eventListener로 관리
+// 지금 class구조, canvasDataManager setLineTexts와 같은 함수, pageSize, cursorPosition 처럼 setState를 넘기냐 혹은 eventListener로 관리, draw useEffect pageSize
 
 export function Editor() {
   const setCursor = useSetRecoilState(cursorState);
@@ -48,8 +48,8 @@ export function Editor() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      editorDataManager.keyDown(event);
-      draw();
+      const isDraw = editorDataManager.keyDown(event);
+      isDraw && draw();
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -73,9 +73,8 @@ export function Editor() {
       }}
     >
       <Cursor
-        defaultFontSize={editorDataManager.defaultFontSize}
-        marginX={canvasDataManager.marginX}
-        marginY={canvasDataManager.marginY}
+        canvasDataManager={canvasDataManager}
+        editorDataManager={editorDataManager}
       />
       {[...Array(pageSize)].map((_, index) => (
         <div key={index} style={{ outline: "1px solid #c7c7c7" }}>

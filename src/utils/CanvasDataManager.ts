@@ -57,39 +57,22 @@ export class CanvasDataManager {
     this._setPageSizeCallback(page);
   }
 
-  setCursor(cursor: Cursor) {
-    this._setCursor(cursor);
-  }
-  setLineTexts(
-    endIndex: number,
-    lineTexts: Map<number, LineText[]>,
-    lineText: TextFragment[],
-    pageIndex: number,
-    maxFontSize: number,
-    x: number,
-    y: number
-  ) {
-    const currentPageText = lineTexts.get(pageIndex) || [];
-    currentPageText.push({
-      endIndex,
-      maxFontSize,
-      text: lineText,
-      x: this.marginX,
-      y,
-    });
+  setCursor(cursor: Cursor, i: number) {
+    const { cursorIndex } = this.editorDataManager;
 
-    lineTexts.set(pageIndex, currentPageText);
+    if (cursorIndex === 0 && i === 0) {
+      this._setCursor({
+        x: this.marginX,
+        y: this._marginY,
+        fontSize: cursor.fontSize,
+        pageIndex: cursor.pageIndex,
+      });
+      return;
+    }
 
-    return {
-      x: this.marginX,
-      y: y + maxFontSize * 1.48,
-      lineText: [],
-      maxFontSize: this.editorDataManager.defaultFontSize,
-      pageIndex:
-        y + maxFontSize * 1.48 > this.canvasHeight - this.marginY
-          ? pageIndex + 1
-          : pageIndex,
-    };
+    if (cursorIndex === i + 1) {
+      this._setCursor(cursor);
+    }
   }
 
   getCanvasData(): Map<number, LineText[]> | undefined {
@@ -98,8 +81,10 @@ export class CanvasDataManager {
     if (!ctx) return;
 
     const textFragments = this.editorDataManager.textArr;
+    this.editorDataManager.cursorIndex;
 
-    const lineTexts: Map<number, LineText[]> = new Map();
+    this._lineTexts = new Map();
+
     let lineText: TextFragment[] = [];
     let maxFontSize = this.editorDataManager.defaultFontSize;
 
@@ -120,7 +105,7 @@ export class CanvasDataManager {
       const isLastText = i === textFragments.length - 1;
 
       if (currentWidth > this.canvasWidth && text !== "\n") {
-        const currentPageText = lineTexts.get(pageIndex) || [];
+        const currentPageText = this._lineTexts.get(pageIndex) || [];
         currentPageText.push({
           endIndex: i - 1,
           maxFontSize,
@@ -129,7 +114,7 @@ export class CanvasDataManager {
           y,
         });
 
-        lineTexts.set(pageIndex, currentPageText);
+        this._lineTexts.set(pageIndex, currentPageText);
 
         y += maxFontSize * 1.48;
         x = this.marginX;
@@ -146,7 +131,7 @@ export class CanvasDataManager {
       x += textWidth;
 
       if (text === "\n") {
-        const currentPageText = lineTexts.get(pageIndex) || [];
+        const currentPageText = this._lineTexts.get(pageIndex) || [];
         currentPageText.push({
           endIndex: i,
           maxFontSize,
@@ -155,7 +140,7 @@ export class CanvasDataManager {
           y,
         });
 
-        lineTexts.set(pageIndex, currentPageText);
+        this._lineTexts.set(pageIndex, currentPageText);
 
         y += maxFontSize * 1.48;
         x = this.marginX;
@@ -169,24 +154,24 @@ export class CanvasDataManager {
       }
 
       if (isLastText) {
-        const currentPageText = lineTexts.get(pageIndex) || [];
+        const currentPageText = this._lineTexts.get(pageIndex) || [];
         currentPageText.push({
-          endIndex: i - 1,
+          endIndex: i,
           maxFontSize,
           text: lineText,
           x: this.marginX,
           y,
         });
 
-        lineTexts.set(pageIndex, currentPageText);
-
-        this.setCursor({ x, y, fontSize, pageIndex });
+        this._lineTexts.set(pageIndex, currentPageText);
       }
+
+      this.setCursor({ x, y, fontSize, pageIndex }, i);
     }
 
-    if (this.pageSize !== lineTexts.size && lineTexts.size > 0)
-      this.setPageSizeCallback(lineTexts.size);
+    if (this.pageSize !== this._lineTexts.size && this._lineTexts.size > 0)
+      this.setPageSizeCallback(this._lineTexts.size);
 
-    return lineTexts;
+    return this._lineTexts;
   }
 }
