@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { EditorDataManager } from "../../utils/EditorDataManager";
 import { drawText } from "../../utils/draw";
 import { useSetRecoilState } from "recoil";
 import { cursorState } from "../../recoil";
 import { Cursor } from "../cursor";
-import { CanvasDataManager } from "../../utils/CanvasDataManager";
+import { EditorManger } from "../../utils/EditorManger";
 
 const isTimeCheck = false;
 const defaultFontSize = 40;
@@ -17,17 +16,9 @@ export function Editor() {
   const [pageSize, setPageSize] = useState<number>(0);
   const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
 
-  const editorDataManager = useMemo(
-    () => new EditorDataManager(defaultFontSize),
-    []
-  );
+  const editorManger = useMemo(() => {
+    const handler = new EditorManger(defaultFontSize, setPageSize, setCursor);
 
-  const canvasDataManager = useMemo(() => {
-    const handler = new CanvasDataManager(
-      editorDataManager,
-      setPageSize,
-      setCursor
-    );
     setPageSize(handler.pageSize);
 
     return handler;
@@ -37,7 +28,7 @@ export function Editor() {
     const start = performance.now();
 
     drawText({
-      canvasDataManager,
+      editorManger,
       canvasRefs,
     });
 
@@ -48,7 +39,7 @@ export function Editor() {
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      const isDraw = editorDataManager.keyDown(event);
+      const isDraw = editorManger.keyDown(event);
       isDraw && draw();
     };
 
@@ -72,10 +63,7 @@ export function Editor() {
         gap: "20px",
       }}
     >
-      <Cursor
-        canvasDataManager={canvasDataManager}
-        editorDataManager={editorDataManager}
-      />
+      <Cursor editorManger={editorManger} />
       {[...Array(pageSize)].map((_, index) => (
         <div key={index} style={{ outline: "1px solid #c7c7c7" }}>
           <canvas

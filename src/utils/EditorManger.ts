@@ -1,10 +1,8 @@
 import { LineText, TextFragment } from "../types/editor";
-import { EditorDataManager } from "./EditorDataManager";
+import { EditorKeyHandler } from "./EditorKeyHandler";
 import { Cursor } from "../recoil";
 
-export class CanvasDataManager {
-  private editorDataManager: EditorDataManager;
-
+export class EditorManger extends EditorKeyHandler {
   private _marginX: number;
   private _marginY: number;
   private _canvasWidth: number;
@@ -16,11 +14,11 @@ export class CanvasDataManager {
   private _setCursor: (cursor: Cursor) => void;
 
   constructor(
-    editorDataManager: EditorDataManager,
+    defaultFontSize: number,
     setPageSizeCallback: (pageSize: number) => void,
     setCursor: (cursor: Cursor) => void
   ) {
-    this.editorDataManager = editorDataManager;
+    super(defaultFontSize);
 
     this._marginX = 40;
     this._marginY = 40;
@@ -58,9 +56,7 @@ export class CanvasDataManager {
   }
 
   setCursor(cursor: Cursor, i: number) {
-    const { cursorIndex } = this.editorDataManager;
-
-    if (cursorIndex === 0 && i === 0) {
+    if (super.cursorIndex === 0 && i === 0) {
       this._setCursor({
         x: this.marginX,
         y: this._marginY,
@@ -70,7 +66,7 @@ export class CanvasDataManager {
       return;
     }
 
-    if (cursorIndex === i + 1) {
+    if (super.cursorIndex === i + 1) {
       this._setCursor(cursor);
     }
   }
@@ -80,13 +76,13 @@ export class CanvasDataManager {
 
     if (!ctx) return;
 
-    const textFragments = this.editorDataManager.textArr;
-    this.editorDataManager.cursorIndex;
+    const textFragments = super.textArr;
+    super.cursorIndex;
 
     this._lineTexts = new Map();
 
     let lineText: TextFragment[] = [];
-    let maxFontSize = this.editorDataManager.defaultFontSize;
+    let maxFontSize = super.defaultFontSize;
 
     let pageIndex = 0;
     let x = this.marginX;
@@ -119,7 +115,7 @@ export class CanvasDataManager {
         y += maxFontSize * 1.48;
         x = this.marginX;
         lineText = [];
-        maxFontSize = this.editorDataManager.defaultFontSize;
+        maxFontSize = super.defaultFontSize;
 
         if (y + maxFontSize * 1.48 > this.canvasHeight - this.marginY) {
           pageIndex++;
@@ -145,7 +141,7 @@ export class CanvasDataManager {
         y += maxFontSize * 1.48;
         x = this.marginX;
         lineText = [];
-        maxFontSize = this.editorDataManager.defaultFontSize;
+        maxFontSize = super.defaultFontSize;
 
         if (y + maxFontSize * 1.48 > this.canvasHeight - this.marginY) {
           pageIndex++;

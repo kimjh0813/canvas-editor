@@ -3,16 +3,14 @@ import { cursorState } from "../../recoil";
 
 import * as S from "./styled";
 import { useEffect, useState } from "react";
-import { EditorDataManager } from "../../utils/EditorDataManager";
-import { CanvasDataManager } from "../../utils/CanvasDataManager";
 import { cursorArrowEvent } from "../../hooks/cursorArrowEvent";
+import { EditorManger } from "../../utils/EditorManger";
 
 interface CursorProps {
-  editorDataManager: EditorDataManager;
-  canvasDataManager: CanvasDataManager;
+  editorManger: EditorManger;
 }
 
-export function Cursor({ editorDataManager, canvasDataManager }: CursorProps) {
+export function Cursor({ editorManger }: CursorProps) {
   const [cursor, setCursor] = useRecoilState(cursorState);
 
   const [isBlinking, setIsBlinking] = useState<boolean>(false);
@@ -26,14 +24,14 @@ export function Cursor({ editorDataManager, canvasDataManager }: CursorProps) {
     return () => clearTimeout(timer);
   }, [cursor]);
 
-  cursorArrowEvent({ canvasDataManager, editorDataManager });
+  cursorArrowEvent({ editorManger });
 
   useEffect(() => {
     const handleTextCleared = () => {
       setCursor({
-        fontSize: editorDataManager.defaultFontSize,
-        x: canvasDataManager.marginX,
-        y: canvasDataManager.marginY,
+        fontSize: editorManger.defaultFontSize,
+        x: editorManger.marginX,
+        y: editorManger.marginY,
         pageIndex: 0,
       });
     };
@@ -43,7 +41,7 @@ export function Cursor({ editorDataManager, canvasDataManager }: CursorProps) {
     return () => {
       window.removeEventListener("notifyTextCleared", handleTextCleared);
     };
-  }, [editorDataManager.defaultFontSize]);
+  }, [editorManger.defaultFontSize]);
 
   if (!cursor) return null;
 

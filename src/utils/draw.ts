@@ -1,13 +1,13 @@
-import { CanvasDataManager } from "./CanvasDataManager";
 import { LineText } from "../types/editor";
+import { EditorManger } from "./EditorManger";
 
 interface DrawTextParams {
-  canvasDataManager: CanvasDataManager;
+  editorManger: EditorManger;
   canvasRefs: React.MutableRefObject<(HTMLCanvasElement | null)[]>;
 }
 
-export function drawText({ canvasDataManager, canvasRefs }: DrawTextParams) {
-  const lineTexts = canvasDataManager.getCanvasData();
+export function drawText({ editorManger, canvasRefs }: DrawTextParams) {
+  const lineTexts = editorManger.getCanvasData();
 
   if (!lineTexts) return;
 

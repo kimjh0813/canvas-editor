@@ -1,23 +1,18 @@
-import { useEffect, useState } from "react";
-import { CanvasDataManager } from "../utils/CanvasDataManager";
-import { EditorDataManager } from "../utils/EditorDataManager";
+import { useEffect } from "react";
 import { LineText } from "../types/editor";
+import { EditorManger } from "../utils/EditorManger";
 
 interface CursorArrowEvent {
-  editorDataManager: EditorDataManager;
-  canvasDataManager: CanvasDataManager;
+  editorManger: EditorManger;
 }
 
-export function cursorArrowEvent({
-  canvasDataManager,
-  editorDataManager,
-}: CursorArrowEvent) {
+export function cursorArrowEvent({ editorManger }: CursorArrowEvent) {
   const arrowUp = () => {
-    const cursorIndex = editorDataManager.cursorIndex;
+    const cursorIndex = editorManger.cursorIndex;
     if (cursorIndex === 0) return;
 
     const lineTextArr: LineText[] = Array.from(
-      canvasDataManager.lineTexts.values()
+      editorManger.lineTexts.values()
     ).flat();
 
     for (let i = 0; i < lineTextArr.length; i++) {
@@ -26,21 +21,21 @@ export function cursorArrowEvent({
       // endIndex가 cursorIndex보다 크거나 혹은 마지막 줄일때(가장 끝에 커서가 잡혀있을때는 글자가 있는공간이 아니라 글자를 작성할 공간 인덱스에 있음)
       if (lineTexts.endIndex >= cursorIndex || i === lineTextArr.length - 1) {
         if (i === 0) {
-          editorDataManager.setCursorIndex(0);
+          editorManger.setCursorIndex(0);
         } else {
           const prevLineText = lineTextArr[i - 1];
 
-          if (editorDataManager.prevRowIndex === null)
-            editorDataManager.setPrevRowIndex(
+          if (editorManger.prevRowIndex === null)
+            editorManger.setPrevRowIndex(
               cursorIndex - (prevLineText.endIndex + 1)
             );
-          const prevRowIndex = editorDataManager.prevRowIndex ?? 0;
+          const prevRowIndex = editorManger.prevRowIndex ?? 0;
           const prevRowStartIndex =
             prevLineText.endIndex - prevLineText.text.length + 1;
 
           const targetCursorIndex = prevRowStartIndex + prevRowIndex;
 
-          editorDataManager.setCursorIndex(
+          editorManger.setCursorIndex(
             targetCursorIndex < prevLineText.endIndex
               ? targetCursorIndex
               : prevLineText.endIndex
@@ -52,12 +47,12 @@ export function cursorArrowEvent({
   };
 
   const arrowDown = () => {
-    const cursorIndex = editorDataManager.cursorIndex;
-    const textLength = editorDataManager.textArr.length;
+    const cursorIndex = editorManger.cursorIndex;
+    const textLength = editorManger.textArr.length;
     if (cursorIndex > textLength) return;
 
     const lineTextArr: LineText[] = Array.from(
-      canvasDataManager.lineTexts.values()
+      editorManger.lineTexts.values()
     ).flat();
 
     for (let i = 0; i < lineTextArr.length; i++) {
@@ -65,16 +60,16 @@ export function cursorArrowEvent({
 
       if (lineTexts.endIndex >= cursorIndex) {
         if (i === lineTextArr.length - 1) {
-          editorDataManager.setCursorIndex(textLength);
+          editorManger.setCursorIndex(textLength);
         } else {
           const nextLineText = lineTextArr[i + 1];
 
-          if (editorDataManager.prevRowIndex === null)
-            editorDataManager.setPrevRowIndex(
+          if (editorManger.prevRowIndex === null)
+            editorManger.setPrevRowIndex(
               cursorIndex - (lineTexts.endIndex - lineTexts.text.length + 1)
             );
 
-          const prevRowIndex = editorDataManager.prevRowIndex ?? 0;
+          const prevRowIndex = editorManger.prevRowIndex ?? 0;
           const nextRowStartIndex =
             nextLineText.endIndex - nextLineText.text.length + 1;
 
@@ -91,7 +86,7 @@ export function cursorArrowEvent({
             }
           }
 
-          editorDataManager.setCursorIndex(targetCursorIndex);
+          editorManger.setCursorIndex(targetCursorIndex);
         }
         break;
       }
@@ -99,13 +94,13 @@ export function cursorArrowEvent({
   };
 
   const arrowLeft = () => {
-    editorDataManager.setPrevRowIndex(null);
-    editorDataManager.setCursorIndex(editorDataManager.cursorIndex - 1);
+    editorManger.setPrevRowIndex(null);
+    editorManger.setCursorIndex(editorManger.cursorIndex - 1);
   };
 
   const arrowRight = () => {
-    editorDataManager.setPrevRowIndex(null);
-    editorDataManager.setCursorIndex(editorDataManager.cursorIndex + 1);
+    editorManger.setPrevRowIndex(null);
+    editorManger.setCursorIndex(editorManger.cursorIndex + 1);
   };
 
   useEffect(() => {

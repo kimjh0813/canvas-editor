@@ -15,7 +15,7 @@ const functionKey = [
   "F12",
 ];
 
-export class EditorDataManager {
+export class EditorKeyHandler {
   private _textArr: TextFragment[];
   private _cursorIndex: number;
   private _defaultFontSize: number;
