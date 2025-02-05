@@ -3,7 +3,6 @@ import { cursorState } from "../../recoil";
 
 import * as S from "./styled";
 import { useEffect, useState } from "react";
-import { cursorArrowEvent } from "../../hooks/cursorArrowEvent";
 import { EditorManger } from "../../utils/EditorManger";
 
 interface CursorProps {
@@ -23,8 +22,6 @@ export function Cursor({ editorManger }: CursorProps) {
 
     return () => clearTimeout(timer);
   }, [cursor]);
-
-  cursorArrowEvent({ editorManger });
 
   useEffect(() => {
     const handleTextCleared = () => {
