@@ -38,7 +38,7 @@ export function Cursor({ editorManger }: CursorProps) {
     return () => {
       window.removeEventListener("notifyTextCleared", handleTextCleared);
     };
-  }, [editorManger.defaultFontSize]);
+  }, []);
 
   if (!cursor) return null;
 

@@ -2,11 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { drawText } from "../../utils/draw";
 import { useSetRecoilState } from "recoil";
 import { cursorState } from "../../recoil";
-import { Cursor } from "../cursor";
 import { EditorManger } from "../../utils/EditorManger";
+import { Cursor } from "../cursor";
 
 const isTimeCheck = false;
-const defaultFontSize = 40;
+const defaultFontSize = 30;
 
 // 지금 class구조, canvasDataManager setLineTexts와 같은 함수, pageSize, cursorPosition 처럼 setState를 넘기냐 혹은 eventListener로 관리, draw useEffect pageSize
 
@@ -69,6 +69,13 @@ export function Editor() {
           <canvas
             width={794}
             height={1123}
+            onClick={(e) =>
+              editorManger.canvasClick(
+                e.nativeEvent.offsetX,
+                e.nativeEvent.offsetY,
+                index
+              )
+            }
             ref={(el) => (canvasRefs.current[index] = el)}
             style={{
               cursor: "text",

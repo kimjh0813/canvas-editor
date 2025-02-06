@@ -10,14 +10,13 @@ export class EditorManger extends EditorKeyHandler {
   private _pageSize: number;
 
   private _setPageSizeCallback: (pageSize: number) => void;
-  private _setCursor: (cursor: Cursor) => void;
 
   constructor(
     defaultFontSize: number,
     setPageSizeCallback: (pageSize: number) => void,
     setCursor: (cursor: Cursor) => void
   ) {
-    super(defaultFontSize);
+    super(defaultFontSize, setCursor);
 
     this._marginX = 40;
     this._marginY = 40;
@@ -26,7 +25,6 @@ export class EditorManger extends EditorKeyHandler {
     this._pageSize = 1;
 
     this._setPageSizeCallback = setPageSizeCallback;
-    this._setCursor = setCursor;
   }
 
   public get marginX(): number {
@@ -45,25 +43,73 @@ export class EditorManger extends EditorKeyHandler {
     return this._pageSize;
   }
 
-  setPageSizeCallback(page: number) {
-    this._pageSize = page;
-    this._setPageSizeCallback(page);
-  }
+  canvasClick(clickX: number, clickY: number, pageIndex: number) {
+    const lineTextArr = this.lineTexts.get(pageIndex);
+    if (!lineTextArr || lineTextArr.length === 0) return;
 
-  setCursor(cursor: Cursor, i: number) {
-    if (this.cursorIndex === 0 && i === 0) {
-      this._setCursor({
-        x: this.marginX,
-        y: this._marginY,
-        fontSize: cursor.fontSize,
-        pageIndex: cursor.pageIndex,
-      });
+    const lastLine = lineTextArr[lineTextArr.length - 1];
+
+    if (lastLine.y + lastLine.maxFontSize * 1.48 < clickY) {
+      this.setCursorIndex(this.textArr.length);
       return;
     }
 
-    if (this.cursorIndex === i + 1) {
-      this._setCursor(cursor);
+    let closestLine: LineText | null = null;
+
+    for (const line of lineTextArr) {
+      if (clickY >= line.y && clickY <= line.y + line.maxFontSize * 1.48) {
+        closestLine = line;
+        break;
+      }
     }
+
+    if (!closestLine) return;
+
+    let x = closestLine.x;
+    let cursorIndex: number | null = null;
+
+    for (let i = 0; i < closestLine.text.length; i++) {
+      const { text, fontSize } = closestLine.text[i];
+
+      const ctx = document.createElement("canvas").getContext("2d");
+      if (!ctx) return;
+      ctx.font = `500 ${fontSize}px Arial`;
+
+      const textWidth = ctx.measureText(text).width;
+      const charMid = x + textWidth / 2;
+
+      if (clickX >= x && clickX <= x + textWidth) {
+        if (clickX < charMid) {
+          cursorIndex =
+            closestLine.endIndex - (closestLine.text.length - i) + 1;
+        } else {
+          cursorIndex =
+            closestLine.endIndex - (closestLine.text.length - i) + 1 + 1;
+        }
+        break;
+      }
+
+      x += textWidth;
+    }
+
+    if (!cursorIndex) {
+      if (clickX > this._marginX) {
+        // 마지막 줄일 경우 +1
+        cursorIndex =
+          this.textArr.length - 1 === closestLine.endIndex
+            ? closestLine.endIndex + 1
+            : closestLine.endIndex;
+      } else {
+        cursorIndex = closestLine.endIndex - closestLine.text.length + 1;
+      }
+    }
+
+    this.setCursorIndex(cursorIndex);
+  }
+
+  setPageSizeCallback(page: number) {
+    this._pageSize = page;
+    this._setPageSizeCallback(page);
   }
 
   getCanvasData(): Map<number, LineText[]> | undefined {
@@ -157,7 +203,21 @@ export class EditorManger extends EditorKeyHandler {
         this.lineTexts.set(pageIndex, currentPageText);
       }
 
-      this.setCursor({ x, y, fontSize, pageIndex }, i);
+      const cursor = { x, y, fontSize, pageIndex };
+
+      if (this.cursorIndex === 0 && i === 0) {
+        this._setCursor({
+          x: this.marginX,
+          y: this._marginY,
+          fontSize: cursor.fontSize,
+          pageIndex: cursor.pageIndex,
+        });
+        return;
+      }
+
+      if (this.cursorIndex === i + 1) {
+        this._setCursor(cursor);
+      }
     }
 
     if (this.pageSize !== this.lineTexts.size && this.lineTexts.size > 0)

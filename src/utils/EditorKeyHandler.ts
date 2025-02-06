@@ -1,3 +1,4 @@
+import { Cursor } from "../recoil";
 import { LineText, TextFragment } from "../types/editor";
 
 const functionKey = [
@@ -22,13 +23,16 @@ export class EditorKeyHandler {
   private _prevRowIndex: number | null;
 
   protected lineTexts: Map<number, LineText[]>;
+  protected _setCursor: (cursor: Cursor) => void;
 
-  constructor(defaultFontSize: number) {
+  constructor(defaultFontSize: number, setCursor: (cursor: Cursor) => void) {
     this._defaultFontSize = defaultFontSize;
     this._textArr = [];
     this._cursorIndex = 0;
     this._prevRowIndex = null;
     this.lineTexts = new Map();
+
+    this._setCursor = setCursor;
   }
 
   public get textArr(): TextFragment[] {
@@ -52,8 +56,53 @@ export class EditorKeyHandler {
 
   setCursorIndex(index: number) {
     if (index < 0 || this._textArr.length < index) return;
-
     this._cursorIndex = index;
+
+    const ctx = document.createElement("canvas").getContext("2d");
+    if (!ctx) return;
+
+    const lineTextArr: LineText[][] = Array.from(this.lineTexts.values());
+
+    let targetLine: LineText | null = null;
+    let pageIndex = 0;
+
+    if (this._cursorIndex > this._textArr.length - 1) {
+      const lastPage = lineTextArr[lineTextArr.length - 1];
+      targetLine = lastPage[lastPage.length - 1];
+      pageIndex = lineTextArr.length - 1;
+    } else {
+      outerLoop: for (let p = 0; p < lineTextArr.length; p++) {
+        for (let i = 0; i < lineTextArr[p].length; i++) {
+          const lineText = lineTextArr[p][i];
+
+          if (lineText.endIndex >= this._cursorIndex) {
+            targetLine = lineText;
+            pageIndex = p;
+            break outerLoop;
+          }
+        }
+      }
+    }
+
+    if (!targetLine) return;
+
+    let x = targetLine.x;
+    const textSliceIndex = Math.max(
+      0,
+      targetLine.text.length - (targetLine.endIndex - this._cursorIndex) - 1
+    );
+
+    targetLine.text.slice(0, textSliceIndex).forEach(({ fontSize, text }) => {
+      ctx.font = `500 ${fontSize}px Arial`;
+      x += ctx.measureText(text).width;
+    });
+
+    this._setCursor({
+      x,
+      y: targetLine.y,
+      fontSize: targetLine.maxFontSize,
+      pageIndex,
+    });
   }
 
   addText(text: string) {
@@ -102,11 +151,11 @@ export class EditorKeyHandler {
     const lineTextArr: LineText[] = Array.from(this.lineTexts.values()).flat();
 
     for (let i = 0; i < lineTextArr.length; i++) {
-      const lineTexts = lineTextArr[i];
+      const lineText = lineTextArr[i];
 
       // endIndex가 cursorIndex보다 크거나 혹은 마지막 줄일때(가장 끝에 커서가 잡혀있을때는 글자가 있는공간이 아니라 글자를 작성할 공간 인덱스에 있음)
       if (
-        lineTexts.endIndex >= this._cursorIndex ||
+        lineText.endIndex >= this._cursorIndex ||
         i === lineTextArr.length - 1
       ) {
         if (i === 0) {
@@ -142,9 +191,9 @@ export class EditorKeyHandler {
     const lineTextArr: LineText[] = Array.from(this.lineTexts.values()).flat();
 
     for (let i = 0; i < lineTextArr.length; i++) {
-      const lineTexts = lineTextArr[i];
+      const lineText = lineTextArr[i];
 
-      if (lineTexts.endIndex >= this._cursorIndex) {
+      if (lineText.endIndex >= this._cursorIndex) {
         if (i === lineTextArr.length - 1) {
           this.setCursorIndex(textLength);
         } else {
@@ -152,8 +201,7 @@ export class EditorKeyHandler {
 
           if (this._prevRowIndex === null)
             this.setPrevRowIndex(
-              this._cursorIndex -
-                (lineTexts.endIndex - lineTexts.text.length + 1)
+              this._cursorIndex - (lineText.endIndex - lineText.text.length + 1)
             );
 
           const prevRowIndex = this._prevRowIndex ?? 0;
@@ -187,10 +235,10 @@ export class EditorKeyHandler {
       ).flat();
 
       for (let i = 0; i < lineTextArr.length; i++) {
-        const lineTexts = lineTextArr[i];
+        const lineText = lineTextArr[i];
 
         if (
-          lineTexts.endIndex >= this._cursorIndex ||
+          lineText.endIndex >= this._cursorIndex ||
           i === lineTextArr.length - 1
         ) {
           if (i === 0) {
@@ -198,7 +246,7 @@ export class EditorKeyHandler {
             this.setCursorIndex(0);
           } else {
             this.setPrevRowIndex(null);
-            this.setCursorIndex(lineTexts.endIndex - lineTexts.text.length + 1);
+            this.setCursorIndex(lineText.endIndex - lineText.text.length + 1);
           }
 
           break;
@@ -217,13 +265,13 @@ export class EditorKeyHandler {
       ).flat();
 
       for (let i = 0; i < lineTextArr.length; i++) {
-        const lineTexts = lineTextArr[i];
+        const lineText = lineTextArr[i];
 
-        if (lineTexts.endIndex >= this._cursorIndex) {
+        if (lineText.endIndex >= this._cursorIndex) {
           const targetIndex =
             i === lineTextArr.length - 1
-              ? lineTexts.endIndex + 1
-              : lineTexts.endIndex;
+              ? lineText.endIndex + 1
+              : lineText.endIndex;
 
           this.setPrevRowIndex(null);
           this.setCursorIndex(targetIndex);
@@ -255,12 +303,16 @@ export class EditorKeyHandler {
         return true;
       }
     } else {
+      let result = false;
+
       switch (event.key) {
         case "Backspace":
           this.deleteText();
+          result = true;
           break;
         case "Enter":
           this.enter();
+          result = true;
           break;
         case "ArrowDown":
           this.arrowDown();
@@ -279,7 +331,7 @@ export class EditorKeyHandler {
           break;
       }
 
-      return true;
+      return result;
     }
   }
 
