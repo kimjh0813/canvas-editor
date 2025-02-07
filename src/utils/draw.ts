@@ -27,26 +27,33 @@ export function drawText({ editorManger, canvasRefs }: DrawTextParams) {
 
       if (!ctx) return;
 
-      drawLine({ ctx, lineTexts: value[i] });
+      drawLine({
+        ctx,
+        lineTexts: value[i],
+        selectedIndex: editorManger.selectedIndex,
+      });
     }
   }
 }
 
 interface DrawLineParams {
   ctx: CanvasRenderingContext2D;
+  selectedIndex: Set<number>;
   lineTexts: LineText;
 }
-function drawLine({ lineTexts, ctx }: DrawLineParams) {
+function drawLine({ lineTexts, ctx, selectedIndex }: DrawLineParams) {
   let lineX = lineTexts.x;
 
   for (let i = 0; i < lineTexts.text.length; i++) {
+    const index = lineTexts.endIndex - lineTexts.text.length + 1 + i;
+
     const lineText = lineTexts.text[i];
     ctx.font = `500 ${lineText.fontSize}px Arial`;
 
     const textWidth = ctx.measureText(lineText.text).width;
     const textHeight = lineTexts.maxFontSize;
 
-    if (lineText.isSelect) {
+    if (selectedIndex.has(index)) {
       ctx.fillStyle = "rgba(30, 144, 255, 0.15)";
       ctx.fillRect(lineX, lineTexts.y, textWidth, textHeight * 1.48);
     }

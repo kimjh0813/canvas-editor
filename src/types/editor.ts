@@ -1,7 +1,6 @@
 export interface TextFragment {
   text: string;
   fontSize: number;
-  isSelect: boolean;
 }
 
 export interface LineText {

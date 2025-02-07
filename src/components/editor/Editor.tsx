@@ -40,6 +40,7 @@ export function Editor() {
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       const isDraw = editorManger.keyDown(event);
+
       isDraw && draw();
     };
 
@@ -65,17 +66,19 @@ export function Editor() {
     >
       <Cursor editorManger={editorManger} />
       {[...Array(pageSize)].map((_, index) => (
-        <div key={index} style={{ outline: "1px solid #c7c7c7" }}>
+        <div key={index} style={{ outline: "1px solid #c7c7c7", height: 1123 }}>
           <canvas
             width={794}
             height={1123}
-            onClick={(e) =>
-              editorManger.canvasClick(
+            onClick={(e) => {
+              const isDraw = editorManger.canvasClick(
                 e.nativeEvent.offsetX,
                 e.nativeEvent.offsetY,
                 index
-              )
-            }
+              );
+
+              isDraw && draw();
+            }}
             ref={(el) => (canvasRefs.current[index] = el)}
             style={{
               cursor: "text",

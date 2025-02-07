@@ -22,6 +22,7 @@ export class EditorKeyHandler {
   private _defaultFontSize: number;
   private _prevRowIndex: number | null;
 
+  protected _selectedIndex: Set<number>;
   protected lineTexts: Map<number, LineText[]>;
   protected _setCursor: (cursor: Cursor) => void;
 
@@ -31,6 +32,7 @@ export class EditorKeyHandler {
     this._cursorIndex = 0;
     this._prevRowIndex = null;
     this.lineTexts = new Map();
+    this._selectedIndex = new Set();
 
     this._setCursor = setCursor;
   }
@@ -46,6 +48,86 @@ export class EditorKeyHandler {
   }
   public get prevRowIndex(): number | null {
     return this._prevRowIndex;
+  }
+  public get selectedIndex(): Set<number> {
+    return this._selectedIndex;
+  }
+
+  addText(text: string) {
+    this.deleteSelectedIndex();
+
+    if (this._prevRowIndex !== null) this.setPrevRowIndex(null);
+
+    const newText = {
+      text,
+      fontSize: this._defaultFontSize,
+    };
+
+    this._textArr.splice(this._cursorIndex, 0, newText);
+
+    this._cursorIndex++;
+  }
+
+  deleteText() {
+    const result = this.deleteSelectedIndex();
+    if (result) return;
+
+    if (this._cursorIndex === 0) return;
+
+    if (this._prevRowIndex !== null) this.setPrevRowIndex(null);
+
+    this._textArr.splice(this._cursorIndex - 1, 1);
+
+    if (this._textArr.length === 0) {
+      this.notifyTextCleared();
+    }
+
+    this._cursorIndex--;
+  }
+
+  enter() {
+    this.deleteSelectedIndex();
+
+    if (this._prevRowIndex !== null) this.setPrevRowIndex(null);
+
+    this._textArr.splice(this._cursorIndex, 0, {
+      text: "\n",
+      fontSize: this._defaultFontSize,
+    });
+
+    this._cursorIndex++;
+  }
+
+  clearSelectedIndex() {
+    if (this._selectedIndex.size < 1) return false;
+
+    this._selectedIndex.clear();
+    return true;
+  }
+
+  updateSelectedIndex(index: number) {
+    if (this._selectedIndex.has(index)) {
+      this._selectedIndex.delete(index);
+    } else {
+      this._selectedIndex.add(index);
+    }
+  }
+
+  deleteSelectedIndex() {
+    if (this._selectedIndex.size < 1) return false;
+
+    const minIndex = Math.min(...this._selectedIndex);
+    const maxIndex = Math.max(...this._selectedIndex);
+
+    console.log(minIndex, maxIndex);
+
+    this._textArr.splice(minIndex, maxIndex - minIndex + 1);
+
+    this._selectedIndex.clear();
+
+    this._cursorIndex = minIndex;
+
+    return true;
   }
 
   setPrevRowIndex(rowIndex: number | null) {
@@ -103,46 +185,6 @@ export class EditorKeyHandler {
       fontSize: targetLine.maxFontSize,
       pageIndex,
     });
-  }
-
-  addText(text: string) {
-    if (this._prevRowIndex !== null) this.setPrevRowIndex(null);
-
-    const newText = {
-      text,
-      fontSize: this._defaultFontSize,
-      isSelect: false,
-    };
-
-    this._textArr.splice(this._cursorIndex, 0, newText);
-
-    this._cursorIndex++;
-  }
-
-  deleteText() {
-    if (this._cursorIndex === 0) return;
-
-    if (this._prevRowIndex !== null) this.setPrevRowIndex(null);
-
-    this._textArr.splice(this._cursorIndex - 1, 1);
-
-    if (this._textArr.length === 0) {
-      this.notifyTextCleared();
-    }
-
-    this._cursorIndex--;
-  }
-
-  enter() {
-    if (this._prevRowIndex !== null) this.setPrevRowIndex(null);
-
-    this._textArr.splice(this._cursorIndex, 0, {
-      text: "\n",
-      fontSize: this._defaultFontSize,
-      isSelect: false,
-    });
-
-    this._cursorIndex++;
   }
 
   arrowUp() {
@@ -237,22 +279,37 @@ export class EditorKeyHandler {
       for (let i = 0; i < lineTextArr.length; i++) {
         const lineText = lineTextArr[i];
 
+        let targetIndex: number | null = null;
+
         if (
           lineText.endIndex >= this._cursorIndex ||
           i === lineTextArr.length - 1
         ) {
           if (i === 0) {
-            this.setPrevRowIndex(null);
-            this.setCursorIndex(0);
+            targetIndex = 0;
           } else {
-            this.setPrevRowIndex(null);
-            this.setCursorIndex(lineText.endIndex - lineText.text.length + 1);
+            targetIndex = lineText.endIndex - lineText.text.length + 1;
           }
 
+          if (event.shiftKey) {
+            for (let i = this._cursorIndex - 1; i >= targetIndex; i--) {
+              this.updateSelectedIndex(i);
+            }
+          } else {
+            this.clearSelectedIndex();
+          }
+
+          this.setPrevRowIndex(null);
+          this.setCursorIndex(targetIndex);
           break;
         }
       }
     } else {
+      if (event.shiftKey) {
+        this.updateSelectedIndex(this._cursorIndex - 1);
+      } else {
+        this.clearSelectedIndex();
+      }
       this.setPrevRowIndex(null);
       this.setCursorIndex(this._cursorIndex - 1);
     }
@@ -273,6 +330,14 @@ export class EditorKeyHandler {
               ? lineText.endIndex + 1
               : lineText.endIndex;
 
+          if (event.shiftKey) {
+            for (let i = this._cursorIndex; i <= targetIndex - 1; i++) {
+              this.updateSelectedIndex(i);
+            }
+          } else {
+            this.clearSelectedIndex();
+          }
+
           this.setPrevRowIndex(null);
           this.setCursorIndex(targetIndex);
 
@@ -280,6 +345,11 @@ export class EditorKeyHandler {
         }
       }
     } else {
+      if (event.shiftKey) {
+        this.updateSelectedIndex(this._cursorIndex);
+      } else {
+        this.clearSelectedIndex();
+      }
       this.setPrevRowIndex(null);
       this.setCursorIndex(this._cursorIndex + 1);
     }
@@ -315,15 +385,23 @@ export class EditorKeyHandler {
           result = true;
           break;
         case "ArrowDown":
+          result = this.clearSelectedIndex();
           this.arrowDown();
           break;
         case "ArrowUp":
+          result = this.clearSelectedIndex();
           this.arrowUp();
           break;
         case "ArrowLeft":
+          if (event.shiftKey || this._selectedIndex.size > 0) {
+            result = true;
+          }
           this.arrowLeft(event);
           break;
         case "ArrowRight":
+          if (event.shiftKey || this._selectedIndex.size > 0) {
+            result = true;
+          }
           this.arrowRight(event);
           break;
         default:
@@ -333,10 +411,6 @@ export class EditorKeyHandler {
 
       return result;
     }
-  }
-
-  arrowEvent(type: "ArrowDown" | "ArrowUp" | "ArrowLeft" | "ArrowRight") {
-    window.dispatchEvent(new Event(type, {}));
   }
 
   notifyTextCleared() {

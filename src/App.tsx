@@ -6,7 +6,6 @@ function App() {
       style={{
         display: "flex",
         flexDirection: "column",
-        gap: 12,
         alignItems: "center",
         justifyContent: "center",
       }}

@@ -44,14 +44,17 @@ export class EditorManger extends EditorKeyHandler {
   }
 
   canvasClick(clickX: number, clickY: number, pageIndex: number) {
+    const result = this.clearSelectedIndex();
+    console.log(this.lineTexts);
+
     const lineTextArr = this.lineTexts.get(pageIndex);
-    if (!lineTextArr || lineTextArr.length === 0) return;
+    if (!lineTextArr || lineTextArr.length === 0) return result;
 
     const lastLine = lineTextArr[lineTextArr.length - 1];
 
     if (lastLine.y + lastLine.maxFontSize * 1.48 < clickY) {
       this.setCursorIndex(this.textArr.length);
-      return;
+      return result;
     }
 
     let closestLine: LineText | null = null;
@@ -63,7 +66,7 @@ export class EditorManger extends EditorKeyHandler {
       }
     }
 
-    if (!closestLine) return;
+    if (!closestLine) return result;
 
     let x = closestLine.x;
     let cursorIndex: number | null = null;
@@ -105,6 +108,8 @@ export class EditorManger extends EditorKeyHandler {
     }
 
     this.setCursorIndex(cursorIndex);
+
+    return result;
   }
 
   setPageSizeCallback(page: number) {
@@ -212,7 +217,8 @@ export class EditorManger extends EditorKeyHandler {
           fontSize: cursor.fontSize,
           pageIndex: cursor.pageIndex,
         });
-        return;
+
+        continue;
       }
 
       if (this.cursorIndex === i + 1) {
