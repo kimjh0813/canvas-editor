@@ -5,6 +5,8 @@ import { cursorState } from "../../recoil";
 import { EditorManger } from "../../utils/EditorManger";
 import { Cursor } from "../cursor";
 
+import * as S from "./styled";
+
 const isTimeCheck = false;
 const defaultFontSize = 30;
 
@@ -56,37 +58,31 @@ export function Editor() {
   }, [pageSize]);
 
   return (
-    <div
-      style={{
-        position: "relative",
-        display: "flex",
-        flexDirection: "column",
-        gap: "20px",
-      }}
-    >
-      <Cursor editorManger={editorManger} />
-      {[...Array(pageSize)].map((_, index) => (
-        <div key={index} style={{ outline: "1px solid #c7c7c7", height: 1123 }}>
-          <canvas
-            width={794}
-            height={1123}
-            onClick={(e) => {
-              const isDraw = editorManger.canvasClick(
-                e.nativeEvent.offsetX,
-                e.nativeEvent.offsetY,
-                index
-              );
+    <S.MainWrapper>
+      <S.CanvasContainer>
+        <Cursor editorManger={editorManger} />
+        {[...Array(pageSize)].map((_, index) => (
+          <S.CanvasWrapper
+            key={index}
+            $canvasHeight={editorManger.canvasHeight}
+          >
+            <canvas
+              width={editorManger.canvasWidth}
+              height={editorManger.canvasHeight}
+              onClick={(e) => {
+                const isDraw = editorManger.canvasClick(
+                  e.nativeEvent.offsetX,
+                  e.nativeEvent.offsetY,
+                  index
+                );
 
-              isDraw && draw();
-            }}
-            ref={(el) => (canvasRefs.current[index] = el)}
-            style={{
-              cursor: "text",
-              outline: "none",
-            }}
-          />
-        </div>
-      ))}
-    </div>
+                isDraw && draw();
+              }}
+              ref={(el) => (canvasRefs.current[index] = el)}
+            />
+          </S.CanvasWrapper>
+        ))}
+      </S.CanvasContainer>
+    </S.MainWrapper>
   );
 }

@@ -58,10 +58,13 @@ export class EditorManger extends EditorKeyHandler {
     }
 
     let closestLine: LineText | null = null;
+    let isLastLine = false;
 
-    for (const line of lineTextArr) {
+    for (let i = 0; i < lineTextArr.length; i++) {
+      const line = lineTextArr[i];
       if (clickY >= line.y && clickY <= line.y + line.maxFontSize * 1.48) {
         closestLine = line;
+        i === lineTextArr.length - 1 && (isLastLine = true);
         break;
       }
     }
@@ -98,10 +101,9 @@ export class EditorManger extends EditorKeyHandler {
     if (!cursorIndex) {
       if (clickX > this._marginX) {
         // 마지막 줄일 경우 +1
-        cursorIndex =
-          this.textArr.length - 1 === closestLine.endIndex
-            ? closestLine.endIndex + 1
-            : closestLine.endIndex;
+        cursorIndex = isLastLine
+          ? closestLine.endIndex + 1
+          : closestLine.endIndex;
       } else {
         cursorIndex = closestLine.endIndex - closestLine.text.length + 1;
       }
