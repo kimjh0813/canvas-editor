@@ -1,5 +1,6 @@
 import { Cursor } from "../recoil";
 import { LineText, TextFragment } from "../types/editor";
+import { measureTextWidth } from "./ctx";
 
 const functionKey = [
   "F1",
@@ -176,7 +177,7 @@ export class EditorKeyHandler {
 
     targetLine.text.slice(0, textSliceIndex).forEach(({ fontSize, text }) => {
       ctx.font = `500 ${fontSize}px Arial`;
-      x += ctx.measureText(text).width;
+      x += measureTextWidth(ctx, text);
     });
 
     this._setCursor({
@@ -338,6 +339,7 @@ export class EditorKeyHandler {
             this.clearSelectedIndex();
           }
 
+          console.log(targetIndex);
           this.setPrevRowIndex(null);
           this.setCursorIndex(targetIndex);
 

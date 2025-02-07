@@ -12,6 +12,7 @@ export const CanvasContainer = styled.div`
   display: flex;
   flex-direction: column;
   gap: 20px;
+  margin-top: 20px;
 `;
 
 export const CanvasWrapper = styled.div<{ $canvasHeight: number }>`
@@ -21,5 +22,6 @@ export const CanvasWrapper = styled.div<{ $canvasHeight: number }>`
   canvas {
     cursor: text;
     outline: none;
+    background-color: white;
   }
 `;

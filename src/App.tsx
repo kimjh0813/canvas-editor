@@ -2,7 +2,7 @@ import { Editor } from "./components";
 
 function App() {
   return (
-    <div>
+    <div style={{ background: "#F8FAFD" }}>
       <Editor />
     </div>
   );

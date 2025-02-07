@@ -1,4 +1,5 @@
 import { LineText } from "../types/editor";
+import { measureTextWidth } from "./ctx";
 import { EditorManger } from "./EditorManger";
 
 interface DrawTextParams {
@@ -46,15 +47,18 @@ function drawLine({ lineTexts, ctx, selectedIndex }: DrawLineParams) {
 
   for (let i = 0; i < lineTexts.text.length; i++) {
     const index = lineTexts.endIndex - lineTexts.text.length + 1 + i;
-
     const lineText = lineTexts.text[i];
-    ctx.font = `500 ${lineText.fontSize}px Arial`;
 
-    const textWidth = ctx.measureText(lineText.text).width;
+    ctx.font = `400 ${lineText.fontSize}px Arial`;
+
+    const textWidth = measureTextWidth(ctx, lineText.text);
     const textHeight = lineTexts.maxFontSize;
 
+    // ctx.fillStyle = "green";
+    // ctx.fillRect(lineX, lineTexts.y, textWidth, textHeight * 1.48);
+
     if (selectedIndex.has(index)) {
-      ctx.fillStyle = "rgba(30, 144, 255, 0.15)";
+      ctx.fillStyle = "#B2CEF9";
       ctx.fillRect(lineX, lineTexts.y, textWidth, textHeight * 1.48);
     }
 

@@ -1,6 +1,7 @@
 import { LineText, TextFragment } from "../types/editor";
 import { EditorKeyHandler } from "./EditorKeyHandler";
 import { Cursor } from "../recoil";
+import { measureTextWidth } from "./ctx";
 
 export class EditorManger extends EditorKeyHandler {
   private _marginX: number;
@@ -81,7 +82,7 @@ export class EditorManger extends EditorKeyHandler {
       if (!ctx) return;
       ctx.font = `500 ${fontSize}px Arial`;
 
-      const textWidth = ctx.measureText(text).width;
+      const textWidth = measureTextWidth(ctx, text);
       const charMid = x + textWidth / 2;
 
       if (clickX >= x && clickX <= x + textWidth) {
@@ -143,7 +144,7 @@ export class EditorManger extends EditorKeyHandler {
       if (maxFontSize < fontSize) maxFontSize = fontSize;
 
       ctx.font = `500 ${fontSize}px Arial`;
-      const textWidth = ctx.measureText(text).width;
+      const textWidth = measureTextWidth(ctx, text);
       const currentWidth = x + this.marginX + textWidth;
 
       const isLastText = i === textFragments.length - 1;
