@@ -244,12 +244,12 @@ export class EditorKeyHandler {
       return;
     }
 
-    let targetCursorIndex = 0;
+    let targetIndex = 0;
 
     const lineTextArr: LineText[] = Array.from(this.lineTexts.values()).flat();
 
     if (isCommandKey(event)) {
-      targetCursorIndex = 0;
+      targetIndex = 0;
     } else {
       for (let i = 0; i < lineTextArr.length; i++) {
         const lineText = lineTextArr[i];
@@ -260,7 +260,7 @@ export class EditorKeyHandler {
           i === lineTextArr.length - 1
         ) {
           if (i === 0) {
-            targetCursorIndex = 0;
+            targetIndex = 0;
           } else {
             const targetLineText = lineTextArr[i - 1];
 
@@ -274,23 +274,43 @@ export class EditorKeyHandler {
             const targetRowStartIndex =
               targetLineText.endIndex - targetLineText.text.length + 1;
 
-            targetCursorIndex = targetRowStartIndex + prevRowIndex;
+            targetIndex = targetRowStartIndex + prevRowIndex;
 
-            if (targetLineText.endIndex < targetCursorIndex) {
-              targetCursorIndex = targetLineText.endIndex;
+            if (targetLineText.endIndex < targetIndex) {
+              targetIndex = targetLineText.endIndex;
             }
           }
           break;
         }
       }
     }
+
+    let startIndex = undefined;
+    let endIndex = undefined;
+
     if (event.shiftKey) {
-      this.updateSelectedRange(targetCursorIndex, undefined);
+      if (this._selectRange && this._selectRange.start <= targetIndex) {
+        endIndex = targetIndex;
+      } else if (
+        isCommandKey(event) &&
+        this._selectRange &&
+        this._selectRange.start > targetIndex
+      ) {
+        startIndex = targetIndex;
+        endIndex = endIndex =
+          this._selectRange.end > this._cursorIndex
+            ? this._selectRange.end
+            : this._selectRange.start;
+      } else {
+        startIndex = targetIndex;
+      }
+
+      this.updateSelectedRange(startIndex, endIndex);
     } else {
       this.clearSelectedRange();
     }
 
-    this.setCursorIndex(targetCursorIndex);
+    this.setCursorIndex(targetIndex);
   }
 
   arrowDown(event: KeyboardEvent) {
@@ -303,10 +323,10 @@ export class EditorKeyHandler {
       return;
     }
 
-    let targetCursorIndex = 0;
+    let targetIndex = 0;
 
     if (isCommandKey(event)) {
-      targetCursorIndex = textLength;
+      targetIndex = textLength;
     } else {
       const lineTextArr: LineText[] = Array.from(
         this.lineTexts.values()
@@ -317,7 +337,7 @@ export class EditorKeyHandler {
 
         if (lineText.endIndex >= this._cursorIndex) {
           if (i === lineTextArr.length - 1) {
-            targetCursorIndex = textLength;
+            targetIndex = textLength;
           } else {
             const targetLineText = lineTextArr[i + 1];
 
@@ -332,16 +352,13 @@ export class EditorKeyHandler {
             const targetRowStartIndex =
               targetLineText.endIndex - targetLineText.text.length + 1;
 
-            targetCursorIndex = targetRowStartIndex + prevRowIndex;
+            targetIndex = targetRowStartIndex + prevRowIndex;
 
-            if (targetLineText.endIndex < targetCursorIndex) {
-              if (
-                i === lineTextArr.length - 2 &&
-                targetCursorIndex >= textLength
-              ) {
-                targetCursorIndex = textLength;
+            if (targetLineText.endIndex < targetIndex) {
+              if (i === lineTextArr.length - 2 && targetIndex >= textLength) {
+                targetIndex = textLength;
               } else {
-                targetCursorIndex = targetLineText.endIndex;
+                targetIndex = targetLineText.endIndex;
               }
             }
           }
@@ -351,13 +368,32 @@ export class EditorKeyHandler {
       }
     }
 
+    let startIndex = undefined;
+    let endIndex = undefined;
+
     if (event.shiftKey) {
-      this.updateSelectedRange(undefined, targetCursorIndex);
+      if (this._selectRange && this._selectRange.end >= targetIndex) {
+        startIndex = targetIndex;
+      } else if (
+        isCommandKey(event) &&
+        this._selectRange &&
+        this._selectRange.end < targetIndex
+      ) {
+        startIndex =
+          this._selectRange.start < this._cursorIndex
+            ? this._selectRange.start
+            : this._selectRange.end;
+        endIndex = targetIndex;
+      } else {
+        endIndex = targetIndex;
+      }
+
+      this.updateSelectedRange(startIndex, endIndex);
     } else {
       this.clearSelectedRange();
     }
 
-    this.setCursorIndex(targetCursorIndex);
+    this.setCursorIndex(targetIndex);
   }
 
   arrowLeft = (event: KeyboardEvent) => {
@@ -407,7 +443,10 @@ export class EditorKeyHandler {
         this._selectRange.start > targetIndex
       ) {
         startIndex = targetIndex;
-        endIndex = this._selectRange.start;
+        endIndex =
+          this._selectRange.end > this._cursorIndex
+            ? this._selectRange.end
+            : this._selectRange.start;
       } else {
         startIndex = targetIndex;
       }
@@ -464,7 +503,10 @@ export class EditorKeyHandler {
         this._selectRange &&
         this._selectRange.end < targetIndex
       ) {
-        startIndex = this._selectRange.end;
+        startIndex =
+          this._selectRange.start < this._cursorIndex
+            ? this._selectRange.start
+            : this._selectRange.end;
         endIndex = targetIndex;
       } else {
         endIndex = targetIndex;
