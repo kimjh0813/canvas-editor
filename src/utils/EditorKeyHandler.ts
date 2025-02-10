@@ -431,6 +431,8 @@ export class EditorKeyHandler {
       targetIndex = this._cursorIndex - 1;
     }
 
+    if (targetIndex === this._cursorIndex) return;
+
     let startIndex = undefined;
     let endIndex = undefined;
 
@@ -491,6 +493,8 @@ export class EditorKeyHandler {
     } else {
       targetIndex = this._cursorIndex + 1;
     }
+
+    if (targetIndex === this._cursorIndex) return;
 
     let startIndex = undefined;
     let endIndex = undefined;
