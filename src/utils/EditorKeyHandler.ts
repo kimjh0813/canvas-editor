@@ -27,7 +27,6 @@ export class EditorKeyHandler {
 
   protected _prevRowIndex: number | null;
   protected _selectRange: SelectRange | null;
-  protected _selectedIndex: Set<number>;
   protected lineTexts: Map<number, LineText[]>;
   protected _setCursor: (cursor: Cursor) => void;
 
@@ -38,7 +37,6 @@ export class EditorKeyHandler {
     setCursor: (cursor: Cursor) => void
   ) {
     this.lineTexts = new Map();
-    this._selectedIndex = new Set();
 
     this._defaultFontSize = defaultFontSize;
     this._marginX = marginX;
@@ -63,9 +61,6 @@ export class EditorKeyHandler {
   }
   public get prevRowIndex(): number | null {
     return this._prevRowIndex;
-  }
-  public get selectedIndex(): Set<number> {
-    return this._selectedIndex;
   }
   public get selectRange(): SelectRange | null {
     return this._selectRange;
