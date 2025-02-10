@@ -10,8 +10,8 @@ import { isCursorSelector } from "../../recoil/selector";
 
 const isTimeCheck = false;
 const defaultFontSize = 30;
-const marginX = 40;
-const marginY = 40;
+const marginX = 60;
+const marginY = 70;
 
 // 지금 class구조, canvasDataManager setLineTexts와 같은 함수, pageSize, cursorPosition 처럼 setState를 넘기냐 혹은 eventListener로 관리, draw useEffect pageSize
 

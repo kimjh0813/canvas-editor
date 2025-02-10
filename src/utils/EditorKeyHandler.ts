@@ -1,6 +1,7 @@
 import { Cursor } from "../recoil";
 import { LineText, SelectRange, TextFragment } from "../types/editor";
 import { measureTextWidth } from "./ctx";
+import { isCommandKey } from "./key";
 
 const functionKey = [
   "F1",
@@ -122,6 +123,15 @@ export class EditorKeyHandler {
     this._cursorIndex++;
   }
 
+  allSelect() {
+    this._selectRange = {
+      start: 0,
+      end: this._textArr.length,
+    };
+
+    this.setCursorIndex(0);
+  }
+
   clearSelectedRange() {
     if (this._selectRange === null) return false;
 
@@ -238,7 +248,7 @@ export class EditorKeyHandler {
 
     const lineTextArr: LineText[] = Array.from(this.lineTexts.values()).flat();
 
-    if (event.metaKey) {
+    if (isCommandKey(event)) {
       targetCursorIndex = 0;
     } else {
       for (let i = 0; i < lineTextArr.length; i++) {
@@ -295,7 +305,7 @@ export class EditorKeyHandler {
 
     let targetCursorIndex = 0;
 
-    if (event.metaKey) {
+    if (isCommandKey(event)) {
       targetCursorIndex = textLength;
     } else {
       const lineTextArr: LineText[] = Array.from(
@@ -360,7 +370,7 @@ export class EditorKeyHandler {
 
     let targetIndex = 0;
 
-    if (event.metaKey) {
+    if (isCommandKey(event)) {
       const lineTextArr: LineText[] = Array.from(
         this.lineTexts.values()
       ).flat();
@@ -392,7 +402,7 @@ export class EditorKeyHandler {
       if (this._selectRange && this._selectRange.start <= targetIndex) {
         endIndex = targetIndex;
       } else if (
-        event.metaKey &&
+        isCommandKey(event) &&
         this._selectRange &&
         this._selectRange.start > targetIndex
       ) {
@@ -422,7 +432,7 @@ export class EditorKeyHandler {
 
     let targetIndex = 0;
 
-    if (event.metaKey) {
+    if (isCommandKey(event)) {
       const lineTextArr: LineText[] = Array.from(
         this.lineTexts.values()
       ).flat();
@@ -450,7 +460,7 @@ export class EditorKeyHandler {
       if (this._selectRange && this._selectRange.end >= targetIndex) {
         startIndex = targetIndex;
       } else if (
-        event.metaKey &&
+        isCommandKey(event) &&
         this._selectRange &&
         this._selectRange.end < targetIndex
       ) {
@@ -469,11 +479,18 @@ export class EditorKeyHandler {
   };
 
   keyDown(event: KeyboardEvent) {
+    let result = false;
+
     if (!functionKey.includes(event.key)) event.preventDefault();
 
+    result = true;
+
     if (event.key.length === 1) {
-      if (event.metaKey) {
+      if (isCommandKey(event)) {
         switch (event.code) {
+          case "KeyA":
+            this.allSelect();
+            break;
           case "KeyR":
             location.reload();
             break;
@@ -482,12 +499,10 @@ export class EditorKeyHandler {
         }
       } else {
         this.addText(event.key);
-
-        return true;
       }
-    } else {
-      let result = false;
 
+      return result;
+    } else {
       switch (event.key) {
         case "Backspace":
           this.deleteText();
