@@ -1,3 +1,4 @@
+import { track } from "@vercel/analytics";
 import { Cursor } from "../recoil";
 import { LineText, TextFragment } from "../types/editor";
 import { measureTextWidth } from "./ctx";
@@ -23,17 +24,29 @@ export class EditorKeyHandler {
   private _defaultFontSize: number;
   private _prevRowIndex: number | null;
 
+  private _marginX: number;
+  private _marginY: number;
+
   protected _selectedIndex: Set<number>;
   protected lineTexts: Map<number, LineText[]>;
   protected _setCursor: (cursor: Cursor) => void;
 
-  constructor(defaultFontSize: number, setCursor: (cursor: Cursor) => void) {
+  constructor(
+    defaultFontSize: number,
+    marginX: number,
+    marginY: number,
+    setCursor: (cursor: Cursor) => void
+  ) {
+    this.lineTexts = new Map();
+    this._selectedIndex = new Set();
+
     this._defaultFontSize = defaultFontSize;
+    this._marginX = marginX;
+    this._marginY = marginY;
+
     this._textArr = [];
     this._cursorIndex = 0;
     this._prevRowIndex = null;
-    this.lineTexts = new Map();
-    this._selectedIndex = new Set();
 
     this._setCursor = setCursor;
   }
@@ -52,6 +65,12 @@ export class EditorKeyHandler {
   }
   public get selectedIndex(): Set<number> {
     return this._selectedIndex;
+  }
+  public get marginX(): number {
+    return this._marginX;
+  }
+  public get marginY(): number {
+    return this._marginY;
   }
 
   addText(text: string) {
@@ -80,7 +99,12 @@ export class EditorKeyHandler {
     this._textArr.splice(this._cursorIndex - 1, 1);
 
     if (this._textArr.length === 0) {
-      this.notifyTextCleared();
+      this._setCursor({
+        x: this.marginX,
+        y: this.marginY,
+        fontSize: this.defaultFontSize,
+        pageIndex: 0,
+      });
     }
 
     this._cursorIndex--;
@@ -107,6 +131,8 @@ export class EditorKeyHandler {
   }
 
   updateSelectedIndex(index: number) {
+    if (index < 0 || this._textArr.length < index) return;
+
     if (this._selectedIndex.has(index)) {
       this._selectedIndex.delete(index);
     } else {
@@ -119,8 +145,6 @@ export class EditorKeyHandler {
 
     const minIndex = Math.min(...this._selectedIndex);
     const maxIndex = Math.max(...this._selectedIndex);
-
-    console.log(minIndex, maxIndex);
 
     this._textArr.splice(minIndex, maxIndex - minIndex + 1);
 
@@ -188,87 +212,121 @@ export class EditorKeyHandler {
     });
   }
 
-  arrowUp() {
+  arrowUp(event: KeyboardEvent) {
     if (this._cursorIndex === 0) return;
 
+    let targetCursorIndex = 0;
+
     const lineTextArr: LineText[] = Array.from(this.lineTexts.values()).flat();
 
-    for (let i = 0; i < lineTextArr.length; i++) {
-      const lineText = lineTextArr[i];
+    if (event.metaKey) {
+      targetCursorIndex = 0;
+    } else {
+      for (let i = 0; i < lineTextArr.length; i++) {
+        const lineText = lineTextArr[i];
 
-      // endIndex가 cursorIndex보다 크거나 혹은 마지막 줄일때(가장 끝에 커서가 잡혀있을때는 글자가 있는공간이 아니라 글자를 작성할 공간 인덱스에 있음)
-      if (
-        lineText.endIndex >= this._cursorIndex ||
-        i === lineTextArr.length - 1
-      ) {
-        if (i === 0) {
-          this.setCursorIndex(0);
-        } else {
-          const prevLineText = lineTextArr[i - 1];
+        // endIndex가 cursorIndex보다 크거나 혹은 마지막 줄일때(가장 끝에 커서가 잡혀있을때는 글자가 있는공간이 아니라 글자를 작성할 공간 인덱스에 있음)
+        if (
+          lineText.endIndex >= this._cursorIndex ||
+          i === lineTextArr.length - 1
+        ) {
+          if (i === 0) {
+            targetCursorIndex = 0;
+          } else {
+            const targetLineText = lineTextArr[i - 1];
 
-          if (this._prevRowIndex === null)
-            this.setPrevRowIndex(
-              this._cursorIndex - (prevLineText.endIndex + 1)
-            );
-          const prevRowIndex = this._prevRowIndex ?? 0;
-          const prevRowStartIndex =
-            prevLineText.endIndex - prevLineText.text.length + 1;
+            if (this._prevRowIndex === null)
+              this.setPrevRowIndex(
+                this._cursorIndex - (targetLineText.endIndex + 1)
+              );
 
-          const targetCursorIndex = prevRowStartIndex + prevRowIndex;
+            const prevRowIndex = this._prevRowIndex ?? 0;
 
-          this.setCursorIndex(
-            targetCursorIndex < prevLineText.endIndex
-              ? targetCursorIndex
-              : prevLineText.endIndex
-          );
+            const targetRowStartIndex =
+              targetLineText.endIndex - targetLineText.text.length + 1;
+
+            targetCursorIndex = targetRowStartIndex + prevRowIndex;
+
+            if (targetLineText.endIndex < targetCursorIndex) {
+              targetCursorIndex = targetLineText.endIndex;
+            }
+          }
+          break;
         }
-        break;
       }
     }
+    if (event.shiftKey) {
+      for (let i = this._cursorIndex - 1; i >= targetCursorIndex; i--) {
+        this.updateSelectedIndex(i);
+      }
+    } else {
+      this.clearSelectedIndex();
+    }
+
+    this.setCursorIndex(targetCursorIndex);
   }
 
-  arrowDown() {
+  arrowDown(event: KeyboardEvent) {
     const textLength = this._textArr.length;
-    if (this._cursorIndex > textLength) return;
+    if (this._cursorIndex >= textLength) return;
 
-    const lineTextArr: LineText[] = Array.from(this.lineTexts.values()).flat();
+    let targetCursorIndex = 0;
 
-    for (let i = 0; i < lineTextArr.length; i++) {
-      const lineText = lineTextArr[i];
+    if (event.metaKey) {
+      targetCursorIndex = textLength;
+    } else {
+      const lineTextArr: LineText[] = Array.from(
+        this.lineTexts.values()
+      ).flat();
 
-      if (lineText.endIndex >= this._cursorIndex) {
-        if (i === lineTextArr.length - 1) {
-          this.setCursorIndex(textLength);
-        } else {
-          const nextLineText = lineTextArr[i + 1];
+      for (let i = 0; i < lineTextArr.length; i++) {
+        const lineText = lineTextArr[i];
 
-          if (this._prevRowIndex === null)
-            this.setPrevRowIndex(
-              this._cursorIndex - (lineText.endIndex - lineText.text.length + 1)
-            );
+        if (lineText.endIndex >= this._cursorIndex) {
+          if (i === lineTextArr.length - 1) {
+            targetCursorIndex = textLength;
+          } else {
+            const targetLineText = lineTextArr[i + 1];
 
-          const prevRowIndex = this._prevRowIndex ?? 0;
-          const nextRowStartIndex =
-            nextLineText.endIndex - nextLineText.text.length + 1;
+            if (this._prevRowIndex === null)
+              this.setPrevRowIndex(
+                this._cursorIndex -
+                  (lineText.endIndex - lineText.text.length + 1)
+              );
 
-          let targetCursorIndex = nextRowStartIndex + prevRowIndex;
+            const prevRowIndex = this._prevRowIndex ?? 0;
 
-          if (nextLineText.endIndex < targetCursorIndex) {
-            if (
-              i === lineTextArr.length - 2 &&
-              targetCursorIndex > textLength
-            ) {
-              targetCursorIndex = textLength;
-            } else {
-              targetCursorIndex = nextLineText.endIndex;
+            const targetRowStartIndex =
+              targetLineText.endIndex - targetLineText.text.length + 1;
+
+            targetCursorIndex = targetRowStartIndex + prevRowIndex;
+
+            if (targetLineText.endIndex < targetCursorIndex) {
+              if (
+                i === lineTextArr.length - 2 &&
+                targetCursorIndex >= textLength
+              ) {
+                targetCursorIndex = textLength;
+              } else {
+                targetCursorIndex = targetLineText.endIndex;
+              }
             }
           }
 
-          this.setCursorIndex(targetCursorIndex);
+          break;
         }
-        break;
       }
     }
+
+    if (event.shiftKey) {
+      for (let i = this._cursorIndex; i < targetCursorIndex; i++) {
+        this.updateSelectedIndex(i);
+      }
+    } else {
+      this.clearSelectedIndex();
+    }
+
+    this.setCursorIndex(targetCursorIndex);
   }
 
   arrowLeft = (event: KeyboardEvent) => {
@@ -332,7 +390,7 @@ export class EditorKeyHandler {
               : lineText.endIndex;
 
           if (event.shiftKey) {
-            for (let i = this._cursorIndex; i <= targetIndex - 1; i++) {
+            for (let i = this._cursorIndex; i < targetIndex; i++) {
               this.updateSelectedIndex(i);
             }
           } else {
@@ -387,12 +445,16 @@ export class EditorKeyHandler {
           result = true;
           break;
         case "ArrowDown":
-          result = this.clearSelectedIndex();
-          this.arrowDown();
+          if (event.shiftKey || this._selectedIndex.size > 0) {
+            result = true;
+          }
+          this.arrowDown(event);
           break;
         case "ArrowUp":
-          result = this.clearSelectedIndex();
-          this.arrowUp();
+          if (event.shiftKey || this._selectedIndex.size > 0) {
+            result = true;
+          }
+          this.arrowUp(event);
           break;
         case "ArrowLeft":
           if (event.shiftKey || this._selectedIndex.size > 0) {
@@ -413,9 +475,5 @@ export class EditorKeyHandler {
 
       return result;
     }
-  }
-
-  notifyTextCleared() {
-    window.dispatchEvent(new Event("notifyTextCleared", {}));
   }
 }

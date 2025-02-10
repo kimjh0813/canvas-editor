@@ -4,8 +4,6 @@ import { Cursor } from "../recoil";
 import { measureTextWidth } from "./ctx";
 
 export class EditorManger extends EditorKeyHandler {
-  private _marginX: number;
-  private _marginY: number;
   private _canvasWidth: number;
   private _canvasHeight: number;
   private _pageSize: number;
@@ -14,25 +12,18 @@ export class EditorManger extends EditorKeyHandler {
 
   constructor(
     defaultFontSize: number,
+    marginX: number,
+    marginY: number,
     setPageSizeCallback: (pageSize: number) => void,
     setCursor: (cursor: Cursor) => void
   ) {
-    super(defaultFontSize, setCursor);
+    super(defaultFontSize, marginX, marginY, setCursor);
 
-    this._marginX = 40;
-    this._marginY = 40;
     this._canvasWidth = 794;
     this._canvasHeight = 1123;
     this._pageSize = 1;
 
     this._setPageSizeCallback = setPageSizeCallback;
-  }
-
-  public get marginX(): number {
-    return this._marginX;
-  }
-  public get marginY(): number {
-    return this._marginY;
   }
   public get canvasWidth(): number {
     return this._canvasWidth;
@@ -49,7 +40,15 @@ export class EditorManger extends EditorKeyHandler {
     console.log(this.lineTexts);
 
     const lineTextArr = this.lineTexts.get(pageIndex);
-    if (!lineTextArr || lineTextArr.length === 0) return result;
+    if (!lineTextArr || lineTextArr.length === 0) {
+      this._setCursor({
+        x: this.marginX,
+        y: this.marginY,
+        fontSize: this.defaultFontSize,
+        pageIndex,
+      });
+      return result;
+    }
 
     const lastLine = lineTextArr[lineTextArr.length - 1];
 
@@ -100,7 +99,7 @@ export class EditorManger extends EditorKeyHandler {
     }
 
     if (!cursorIndex) {
-      if (clickX > this._marginX) {
+      if (clickX > this.marginX) {
         // 마지막 줄일 경우 +1
         cursorIndex = isLastLine
           ? closestLine.endIndex + 1
@@ -216,7 +215,7 @@ export class EditorManger extends EditorKeyHandler {
       if (this.cursorIndex === 0 && i === 0) {
         this._setCursor({
           x: this.marginX,
-          y: this._marginY,
+          y: this.marginY,
           fontSize: cursor.fontSize,
           pageIndex: cursor.pageIndex,
         });

@@ -1,25 +1,36 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { drawText } from "../../utils/draw";
-import { useSetRecoilState } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 import { cursorState } from "../../recoil";
 import { EditorManger } from "../../utils/EditorManger";
 import { Cursor } from "../cursor";
 
 import * as S from "./styled";
+import { isCursorSelector } from "../../recoil/selector";
 
 const isTimeCheck = false;
 const defaultFontSize = 30;
+const marginX = 40;
+const marginY = 40;
 
 // 지금 class구조, canvasDataManager setLineTexts와 같은 함수, pageSize, cursorPosition 처럼 setState를 넘기냐 혹은 eventListener로 관리, draw useEffect pageSize
 
 export function Editor() {
+  const isCursor = useRecoilValue(isCursorSelector);
+
   const setCursor = useSetRecoilState(cursorState);
 
   const [pageSize, setPageSize] = useState<number>(0);
   const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
 
   const editorManger = useMemo(() => {
-    const handler = new EditorManger(defaultFontSize, setPageSize, setCursor);
+    const handler = new EditorManger(
+      defaultFontSize,
+      marginX,
+      marginY,
+      setPageSize,
+      setCursor
+    );
 
     setPageSize(handler.pageSize);
 
@@ -40,6 +51,8 @@ export function Editor() {
   }, []);
 
   useEffect(() => {
+    if (!isCursor) return;
+
     const handleKeyDown = (event: KeyboardEvent) => {
       const isDraw = editorManger.keyDown(event);
 
@@ -51,7 +64,7 @@ export function Editor() {
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-  }, [draw]);
+  }, [draw, isCursor]);
 
   useEffect(() => {
     draw();
@@ -60,7 +73,7 @@ export function Editor() {
   return (
     <S.MainWrapper>
       <S.CanvasContainer>
-        <Cursor editorManger={editorManger} />
+        <Cursor />
         {[...Array(pageSize)].map((_, index) => (
           <S.CanvasWrapper
             key={index}

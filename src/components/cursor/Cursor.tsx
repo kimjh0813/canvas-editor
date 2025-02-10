@@ -1,16 +1,11 @@
-import { useRecoilState } from "recoil";
+import { useRecoilValue } from "recoil";
 import { cursorState } from "../../recoil";
 
 import * as S from "./styled";
 import { useEffect, useState } from "react";
-import { EditorManger } from "../../utils/EditorManger";
 
-interface CursorProps {
-  editorManger: EditorManger;
-}
-
-export function Cursor({ editorManger }: CursorProps) {
-  const [cursor, setCursor] = useRecoilState(cursorState);
+export function Cursor() {
+  const cursor = useRecoilValue(cursorState);
 
   const [isBlinking, setIsBlinking] = useState<boolean>(false);
 
@@ -22,23 +17,6 @@ export function Cursor({ editorManger }: CursorProps) {
 
     return () => clearTimeout(timer);
   }, [cursor]);
-
-  useEffect(() => {
-    const handleTextCleared = () => {
-      setCursor({
-        fontSize: editorManger.defaultFontSize,
-        x: editorManger.marginX,
-        y: editorManger.marginY,
-        pageIndex: 0,
-      });
-    };
-
-    window.addEventListener("notifyTextCleared", handleTextCleared);
-
-    return () => {
-      window.removeEventListener("notifyTextCleared", handleTextCleared);
-    };
-  }, []);
 
   if (!cursor) return null;
 
