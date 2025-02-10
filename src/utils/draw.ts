@@ -1,4 +1,4 @@
-import { LineText } from "../types/editor";
+import { LineText, SelectRange } from "../types/editor";
 import { measureTextWidth } from "./ctx";
 import { EditorManger } from "./EditorManger";
 
@@ -31,7 +31,7 @@ export function drawText({ editorManger, canvasRefs }: DrawTextParams) {
       drawLine({
         ctx,
         lineTexts: value[i],
-        selectedIndex: editorManger.selectedIndex,
+        selectRange: editorManger.selectRange,
       });
     }
   }
@@ -39,10 +39,10 @@ export function drawText({ editorManger, canvasRefs }: DrawTextParams) {
 
 interface DrawLineParams {
   ctx: CanvasRenderingContext2D;
-  selectedIndex: Set<number>;
+  selectRange: SelectRange | null;
   lineTexts: LineText;
 }
-function drawLine({ lineTexts, ctx, selectedIndex }: DrawLineParams) {
+function drawLine({ lineTexts, ctx, selectRange }: DrawLineParams) {
   let lineX = lineTexts.x;
 
   for (let i = 0; i < lineTexts.text.length; i++) {
@@ -57,7 +57,7 @@ function drawLine({ lineTexts, ctx, selectedIndex }: DrawLineParams) {
     // ctx.fillStyle = "green";
     // ctx.fillRect(lineX, lineTexts.y, textWidth, textHeight * 1.48);
 
-    if (selectedIndex.has(index)) {
+    if (selectRange && index >= selectRange.start && index < selectRange.end) {
       ctx.fillStyle = "#B2CEF9";
       ctx.fillRect(lineX, lineTexts.y, textWidth, textHeight * 1.48);
     }

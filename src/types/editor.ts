@@ -10,3 +10,8 @@ export interface LineText {
   x: number;
   y: number;
 }
+
+export interface SelectRange {
+  start: number;
+  end: number;
+}
