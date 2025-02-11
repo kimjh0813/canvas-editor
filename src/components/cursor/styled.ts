@@ -5,19 +5,23 @@ const blink = keyframes`
   50% { opacity: 0; }
 `;
 
-export const Cursor = styled.div<{
+export const Cursor = styled.div.attrs<{
   $x: number;
   $y: number;
   $fontSize: number;
-  $isBlinking: boolean;
   $pageIndex: number;
+}>((props) => ({
+  style: {
+    top: `${props.$pageIndex * (1123 + 20) + props.$y + 1}px`,
+    left: `${props.$x + 1}px`,
+    height: `${props.$fontSize * 1.21}px`,
+  },
+}))<{
+  $isBlinking: boolean;
 }>`
   position: absolute;
-  top: ${({ $y, $pageIndex }) => `${$pageIndex * (1123 + 20) + $y + 1}px`};
-  left: ${({ $x }) => `${$x + 1}px`};
   width: 2px;
   background-color: black;
-  height: ${({ $fontSize }) => `${$fontSize * 1.21}px`};
 
   ${({ $isBlinking }) =>
     $isBlinking &&

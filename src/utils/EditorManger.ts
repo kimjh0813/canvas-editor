@@ -37,7 +37,6 @@ export class EditorManger extends EditorKeyHandler {
 
   canvasClick(clickX: number, clickY: number, pageIndex: number) {
     const result = this.clearSelectedRange();
-    console.log(this.lineTexts);
     this._prevRowIndex = null;
 
     const lineTextArr = this.lineTexts.get(pageIndex);
@@ -229,8 +228,8 @@ export class EditorManger extends EditorKeyHandler {
       }
     }
 
-    if (this.pageSize !== this.lineTexts.size && this.lineTexts.size > 0)
-      this.setPageSizeCallback(this.lineTexts.size);
+    if (this.pageSize !== pageIndex + 1)
+      this.setPageSizeCallback(pageIndex + 1);
 
     return this.lineTexts;
   }

@@ -73,6 +73,17 @@ export class EditorKeyHandler {
     return this._marginY;
   }
 
+  addRandomAlphabetText(count: number = 500) {
+    const alphabet = "abcdefghijklmnopqrstuvwxyz"; // 알파벳 대소문자
+
+    for (let i = 0; i < count; i++) {
+      const randomChar = alphabet.charAt(
+        Math.floor(Math.random() * alphabet.length)
+      );
+      this.addText(randomChar); // 한 글자씩 추가
+    }
+  }
+
   addText(text: string) {
     this.deleteSelectedRange();
 
@@ -529,9 +540,8 @@ export class EditorKeyHandler {
 
     if (!functionKey.includes(event.key)) event.preventDefault();
 
-    result = true;
-
     if (event.key.length === 1) {
+      result = true;
       if (isCommandKey(event)) {
         switch (event.code) {
           case "KeyA":

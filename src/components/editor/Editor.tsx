@@ -36,6 +36,12 @@ export function Editor() {
 
   return (
     <S.MainWrapper>
+      <div
+        onClick={() => editorManger.addRandomAlphabetText(5000)}
+        style={{ cursor: "pointer" }}
+      >
+        btn
+      </div>
       <S.CanvasContainer>
         <Cursor />
         <EditorCanvas pageSize={pageSize} editorManger={editorManger} />
