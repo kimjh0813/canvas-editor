@@ -59,6 +59,7 @@ export function EditorCanvas({ pageSize, editorManger }: EditorCanvasProps) {
       {[...Array(pageSize)].map((_, index) => (
         <S.CanvasWrapper
           key={uuidv4()}
+          $canvasWidth={editorManger.canvasWidth}
           $canvasHeight={editorManger.canvasHeight}
         >
           <canvas

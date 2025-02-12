@@ -1,7 +1,13 @@
 import styled from "styled-components";
 
-export const CanvasWrapper = styled.div<{ $canvasHeight: number }>`
+export const EditorCanvasWrapper = styled.div``;
+
+export const CanvasWrapper = styled.div<{
+  $canvasWidth: number;
+  $canvasHeight: number;
+}>`
   outline: 1px solid #c7c7c7;
+  width: ${({ $canvasWidth }) => `${$canvasWidth}`}px;
   height: ${({ $canvasHeight }) => `${$canvasHeight}`}px;
 
   canvas {

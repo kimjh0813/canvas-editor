@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 
 import { useSetRecoilState } from "recoil";
 
@@ -16,6 +16,8 @@ const marginY = 70;
 // 지금 class구조, canvasDataManager setLineTexts와 같은 함수, pageSize, cursorPosition 처럼 setState를 넘기냐 혹은 eventListener로 관리, draw useEffect pageSize
 
 export function Editor() {
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
   const setCursor = useSetRecoilState(cursorState);
 
   const [pageSize, setPageSize] = useState<number>(0);
@@ -42,10 +44,14 @@ export function Editor() {
       >
         btn
       </div> */}
-      <S.CanvasContainer>
-        <Cursor />
-        <EditorCanvas pageSize={pageSize} editorManger={editorManger} />
-      </S.CanvasContainer>
+      <S.CanvasScrollContainer ref={scrollContainerRef}>
+        <S.CanvasContainer>
+          <Cursor scrollContainerRef={scrollContainerRef} />
+          <EditorCanvas pageSize={pageSize} editorManger={editorManger} />
+          {/* tab wrapper*/}
+          <div style={{ paddingBottom: 40 }} />
+        </S.CanvasContainer>
+      </S.CanvasScrollContainer>
     </S.MainWrapper>
   );
 }
