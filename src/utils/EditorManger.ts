@@ -37,6 +37,7 @@ export class EditorManger extends EditorKeyHandler {
 
   canvasClick(clickX: number, clickY: number, pageIndex: number) {
     const result = this.clearSelectedRange();
+
     this._prevRowIndex = null;
 
     const lineTextArr = this.lineTexts.get(pageIndex);
@@ -125,6 +126,7 @@ export class EditorManger extends EditorKeyHandler {
     if (!ctx) return;
 
     const textFragments = this.textArr;
+
     this.cursorIndex;
 
     this.lineTexts = new Map();
@@ -223,9 +225,7 @@ export class EditorManger extends EditorKeyHandler {
         continue;
       }
 
-      if (this.cursorIndex === i + 1) {
-        this._setCursor(cursor);
-      }
+      if (this.cursorIndex === i + 1) this._setCursor(cursor);
     }
 
     if (this.pageSize !== pageIndex + 1)

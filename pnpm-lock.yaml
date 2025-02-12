@@ -8,6 +8,9 @@ dependencies:
   '@vercel/analytics':
     specifier: ^1.4.1
     version: 1.4.1(react@18.3.1)
+  hangul-js:
+    specifier: ^0.2.6
+    version: 0.2.6
   react:
     specifier: ^18.3.1
     version: 18.3.1
@@ -843,6 +846,10 @@ packages:
 
   /hamt_plus@1.0.2:
     resolution: {integrity: sha512-t2JXKaehnMb9paaYA7J0BX8QQAY8lwfQ9Gjf4pg/mk4krt+cmwmU652HOoWonf+7+EQV97ARPMhhVgU1ra2GhA==}
+    dev: false
+
+  /hangul-js@0.2.6:
+    resolution: {integrity: sha512-48axU8LgjCD30FEs66Xc04/8knxMwCMQw0f67l67rlttW7VXT3qRJgQeHmhiuGwWXGvSbk6YM0fhQlcjE1JFQA==}
     dev: false
 
   /js-tokens@4.0.0:

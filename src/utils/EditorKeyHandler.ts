@@ -1,7 +1,9 @@
+import Hangul from "hangul-js";
+
 import { Cursor } from "../recoil";
 import { LineText, SelectRange, TextFragment } from "../types/editor";
 import { measureTextWidth } from "./ctx";
-import { isCommandKey } from "./key";
+import { isCommandKey, isKorean } from "./key";
 
 const functionKey = [
   "F1",
@@ -26,6 +28,8 @@ export class EditorKeyHandler {
   private _marginX: number;
   private _marginY: number;
 
+  private _isKoreanComposing: boolean;
+
   protected _prevRowIndex: number | null;
   protected _selectRange: SelectRange | null;
   protected lineTexts: Map<number, LineText[]>;
@@ -47,6 +51,7 @@ export class EditorKeyHandler {
     this._cursorIndex = 0;
     this._selectRange = null;
     this._prevRowIndex = null;
+    this._isKoreanComposing = false;
 
     this._setCursor = setCursor;
   }
@@ -72,35 +77,74 @@ export class EditorKeyHandler {
   public get marginY(): number {
     return this._marginY;
   }
+  public get isKoreanComposing(): boolean {
+    return this._isKoreanComposing;
+  }
 
   addRandomAlphabetText(count: number = 500) {
-    const alphabet = "abcdefghijklmnopqrstuvwxyz"; // 알파벳 대소문자
+    const alphabet = "abcdefghijklmnopqrstuvwxyz";
 
     for (let i = 0; i < count; i++) {
       const randomChar = alphabet.charAt(
         Math.floor(Math.random() * alphabet.length)
       );
-      this.addText(randomChar); // 한 글자씩 추가
+
+      const newText = {
+        text: randomChar,
+        fontSize: this._defaultFontSize,
+      };
+
+      this._textArr.splice(this._cursorIndex, 0, newText);
+
+      this._cursorIndex++;
     }
   }
 
-  addText(text: string) {
+  addText(event: KeyboardEvent) {
     this.deleteSelectedRange();
+    const key = event.key;
 
     if (this._prevRowIndex !== null) this.setPrevRowIndex(null);
 
-    const newText = {
-      text,
-      fontSize: this._defaultFontSize,
-    };
+    if (!this._isKoreanComposing || this._cursorIndex === 0) {
+      const newText = {
+        text: key,
+        fontSize: this._defaultFontSize,
+      };
 
-    this._textArr.splice(this._cursorIndex, 0, newText);
+      this._textArr.splice(this._cursorIndex, 0, newText);
+      this._cursorIndex++;
+    } else {
+      const prevText = this._textArr[this._cursorIndex - 1].text;
+      const decomposed = Hangul.d(prevText);
+      decomposed.push(key);
+      const assembleText = Hangul.a(decomposed);
 
-    this._cursorIndex++;
+      if (assembleText.length === 1) {
+        this._textArr[this._cursorIndex - 1].text = assembleText;
+      } else {
+        this._textArr[this._cursorIndex - 1].text = assembleText[0];
+
+        for (let i = 1; i < assembleText.length; i++) {
+          this._textArr.splice(this._cursorIndex, 0, {
+            text: assembleText[i],
+            fontSize: this._defaultFontSize,
+          });
+          this._cursorIndex++;
+        }
+      }
+    }
+
+    const isTextKorean = isKorean(key);
+
+    if (this._isKoreanComposing !== isTextKorean) {
+      this._isKoreanComposing = isTextKorean;
+    }
   }
 
   deleteText() {
     const result = this.deleteSelectedRange();
+
     if (result) return;
 
     if (this._cursorIndex === 0) return;
@@ -134,7 +178,15 @@ export class EditorKeyHandler {
     this._cursorIndex++;
   }
 
+  resetKoreanComposing() {
+    if (!this._isKoreanComposing) return;
+
+    this._isKoreanComposing = false;
+  }
+
   allSelect() {
+    if (this._textArr.length === 0) return;
+
     this._selectRange = {
       start: 0,
       end: this._textArr.length,
@@ -181,9 +233,18 @@ export class EditorKeyHandler {
 
     const { start, end } = this._selectRange;
 
-    this._textArr.splice(start, end - start + 1);
+    this._textArr.splice(start, end - start);
 
     this._selectRange = null;
+
+    if (this._textArr.length === 0) {
+      this._setCursor({
+        fontSize: this._defaultFontSize,
+        pageIndex: 0,
+        x: this._marginX,
+        y: this._marginY,
+      });
+    }
 
     this._cursorIndex = start;
 
@@ -543,6 +604,7 @@ export class EditorKeyHandler {
     if (event.key.length === 1) {
       result = true;
       if (isCommandKey(event)) {
+        this.resetKoreanComposing();
         switch (event.code) {
           case "KeyA":
             this.allSelect();
@@ -554,7 +616,7 @@ export class EditorKeyHandler {
             break;
         }
       } else {
-        this.addText(event.key);
+        this.addText(event);
       }
 
       return result;
@@ -566,6 +628,7 @@ export class EditorKeyHandler {
           break;
         case "Enter":
           this.enter();
+          this.resetKoreanComposing();
           result = true;
           break;
         case "ArrowDown":
@@ -573,24 +636,28 @@ export class EditorKeyHandler {
             result = true;
           }
           this.arrowDown(event);
+          this.resetKoreanComposing();
           break;
         case "ArrowUp":
           if (event.shiftKey || this._selectRange) {
             result = true;
           }
           this.arrowUp(event);
+          this.resetKoreanComposing();
           break;
         case "ArrowLeft":
           if (event.shiftKey || this._selectRange) {
             result = true;
           }
           this.arrowLeft(event);
+          this.resetKoreanComposing();
           break;
         case "ArrowRight":
           if (event.shiftKey || this._selectRange) {
             result = true;
           }
           this.arrowRight(event);
+          this.resetKoreanComposing();
           break;
         default:
           console.log(`Unhandled special key: ${event.key}`);
