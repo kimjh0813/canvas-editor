@@ -75,3 +75,23 @@ function drawLine({ lineTexts, ctx, selectRange }: DrawLineParams) {
     lineX += textWidth;
   }
 }
+
+interface DrawTextUnderLine {
+  ctx: CanvasRenderingContext2D;
+  underlineY: number;
+  lineX: number;
+  textWidth: number;
+}
+function drawTextUnderLine({
+  ctx,
+  underlineY,
+  lineX,
+  textWidth,
+}: DrawTextUnderLine) {
+  ctx.beginPath();
+  ctx.moveTo(lineX, underlineY);
+  ctx.lineTo(lineX + textWidth, underlineY);
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = "black";
+  ctx.stroke();
+}
