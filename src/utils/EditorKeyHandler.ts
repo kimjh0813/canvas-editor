@@ -142,7 +142,7 @@ export class EditorKeyHandler {
     }
   }
 
-  backSpace() {
+  backSpace(event: KeyboardEvent) {
     const result = this.deleteSelectedRange();
 
     if (result) return;
@@ -150,6 +150,44 @@ export class EditorKeyHandler {
     if (this._cursorIndex === 0) return;
 
     if (this._prevRowIndex !== null) this.setPrevRowIndex(null);
+
+    if (isCommandKey(event)) {
+      console.log("dd");
+      const lineTextArr: LineText[] = Array.from(
+        this.lineTexts.values()
+      ).flat();
+
+      let startIndex;
+
+      for (let i = 0; i < lineTextArr.length; i++) {
+        const lineText = lineTextArr[i];
+
+        if (
+          lineText.endIndex >= this._cursorIndex ||
+          i === lineTextArr.length - 1
+        ) {
+          startIndex = lineText.endIndex - lineText.text.length + 1;
+          console.log(startIndex);
+          break;
+        }
+      }
+
+      if (startIndex !== undefined) {
+        this._textArr.splice(startIndex, this.cursorIndex - startIndex);
+        this._cursorIndex = startIndex;
+      }
+
+      if (this._textArr.length === 0) {
+        this._setCursor({
+          x: this.marginX,
+          y: this.marginY,
+          fontSize: this.defaultFontSize,
+          pageIndex: 0,
+        });
+      }
+
+      return;
+    }
 
     if (this._isKoreanComposing) {
       const text = this._textArr[this._cursorIndex - 1].text;
@@ -373,8 +411,8 @@ export class EditorKeyHandler {
       }
     }
 
-    let startIndex = undefined;
-    let endIndex = undefined;
+    let startIndex;
+    let endIndex;
 
     if (event.shiftKey) {
       if (this._selectRange && this._selectRange.start <= targetIndex) {
@@ -456,8 +494,8 @@ export class EditorKeyHandler {
       }
     }
 
-    let startIndex = undefined;
-    let endIndex = undefined;
+    let startIndex;
+    let endIndex;
 
     if (event.shiftKey) {
       if (this._selectRange && this._selectRange.end >= targetIndex) {
@@ -521,8 +559,8 @@ export class EditorKeyHandler {
 
     if (targetIndex === this._cursorIndex) return;
 
-    let startIndex = undefined;
-    let endIndex = undefined;
+    let startIndex;
+    let endIndex;
 
     if (event.shiftKey) {
       if (this._selectRange && this._selectRange.start <= targetIndex) {
@@ -584,8 +622,8 @@ export class EditorKeyHandler {
 
     if (targetIndex === this._cursorIndex) return;
 
-    let startIndex = undefined;
-    let endIndex = undefined;
+    let startIndex;
+    let endIndex;
 
     if (event.shiftKey) {
       if (this._selectRange && this._selectRange.end >= targetIndex) {
@@ -640,7 +678,7 @@ export class EditorKeyHandler {
     } else {
       switch (event.key) {
         case "Backspace":
-          this.backSpace();
+          this.backSpace(event);
           result = true;
           break;
         case "Enter":
