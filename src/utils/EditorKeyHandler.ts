@@ -115,8 +115,8 @@ export class EditorKeyHandler {
       this._textArr.splice(this._cursorIndex, 0, newText);
       this._cursorIndex++;
     } else {
-      const prevText = this._textArr[this._cursorIndex - 1].text;
-      const decomposed = Hangul.d(prevText);
+      const text = this._textArr[this._cursorIndex - 1].text;
+      const decomposed = Hangul.d(text);
       decomposed.push(key);
       const assembleText = Hangul.a(decomposed);
 
@@ -142,7 +142,7 @@ export class EditorKeyHandler {
     }
   }
 
-  deleteText() {
+  backSpace() {
     const result = this.deleteSelectedRange();
 
     if (result) return;
@@ -151,6 +151,23 @@ export class EditorKeyHandler {
 
     if (this._prevRowIndex !== null) this.setPrevRowIndex(null);
 
+    if (this._isKoreanComposing) {
+      const text = this._textArr[this._cursorIndex - 1].text;
+      const decomposed = Hangul.d(text);
+
+      if (decomposed.length > 1) {
+        decomposed.pop();
+        this._textArr[this._cursorIndex - 1].text = Hangul.a(decomposed);
+      } else {
+        this.resetKoreanComposing();
+        this.deleteText();
+      }
+    } else {
+      this.deleteText();
+    }
+  }
+
+  deleteText() {
     this._textArr.splice(this._cursorIndex - 1, 1);
 
     if (this._textArr.length === 0) {
@@ -623,7 +640,7 @@ export class EditorKeyHandler {
     } else {
       switch (event.key) {
         case "Backspace":
-          this.deleteText();
+          this.backSpace();
           result = true;
           break;
         case "Enter":
