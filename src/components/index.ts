@@ -2,3 +2,4 @@
 export * from "./Cursor";
 export * from "./Editor";
 export * from "./EditorCanvas";
+export * from "./EditorToolbar";
