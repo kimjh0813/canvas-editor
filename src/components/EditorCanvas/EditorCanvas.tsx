@@ -9,8 +9,6 @@ import { isCursorSelector } from "../../recoil/selector";
 
 import * as S from "./styled";
 
-const isTimeCheck = false;
-
 interface EditorCanvasProps {
   pageSize: number;
   editorManger: EditorManger;
@@ -21,26 +19,21 @@ export function EditorCanvas({ pageSize, editorManger }: EditorCanvasProps) {
 
   const isCursor = useRecoilValue(isCursorSelector);
 
-  const draw = useCallback(() => {
-    const start = performance.now();
-
+  const draw = useCallback((shouldUpdateText: boolean) => {
     drawText({
       editorManger,
       canvasRefs,
+      shouldUpdateText,
     });
-
-    const end = performance.now();
-    if (isTimeCheck)
-      console.log(`draw 함수 실행 시간: ${(end - start).toFixed(2)}ms`);
   }, []);
 
   useEffect(() => {
     if (!isCursor) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      const isDraw = editorManger.keyDown(event);
+      const shouldUpdateText = editorManger.keyDown(event);
 
-      isDraw && draw();
+      draw(shouldUpdateText);
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -51,7 +44,7 @@ export function EditorCanvas({ pageSize, editorManger }: EditorCanvasProps) {
   }, [draw, isCursor]);
 
   useEffect(() => {
-    draw();
+    draw(false);
   }, [pageSize]);
 
   return (
@@ -66,13 +59,13 @@ export function EditorCanvas({ pageSize, editorManger }: EditorCanvasProps) {
             width={editorManger.canvasWidth}
             height={editorManger.canvasHeight}
             onClick={(e) => {
-              const isDraw = editorManger.canvasClick(
+              editorManger.canvasClick(
                 e.nativeEvent.offsetX,
                 e.nativeEvent.offsetY,
                 index
               );
 
-              isDraw && draw();
+              draw(false);
             }}
             ref={(el) => (canvasRefs.current[index] = el)}
           />

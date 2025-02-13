@@ -36,7 +36,7 @@ export class EditorManger extends EditorKeyHandler {
   }
 
   canvasClick(clickX: number, clickY: number, pageIndex: number) {
-    const result = this.clearSelectedRange();
+    this.clearSelectedRange();
 
     this._prevRowIndex = null;
 
@@ -48,14 +48,14 @@ export class EditorManger extends EditorKeyHandler {
         fontSize: this.defaultFontSize,
         pageIndex,
       });
-      return result;
+      return;
     }
 
     const lastLine = lineTextArr[lineTextArr.length - 1];
 
     if (lastLine.y + lastLine.maxFontSize * 1.48 < clickY) {
       this.setCursorIndex(this.textArr.length);
-      return result;
+      return;
     }
 
     let closestLine: LineText | null = null;
@@ -70,7 +70,7 @@ export class EditorManger extends EditorKeyHandler {
       }
     }
 
-    if (!closestLine) return result;
+    if (!closestLine) return;
 
     let x = closestLine.x;
     let cursorIndex: number | null = null;
@@ -111,8 +111,6 @@ export class EditorManger extends EditorKeyHandler {
     }
 
     this.setCursorIndex(cursorIndex);
-
-    return result;
   }
 
   setPageSizeCallback(page: number) {
@@ -120,7 +118,11 @@ export class EditorManger extends EditorKeyHandler {
     this._setPageSizeCallback(page);
   }
 
-  getCanvasData(): Map<number, LineText[]> | undefined {
+  getCanvasData(
+    shouldUpdateText: boolean
+  ): Map<number, LineText[]> | undefined {
+    if (!shouldUpdateText) return this.lineTexts;
+
     const ctx = document.createElement("canvas").getContext("2d");
 
     if (!ctx) return;

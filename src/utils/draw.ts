@@ -5,10 +5,17 @@ import { EditorManger } from "./EditorManger";
 interface DrawTextParams {
   editorManger: EditorManger;
   canvasRefs: React.MutableRefObject<(HTMLCanvasElement | null)[]>;
+  shouldUpdateText: boolean;
 }
 
 export function drawText({ editorManger, canvasRefs }: DrawTextParams) {
   const lineTexts = editorManger.getCanvasData();
+export function drawText({
+  editorManger,
+  canvasRefs,
+  shouldUpdateText,
+}: DrawTextParams) {
+  const lineTexts = editorManger.getCanvasData(shouldUpdateText);
 
   if (!lineTexts) return;
 

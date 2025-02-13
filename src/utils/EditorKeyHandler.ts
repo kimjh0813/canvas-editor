@@ -196,10 +196,9 @@ export class EditorKeyHandler {
   }
 
   clearSelectedRange() {
-    if (this._selectRange === null) return false;
+    if (this._selectRange === null) return;
 
     this._selectRange = null;
-    return true;
   }
 
   updateSelectedRange(start?: number, end?: number) {
@@ -597,12 +596,12 @@ export class EditorKeyHandler {
   };
 
   keyDown(event: KeyboardEvent) {
+    // change textArr
     let result = false;
 
     if (!functionKey.includes(event.key)) event.preventDefault();
 
     if (event.key.length === 1) {
-      result = true;
       if (isCommandKey(event)) {
         this.resetKoreanComposing();
         switch (event.code) {
@@ -616,6 +615,7 @@ export class EditorKeyHandler {
             break;
         }
       } else {
+        result = true;
         this.addText(event);
       }
 
@@ -632,30 +632,18 @@ export class EditorKeyHandler {
           result = true;
           break;
         case "ArrowDown":
-          if (event.shiftKey || this._selectRange) {
-            result = true;
-          }
           this.arrowDown(event);
           this.resetKoreanComposing();
           break;
         case "ArrowUp":
-          if (event.shiftKey || this._selectRange) {
-            result = true;
-          }
           this.arrowUp(event);
           this.resetKoreanComposing();
           break;
         case "ArrowLeft":
-          if (event.shiftKey || this._selectRange) {
-            result = true;
-          }
           this.arrowLeft(event);
           this.resetKoreanComposing();
           break;
         case "ArrowRight":
-          if (event.shiftKey || this._selectRange) {
-            result = true;
-          }
           this.arrowRight(event);
           this.resetKoreanComposing();
           break;
