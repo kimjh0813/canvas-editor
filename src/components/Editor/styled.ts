@@ -16,12 +16,7 @@ export const CanvasScrollContainer = styled.div`
   flex-direction: column;
   align-items: center;
   overflow-y: auto;
-`;
-
-export const Line = styled.div`
-  width: 100%;
-  padding-bottom: 16px;
-  border-top: 1px solid #bcc0be;
+  padding-top: 20px;
 `;
 
 export const CanvasContainer = styled.div`

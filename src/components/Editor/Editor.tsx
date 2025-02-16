@@ -47,7 +47,6 @@ export function Editor() {
       </div> */}
       <EditorToolbar editorManger={editorManger} />
       <S.CanvasScrollContainer ref={scrollContainerRef}>
-        <S.Line />
         <S.CanvasContainer>
           <Cursor scrollContainerRef={scrollContainerRef} />
           <EditorCanvas pageSize={pageSize} editorManger={editorManger} />
