@@ -4,7 +4,7 @@ import { createCanvasElement, measureTextWidth } from "../utils/ctx";
 import { EditorManger } from "./EditorManger";
 
 export class Cursor {
-  private _cursorIndex: number;
+  private _index: number;
 
   private _setCursor: (cursor: ICursor) => void;
 
@@ -12,13 +12,13 @@ export class Cursor {
     private editor: EditorManger,
     setCursor: (cursor: ICursor) => void
   ) {
-    this._cursorIndex = 0;
+    this._index = 0;
 
     this._setCursor = setCursor;
   }
 
-  getCursorIndex() {
-    return this._cursorIndex;
+  public get index() {
+    return this._index;
   }
 
   setCursor(cursor: Omit<ICursor, "isFocusCanvas">) {
@@ -35,10 +35,8 @@ export class Cursor {
   }
 
   setCursorIndex(cursorIndex: number, shouldUpdatePosition: boolean = true) {
-    const textLength = this.editor.text.length();
-
-    if (cursorIndex < 0 || textLength < cursorIndex) return;
-    this._cursorIndex = cursorIndex;
+    if (cursorIndex < 0 || this.editor.text.length() < cursorIndex) return;
+    this._index = cursorIndex;
 
     //just update index function because run setCursor from draw function
     if (!shouldUpdatePosition) return;
@@ -51,7 +49,7 @@ export class Cursor {
     let targetLine: ILineText | null = null;
     let pageIndex = 0;
 
-    if (this._cursorIndex > textLength - 1) {
+    if (this._index > this.editor.text.length() - 1) {
       const lastPage = lineTextArr[lineTextArr.length - 1];
       targetLine = lastPage[lastPage.length - 1];
       pageIndex = lineTextArr.length - 1;
@@ -60,7 +58,7 @@ export class Cursor {
         for (let i = 0; i < lineTextArr[p].length; i++) {
           const lineText = lineTextArr[p][i];
 
-          if (lineText.endIndex >= this._cursorIndex) {
+          if (lineText.endIndex >= this._index) {
             targetLine = lineText;
             pageIndex = p;
             break outerLoop;
@@ -74,7 +72,7 @@ export class Cursor {
     let x = targetLine.x;
     const textSliceIndex = Math.max(
       0,
-      targetLine.text.length - (targetLine.endIndex - this._cursorIndex) - 1
+      targetLine.text.length - (targetLine.endIndex - this._index) - 1
     );
 
     targetLine.text.slice(0, textSliceIndex).forEach(({ fontSize, text }) => {

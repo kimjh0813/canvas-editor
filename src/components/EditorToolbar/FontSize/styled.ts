@@ -18,6 +18,7 @@ export const FontSizeInput = styled.input`
 export const FontSizeListWrapper = styled.div`
   display: flex;
   flex-direction: column;
+  padding: 6px 0;
 
   .font-size-item {
     width: 100%;

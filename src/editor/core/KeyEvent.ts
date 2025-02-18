@@ -73,7 +73,7 @@ export class KeyEvent {
 
     if (result) return;
 
-    const cursorIndex = this.editor.cursor.getCursorIndex();
+    const cursorIndex = this.editor.cursor.index;
 
     if (cursorIndex === 0) return;
 
@@ -101,30 +101,26 @@ export class KeyEvent {
       if (this.editor.text.length() === 0) {
         this.editor.cursor.resetCursorPosition();
       }
+    } else {
+      if (this.editor.text.isKoreanComposing) {
+        const prevTextFragment = this.editor.text.getTextFragment(
+          cursorIndex - 1
+        );
+        const decomposed = Hangul.d(prevTextFragment.text);
 
-      return;
-    }
-
-    if (this.editor.text.isKoreanComposing) {
-      const cursorIndex = this.editor.cursor.getCursorIndex();
-
-      const prevTextFragment = this.editor.text.getTextFragment(
-        cursorIndex - 1
-      );
-      const decomposed = Hangul.d(prevTextFragment.text);
-
-      if (decomposed.length > 1) {
-        decomposed.pop();
-        this.editor.text.setTextFragment(cursorIndex - 1, {
-          ...prevTextFragment,
-          text: Hangul.a(decomposed),
-        });
+        if (decomposed.length > 1) {
+          decomposed.pop();
+          this.editor.text.setTextFragment(cursorIndex - 1, {
+            ...prevTextFragment,
+            text: Hangul.a(decomposed),
+          });
+        } else {
+          this.editor.text.resetKoreanComposing();
+          this.editor.text.deleteText();
+        }
       } else {
-        this.editor.text.resetKoreanComposing();
         this.editor.text.deleteText();
       }
-    } else {
-      this.editor.text.deleteText();
     }
   }
 
@@ -133,7 +129,7 @@ export class KeyEvent {
 
     if (this.editor.prevRowIndex !== null) this.editor.setPrevRowIndex(null);
 
-    const cursorIndex = this.editor.cursor.getCursorIndex();
+    const cursorIndex = this.editor.cursor.index;
 
     this.editor.text.insert(cursorIndex, 0, {
       text: "\n",
@@ -144,7 +140,7 @@ export class KeyEvent {
   }
 
   arrowUp(event: KeyboardEvent) {
-    const cursorIndex = this.editor.cursor.getCursorIndex();
+    const cursorIndex = this.editor.cursor.index;
 
     if (cursorIndex === 0 && !event.shiftKey) {
       this.editor.select.clearSelectedRange();
@@ -219,10 +215,9 @@ export class KeyEvent {
   }
 
   arrowDown(event: KeyboardEvent) {
-    const cursorIndex = this.editor.cursor.getCursorIndex();
-    const textLength = this.editor.text.length();
+    const cursorIndex = this.editor.cursor.index;
 
-    if (cursorIndex >= textLength && !event.shiftKey) {
+    if (cursorIndex >= this.editor.text.length() && !event.shiftKey) {
       this.editor.select.clearSelectedRange();
       return;
     }
@@ -230,7 +225,7 @@ export class KeyEvent {
     let targetIndex = 0;
 
     if (isCommandKey(event)) {
-      targetIndex = textLength;
+      targetIndex = this.editor.text.length();
     } else {
       const lineTextArr = this.editor.getLineTextArray().flat();
 
@@ -239,7 +234,7 @@ export class KeyEvent {
 
         if (lineText.endIndex >= cursorIndex) {
           if (i === lineTextArr.length - 1) {
-            targetIndex = textLength;
+            targetIndex = this.editor.text.length();
           } else {
             const targetLineText = lineTextArr[i + 1];
 
@@ -256,8 +251,11 @@ export class KeyEvent {
             targetIndex = targetRowStartIndex + prevRowIndex;
 
             if (targetLineText.endIndex < targetIndex) {
-              if (i === lineTextArr.length - 2 && targetIndex >= textLength) {
-                targetIndex = textLength;
+              if (
+                i === lineTextArr.length - 2 &&
+                targetIndex >= this.editor.text.length()
+              ) {
+                targetIndex = this.editor.text.length();
               } else {
                 targetIndex = targetLineText.endIndex;
               }
@@ -298,7 +296,7 @@ export class KeyEvent {
   }
 
   arrowLeft = (event: KeyboardEvent) => {
-    const cursorIndex = this.editor.cursor.getCursorIndex();
+    const cursorIndex = this.editor.cursor.index;
 
     if (cursorIndex === 0 && !event.shiftKey) {
       this.editor.select.clearSelectedRange();
@@ -358,10 +356,9 @@ export class KeyEvent {
   };
 
   arrowRight = (event: KeyboardEvent) => {
-    const cursorIndex = this.editor.cursor.getCursorIndex();
-    const textLength = this.editor.text.length();
+    const cursorIndex = this.editor.cursor.index;
 
-    if (cursorIndex >= textLength && !event.shiftKey) {
+    if (cursorIndex >= this.editor.text.length() && !event.shiftKey) {
       this.editor.select.clearSelectedRange();
       return;
     }
@@ -418,10 +415,9 @@ export class KeyEvent {
   };
 
   selectAll() {
-    const textLength = this.editor.text.length();
-    if (textLength === 0) return;
+    if (this.editor.text.length() === 0) return;
 
-    this.editor.select.updateSelectedRange(0, textLength);
+    this.editor.select.updateSelectedRange(0, this.editor.text.length());
 
     this.editor.cursor.setCursorIndex(0);
   }

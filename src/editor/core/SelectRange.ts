@@ -19,7 +19,7 @@ export class SelectRange {
   }
 
   updateSelectedRange(start?: number, end?: number) {
-    const cursorIndex = this.editor.cursor.getCursorIndex();
+    const cursorIndex = this.editor.cursor.index;
 
     let startIndex;
     let endIndex;
@@ -55,9 +55,7 @@ export class SelectRange {
 
     this._selectRange = null;
 
-    const textLength = this.editor.text.length();
-
-    if (textLength === 0) {
+    if (this.editor.text.length() === 0) {
       this.editor.cursor.resetCursorPosition();
     }
 

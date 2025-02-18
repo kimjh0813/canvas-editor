@@ -38,10 +38,7 @@ export function FontSize({ editorManger }: FontSizeProps) {
       setFontSize("120");
     }
 
-    if (
-      editorManger.cursor.getCursorIndex() === 0 &&
-      editorManger.text.length() === 0
-    ) {
+    if (editorManger.cursor.index === 0 && editorManger.text.length() === 0) {
       editorManger.layout.setDefaultFontSize(_fontSize);
       setFontSize(String(_fontSize));
       setCursor((prev) => {

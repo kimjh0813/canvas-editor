@@ -15,12 +15,16 @@ export class TextManager {
     this._isKoreanComposing = false;
   }
 
+  public get textFragments() {
+    return this._textFragments;
+  }
+
   public get isKoreanComposing() {
     return this._isKoreanComposing;
   }
 
   addRandomAlphabetText(count: number = 500) {
-    const cursorIndex = this.editor.cursor.getCursorIndex();
+    const cursorIndex = this.editor.cursor.index;
 
     const alphabet = "abcdefghijklmnopqrstuvwxyz";
 
@@ -36,10 +40,6 @@ export class TextManager {
 
       this.insert(cursorIndex, 0, newText);
     }
-  }
-
-  get() {
-    return this._textFragments;
   }
 
   length() {
@@ -59,7 +59,7 @@ export class TextManager {
   }
 
   setTextFragment(index: number, value: ITextFragment) {
-    return (this._textFragments[index] = value);
+    this._textFragments[index] = value;
   }
 
   resetKoreanComposing() {
@@ -73,7 +73,7 @@ export class TextManager {
 
     if (this.editor.prevRowIndex !== null) this.editor.setPrevRowIndex(null);
 
-    const cursorIndex = this.editor.cursor.getCursorIndex();
+    const cursorIndex = this.editor.cursor.index;
     const key = event.key;
 
     if (!this._isKoreanComposing || cursorIndex === 0) {
@@ -113,7 +113,7 @@ export class TextManager {
   }
 
   deleteText() {
-    const cursorIndex = this.editor.cursor.getCursorIndex();
+    const cursorIndex = this.editor.cursor.index;
 
     this.remove(cursorIndex - 1, 1);
 

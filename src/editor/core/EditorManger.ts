@@ -59,8 +59,6 @@ export class EditorManger {
 
     if (this._prevRowIndex !== null) this.setPrevRowIndex(null);
 
-    const textLength = this.text.length();
-
     const lineTextArr = this._lineTexts.get(pageIndex);
     if (!lineTextArr || lineTextArr.length === 0) {
       this.cursor.resetCursorPosition(pageIndex);
@@ -70,7 +68,7 @@ export class EditorManger {
     const lastLine = lineTextArr[lineTextArr.length - 1];
 
     if (lastLine.y + lastLine.maxFontSize * 1.48 < clickY) {
-      this.cursor.setCursorIndex(textLength);
+      this.cursor.setCursorIndex(this.text.length());
       return;
     }
 
@@ -140,7 +138,7 @@ export class EditorManger {
 
     this._lineTexts = new Map();
 
-    const textFragments = this.text.get();
+    const textFragments = this.text.textFragments;
     const { canvasHeight, canvasWidth, defaultFontSize, marginX, marginY } =
       this.layout;
 
@@ -227,9 +225,7 @@ export class EditorManger {
 
       const cursor = { x, y, fontSize, pageIndex };
 
-      const cursorIndex = this.cursor.getCursorIndex();
-
-      if (cursorIndex === 0 && i === 0) {
+      if (this.cursor.index === 0 && i === 0) {
         this.cursor.setCursor({
           x: marginX,
           y: marginY,
@@ -240,7 +236,7 @@ export class EditorManger {
         continue;
       }
 
-      if (cursorIndex === i + 1) this.cursor.setCursor(cursor);
+      if (this.cursor.index === i + 1) this.cursor.setCursor(cursor);
     }
 
     if (this.layout.pageSize !== pageIndex + 1)

@@ -47,7 +47,7 @@ export function drawText({
         lineText,
         selectRange: editorManger.select.selectRange,
         composingIndex: editorManger.text.isKoreanComposing
-          ? editorManger.cursor.getCursorIndex() - 1
+          ? editorManger.cursor.index - 1
           : undefined,
       });
     }
