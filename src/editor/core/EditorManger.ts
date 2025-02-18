@@ -14,12 +14,9 @@ export class EditorManger {
   layout: EditorLayout;
   keyEvent: KeyEvent;
 
-  private _prevRowIndex: number | null;
+  private _prevRowIndex: number | null; //TODO:인덱스 말고 넓이 기준으로 바
 
   private _lineTexts: Map<number, ILineText[]>;
-
-  private _pageSize: number;
-  private _setPageSize: (pageSize: number) => void;
 
   constructor(
     defaultFontSize: number,
@@ -29,22 +26,22 @@ export class EditorManger {
     setPageSize: (pageSize: number) => void
   ) {
     this._lineTexts = new Map();
-    this._pageSize = 1;
-    this._setPageSize = setPageSize;
     this._prevRowIndex = null;
 
     this.text = new TextManager(this);
     this.cursor = new Cursor(this, setCursor);
     this.select = new SelectRange(this);
-    this.layout = new EditorLayout(defaultFontSize, marginX, marginY);
+    this.layout = new EditorLayout(
+      defaultFontSize,
+      marginX,
+      marginY,
+      setPageSize
+    );
     this.keyEvent = new KeyEvent(this);
   }
 
   public get prevRowIndex() {
     return this._prevRowIndex;
-  }
-  public get pageSize() {
-    return this._pageSize;
   }
 
   setPrevRowIndex(rowIndex: number | null) {
@@ -130,11 +127,6 @@ export class EditorManger {
     }
 
     this.cursor.setCursorIndex(cursorIndex);
-  }
-
-  setPageSize(page: number) {
-    this._pageSize = page;
-    this._setPageSize(page);
   }
 
   getCanvasData(
@@ -251,7 +243,8 @@ export class EditorManger {
       if (cursorIndex === i + 1) this.cursor.setCursor(cursor);
     }
 
-    if (this._pageSize !== pageIndex + 1) this.setPageSize(pageIndex + 1);
+    if (this.layout.pageSize !== pageIndex + 1)
+      this.layout.setPageSize(pageIndex + 1);
 
     return this._lineTexts;
   }

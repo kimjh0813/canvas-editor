@@ -32,7 +32,7 @@ export function Editor() {
       setPageSize
     );
 
-    setPageSize(handler.pageSize);
+    setPageSize(handler.layout.pageSize);
 
     return handler;
   }, []);
