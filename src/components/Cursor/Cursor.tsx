@@ -10,13 +10,16 @@ interface CursorProps {
 
 export function Cursor({ scrollContainerRef }: CursorProps) {
   const cursor = useRecoilValue(cursorState);
+
   const [isBlinking, setIsBlinking] = useState<boolean>(false);
 
   useEffect(() => {
     if (!cursor) return;
 
     setIsBlinking(false);
-    const timer = setTimeout(() => setIsBlinking(true), 1000);
+    if (!cursor.isFocusCanvas) return;
+
+    const timer = setTimeout(() => setIsBlinking(true), 100);
 
     return () => clearTimeout(timer);
   }, [cursor]);

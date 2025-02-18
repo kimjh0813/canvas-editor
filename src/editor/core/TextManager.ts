@@ -19,14 +19,6 @@ export class TextManager {
     return this._isKoreanComposing;
   }
 
-  getTextFragment(index: number) {
-    return this._textFragments[index];
-  }
-
-  setTextFragment(index: number, value: ITextFragment) {
-    return (this._textFragments[index] = value);
-  }
-
   addRandomAlphabetText(count: number = 500) {
     const cursorIndex = this.editor.cursor.getCursorIndex();
 
@@ -60,6 +52,14 @@ export class TextManager {
 
   insert(start: number, deleteCount: number, ...items: ITextFragment[]) {
     this._textFragments.splice(start, deleteCount, ...items);
+  }
+
+  getTextFragment(index: number) {
+    return this._textFragments[index];
+  }
+
+  setTextFragment(index: number, value: ITextFragment) {
+    return (this._textFragments[index] = value);
   }
 
   resetKoreanComposing() {

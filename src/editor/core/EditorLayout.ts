@@ -1,5 +1,3 @@
-import { EditorManger } from "./EditorManger";
-
 export class EditorLayout {
   private _canvasWidth: number;
   private _canvasHeight: number;
@@ -52,6 +50,10 @@ export class EditorLayout {
 
   public get pageSize() {
     return this._pageSize;
+  }
+
+  setDefaultFontSize(fontSize: number) {
+    this._defaultFontSize = fontSize;
   }
 
   setPageSize(page: number) {

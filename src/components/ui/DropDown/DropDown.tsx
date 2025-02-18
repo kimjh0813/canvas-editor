@@ -34,9 +34,7 @@ export function DropDown({
     <S.RelativeContainer>
       <S.TriggerWrapper
         ref={triggerRef}
-        onClick={() => {
-          setIsVisible(true);
-        }}
+        onClick={() => setIsVisible((prev) => !prev)}
       >
         {triggerElement}
       </S.TriggerWrapper>
@@ -64,16 +62,16 @@ interface DropDownContentProps {
   onClickOutside: () => void;
   usePropagation?: boolean;
   style?: React.CSSProperties;
-  position: "left" | "right";
+  position?: "left" | "right";
 }
 
-function DropDownContent({
+export function DropDownContent({
   children,
   triggerRef,
   style,
   onClickOutside,
   usePropagation,
-  position,
+  position = "left",
 }: PropsWithChildren<DropDownContentProps>) {
   const ref = useRef<HTMLDivElement>(null);
 

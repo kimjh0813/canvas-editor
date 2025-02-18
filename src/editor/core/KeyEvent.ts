@@ -2,21 +2,7 @@ import Hangul from "hangul-js";
 
 import { isCommandKey } from "../utils/key";
 import { EditorManger } from "./EditorManger";
-
-const functionKey = [
-  "F1",
-  "F2",
-  "F3",
-  "F4",
-  "F5",
-  "F6",
-  "F7",
-  "F8",
-  "F9",
-  "F10",
-  "F11",
-  "F12",
-];
+import { functionKey } from "../../constants/key";
 
 export class KeyEvent {
   constructor(private editor: EditorManger) {}
@@ -88,7 +74,6 @@ export class KeyEvent {
     if (result) return;
 
     const cursorIndex = this.editor.cursor.getCursorIndex();
-    const textLength = this.editor.text.length();
 
     if (cursorIndex === 0) return;
 
@@ -113,7 +98,7 @@ export class KeyEvent {
         this.editor.cursor.setCursorIndex(startIndex, false);
       }
 
-      if (textLength === 0) {
+      if (this.editor.text.length() === 0) {
         this.editor.cursor.resetCursorPosition();
       }
 

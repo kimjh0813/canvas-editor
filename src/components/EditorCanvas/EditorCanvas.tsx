@@ -46,7 +46,7 @@ export function EditorCanvas({ pageSize, editorManger }: EditorCanvasProps) {
 
   useEffect(() => {
     draw(false);
-  }, [pageSize]);
+  }, [pageSize, isCursor]);
 
   return (
     <>

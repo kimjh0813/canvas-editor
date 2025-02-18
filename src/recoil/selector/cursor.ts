@@ -6,7 +6,7 @@ const isCursorSelector = selector({
   get: ({ get }) => {
     const cursor = get(cursorState);
 
-    return cursor !== undefined;
+    return !!cursor?.isFocusCanvas;
   },
 });
 

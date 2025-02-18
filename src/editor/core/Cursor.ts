@@ -13,6 +13,7 @@ export class Cursor {
     setCursor: (cursor: ICursor) => void
   ) {
     this._cursorIndex = 0;
+
     this._setCursor = setCursor;
   }
 
@@ -20,12 +21,12 @@ export class Cursor {
     return this._cursorIndex;
   }
 
-  setCursor(cursor: ICursor) {
-    this._setCursor(cursor);
+  setCursor(cursor: Omit<ICursor, "isFocusCanvas">) {
+    this._setCursor({ ...cursor, isFocusCanvas: true });
   }
 
   resetCursorPosition(pageIndex?: number) {
-    this._setCursor({
+    this.setCursor({
       x: this.editor.layout.marginX,
       y: this.editor.layout.marginY,
       fontSize: this.editor.layout.defaultFontSize,
@@ -81,7 +82,7 @@ export class Cursor {
       x += measureTextWidth(ctx, text);
     });
 
-    this._setCursor({
+    this.setCursor({
       x,
       y: targetLine.y,
       fontSize: targetLine.maxFontSize,

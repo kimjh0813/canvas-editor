@@ -4,6 +4,7 @@ export interface ICursor {
   y: number;
   pageIndex: number;
   fontSize: number;
+  isFocusCanvas: boolean;
 }
 
 export const cursorState = atom<ICursor | undefined>({
