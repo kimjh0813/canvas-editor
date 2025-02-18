@@ -1,6 +1,7 @@
-import { LineText, SelectRange } from "../types/editor";
+import { EditorManger } from "../core/EditorManger";
+import { ISelectRange } from "../types/selectRange";
+import { ILineText } from "../types/text";
 import { measureTextWidth } from "./ctx";
-import { EditorManger } from "./EditorManger";
 
 interface DrawTextParams {
   editorManger: EditorManger;
@@ -44,9 +45,9 @@ export function drawText({
       drawLine({
         ctx,
         lineText,
-        selectRange: editorManger.selectRange,
-        composingIndex: editorManger.isKoreanComposing
-          ? editorManger.cursorIndex - 1
+        selectRange: editorManger.select.selectRange,
+        composingIndex: editorManger.text.isKoreanComposing
+          ? editorManger.cursor.getCursorIndex() - 1
           : undefined,
       });
     }
@@ -58,8 +59,8 @@ export function drawText({
 
 interface DrawLineParams {
   ctx: CanvasRenderingContext2D;
-  lineText: LineText;
-  selectRange: SelectRange | null;
+  lineText: ILineText;
+  selectRange: ISelectRange | null;
   composingIndex?: number;
 }
 function drawLine({

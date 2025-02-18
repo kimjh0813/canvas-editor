@@ -3,12 +3,12 @@ import { useMemo, useRef, useState } from "react";
 import { useSetRecoilState } from "recoil";
 
 import { cursorState } from "../../recoil";
-import { EditorManger } from "../../utils/EditorManger";
 import { EditorCanvas } from "../EditorCanvas";
 import { Cursor } from "../Cursor";
 
 import * as S from "./styled";
 import { EditorToolbar } from "../EditorToolbar";
+import { EditorManger } from "../../editor/core/EditorManger";
 
 const defaultFontSize = 14;
 const marginX = 96;
@@ -28,8 +28,8 @@ export function Editor() {
       defaultFontSize,
       marginX,
       marginY,
-      setPageSize,
-      setCursor
+      setCursor,
+      setPageSize
     );
 
     setPageSize(handler.pageSize);

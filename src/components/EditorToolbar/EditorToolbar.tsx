@@ -1,4 +1,4 @@
-import { EditorManger } from "../../utils/EditorManger";
+import { EditorManger } from "../../editor/core/EditorManger";
 import * as S from "./styled";
 
 interface EditorToolbarProps {

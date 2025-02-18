@@ -3,11 +3,11 @@ import { useCallback, useEffect, useRef } from "react";
 import { useRecoilValue } from "recoil";
 import { v4 as uuidv4 } from "uuid";
 
-import { EditorManger } from "../../utils/EditorManger";
-import { drawText } from "../../utils/draw";
 import { isCursorSelector } from "../../recoil/selector";
 
 import * as S from "./styled";
+import { EditorManger } from "../../editor/core/EditorManger";
+import { drawText } from "../../editor/utils/draw";
 
 interface EditorCanvasProps {
   pageSize: number;
@@ -31,7 +31,8 @@ export function EditorCanvas({ pageSize, editorManger }: EditorCanvasProps) {
     if (!isCursor) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      const shouldUpdateText = editorManger.keyDown(event);
+      const shouldUpdateText = editorManger.keyEvent.keyDown(event);
+      console.log(shouldUpdateText);
 
       draw(shouldUpdateText);
     };
@@ -52,12 +53,12 @@ export function EditorCanvas({ pageSize, editorManger }: EditorCanvasProps) {
       {[...Array(pageSize)].map((_, index) => (
         <S.CanvasWrapper
           key={uuidv4()}
-          $canvasWidth={editorManger.canvasWidth}
-          $canvasHeight={editorManger.canvasHeight}
+          $canvasWidth={editorManger.layout.canvasWidth}
+          $canvasHeight={editorManger.layout.canvasHeight}
         >
           <canvas
-            width={editorManger.canvasWidth}
-            height={editorManger.canvasHeight}
+            width={editorManger.layout.canvasWidth}
+            height={editorManger.layout.canvasHeight}
             onClick={(e) => {
               editorManger.canvasClick(
                 e.nativeEvent.offsetX,
