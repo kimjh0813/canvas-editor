@@ -21,8 +21,44 @@ export class Cursor {
     return this._index;
   }
 
-  setCursor(cursor: Omit<ICursor, "isFocusCanvas">) {
-    this._setCursor({ ...cursor, isFocusCanvas: true });
+  setCursor(
+    cursor: Omit<ICursor, "isFocusCanvas" | "index" | "lineMaxFontSize">,
+    maxFontSize?: number
+  ) {
+    this.editor.textStyle.reset();
+
+    let lineMaxFontSize;
+
+    if (maxFontSize) {
+      lineMaxFontSize = maxFontSize;
+    } else if (this.editor.text.length() === 0) {
+      lineMaxFontSize = this.editor.layout.defaultFontSize;
+    } else {
+      lineMaxFontSize =
+        this.editor.getLineText(this._index)?.maxFontSize ??
+        this.editor.layout.defaultFontSize;
+    }
+
+    const prevTextFragment = this.editor.text.getTextFragment(this._index - 1);
+    const nextTextFragment = this.editor.text.getTextFragment(this._index + 1);
+
+    let fontSize;
+
+    if (prevTextFragment) {
+      fontSize = prevTextFragment.fontSize;
+    } else if (nextTextFragment) {
+      fontSize = nextTextFragment.fontSize;
+    } else {
+      fontSize = cursor.fontSize;
+    }
+
+    this._setCursor({
+      ...cursor,
+      fontSize,
+      lineMaxFontSize,
+      index: this._index,
+      isFocusCanvas: true,
+    });
   }
 
   resetCursorPosition(pageIndex?: number) {
@@ -83,7 +119,7 @@ export class Cursor {
     this.setCursor({
       x,
       y: targetLine.y,
-      fontSize: targetLine.maxFontSize,
+      fontSize: this.editor.layout.defaultFontSize,
       pageIndex,
     });
   }

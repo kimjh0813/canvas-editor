@@ -5,16 +5,24 @@ const blink = keyframes`
   50% { opacity: 0; }
 `;
 
+// const underlineY = lineText.y + textHeight * 1.2;
 export const Cursor = styled.div.attrs<{
   $x: number;
   $y: number;
   $fontSize: number;
   $pageIndex: number;
-}>((props) => ({
+  $lineMaxFontSize: number;
+}>(({ $pageIndex, $fontSize, $lineMaxFontSize, $x, $y }) => ({
   style: {
-    top: `${props.$pageIndex * (1123 + 20) + props.$y + 1}px`,
-    left: `${props.$x + 1}px`,
-    height: `${props.$fontSize * 1.21}px`,
+    top: `${
+      $pageIndex * (1123 + 20) +
+      $y +
+      $lineMaxFontSize -
+      $fontSize +
+      $fontSize * 0.1
+    }px`,
+    left: `${$x}px`,
+    height: `${$fontSize}px`,
   },
 }))<{
   $isBlinking: boolean;

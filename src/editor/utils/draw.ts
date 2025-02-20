@@ -1,3 +1,4 @@
+import { FontSize } from "../../components/EditorToolbar/FontSize";
 import { EditorManger } from "../core/EditorManger";
 import { ISelectRange } from "../types/selectRange";
 import { ILineText } from "../types/text";
@@ -78,7 +79,7 @@ function drawLine({
     ctx.font = `500 ${fontSize}px Arial`;
 
     const textWidth = measureTextWidth(ctx, text);
-    const textHeight = lineText.maxFontSize;
+    const maxFontSize = lineText.maxFontSize;
 
     // ctx.fillStyle = "green";
     // ctx.fillRect(lineX, lineText.y, textWidth, textHeight * 1.48);
@@ -86,16 +87,16 @@ function drawLine({
     //draw select
     if (selectRange && index >= selectRange.start && index < selectRange.end) {
       ctx.fillStyle = "#B2CEF9";
-      ctx.fillRect(lineX, lineText.y, textWidth, textHeight * 1.48);
+      ctx.fillRect(lineX, lineText.y, textWidth, maxFontSize * 1.48);
     }
 
     //draw text
     ctx.fillStyle = "black";
-    ctx.fillText(text, lineX, lineText.y + textHeight);
+    ctx.fillText(text, lineX, lineText.y + maxFontSize);
 
     //draw isComposing
     if (composingIndex === index) {
-      const underlineY = lineText.y + textHeight * 1.2;
+      const underlineY = lineText.y + maxFontSize * 0.1 + maxFontSize;
       drawTextUnderLine({ ctx, underlineY, lineX, textWidth });
     }
 

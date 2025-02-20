@@ -1,14 +1,32 @@
 import styled from "styled-components";
 
+export const Container = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
+export const IconWrapper = styled.div`
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+
+  &:hover {
+    background-color: #e0e4ea;
+  }
+`;
+
 export const RelativeContainer = styled.div`
   position: relative;
 `;
 
-export const TriggerWrapper = styled.div``;
-
 export const FontSizeInput = styled.input`
   width: 28px;
-  height: 18px;
+  height: 19px;
   text-align: center;
   background-color: transparent;
   border: 1px solid #222;

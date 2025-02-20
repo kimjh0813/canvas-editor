@@ -12,6 +12,13 @@ export class SelectRange {
     return this._selectRange;
   }
 
+  isAllSelect() {
+    return (
+      this._selectRange?.start === 0 &&
+      this._selectRange?.end === this.editor.text.length()
+    );
+  }
+
   clearSelectedRange() {
     if (this._selectRange === null) return;
 
@@ -55,11 +62,11 @@ export class SelectRange {
 
     this._selectRange = null;
 
+    this.editor.cursor.setCursorIndex(start, false);
+
     if (this.editor.text.length() === 0) {
       this.editor.cursor.resetCursorPosition();
     }
-
-    this.editor.cursor.setCursorIndex(start, false);
 
     return true;
   }

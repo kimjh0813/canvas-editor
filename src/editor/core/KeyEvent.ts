@@ -106,6 +106,9 @@ export class KeyEvent {
         const prevTextFragment = this.editor.text.getTextFragment(
           cursorIndex - 1
         );
+
+        if (!prevTextFragment) return;
+
         const decomposed = Hangul.d(prevTextFragment.text);
 
         if (decomposed.length > 1) {
@@ -121,19 +124,23 @@ export class KeyEvent {
       } else {
         this.editor.text.deleteText();
       }
+
+      if (this.editor.cursor.index === 0)
+        this.editor.cursor.resetCursorPosition();
     }
   }
 
   enter() {
-    this.editor.select.deleteSelectedRange();
-
     if (this.editor.prevRowIndex !== null) this.editor.setPrevRowIndex(null);
 
     const cursorIndex = this.editor.cursor.index;
+    const prevTextFragment = this.editor.text.getTextFragment(cursorIndex - 1);
 
     this.editor.text.insert(cursorIndex, 0, {
       text: "\n",
-      fontSize: this.editor.layout.defaultFontSize,
+      fontSize: prevTextFragment
+        ? prevTextFragment.fontSize
+        : this.editor.layout.defaultFontSize,
     });
 
     this.editor.cursor.setCursorIndex(cursorIndex + 1, false);
@@ -215,6 +222,8 @@ export class KeyEvent {
   }
 
   arrowDown(event: KeyboardEvent) {
+    this.editor.textStyle.reset();
+
     const cursorIndex = this.editor.cursor.index;
 
     if (cursorIndex >= this.editor.text.length() && !event.shiftKey) {

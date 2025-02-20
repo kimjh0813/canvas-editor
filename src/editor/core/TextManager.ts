@@ -4,6 +4,7 @@ import { ITextFragment } from "../types/text";
 
 import { EditorManger } from "./EditorManger";
 import { isKorean } from "../utils/key";
+import { TextStyle } from "./TextStyle";
 
 export class TextManager {
   private _textFragments: ITextFragment[];
@@ -55,11 +56,24 @@ export class TextManager {
   }
 
   getTextFragment(index: number) {
+    if (index < 0) return;
+
     return this._textFragments[index];
   }
 
   setTextFragment(index: number, value: ITextFragment) {
+    if (index < 0) return;
+
     this._textFragments[index] = value;
+  }
+
+  setTextFragmentStyle(index: number, newStyle: Partial<ITextFragment>) {
+    if (!this._textFragments[index]) return;
+
+    this._textFragments[index] = {
+      ...this._textFragments[index],
+      ...newStyle,
+    };
   }
 
   resetKoreanComposing() {
@@ -77,9 +91,11 @@ export class TextManager {
     const key = event.key;
 
     if (!this._isKoreanComposing || cursorIndex === 0) {
+      const fontStyle = this.editor.textStyle.getTextStyle(cursorIndex);
+
       const newText = {
         text: key,
-        fontSize: this.editor.layout.defaultFontSize,
+        ...fontStyle,
       };
 
       this.insert(cursorIndex, 0, newText);
@@ -95,10 +111,12 @@ export class TextManager {
       } else {
         this._textFragments[cursorIndex - 1].text = assembleText[0];
 
+        const fontStyle = this.editor.textStyle.getTextStyle(cursorIndex);
+
         for (let i = 1; i < assembleText.length; i++) {
           this.insert(cursorIndex, 0, {
             text: assembleText[i],
-            fontSize: this.editor.layout.defaultFontSize,
+            ...fontStyle,
           });
           this.editor.cursor.setCursorIndex(cursorIndex + 1, false);
         }

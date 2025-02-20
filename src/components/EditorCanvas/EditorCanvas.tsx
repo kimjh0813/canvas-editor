@@ -1,38 +1,27 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect } from "react";
 
 import { useRecoilValue } from "recoil";
-import { v4 as uuidv4 } from "uuid";
 
 import { isCursorSelector } from "../../recoil/selector";
 
 import * as S from "./styled";
-import { EditorManger } from "../../editor/core/EditorManger";
-import { drawText } from "../../editor/utils/draw";
+import { useEditor } from "../../context/EditorContext";
 
 interface EditorCanvasProps {
   pageSize: number;
-  editorManger: EditorManger;
+  canvasRefs: React.MutableRefObject<(HTMLCanvasElement | null)[]>;
 }
 
-export function EditorCanvas({ pageSize, editorManger }: EditorCanvasProps) {
-  const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([]);
+export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
+  const { editorManger, draw } = useEditor();
 
   const isCursor = useRecoilValue(isCursorSelector);
-
-  const draw = useCallback((shouldUpdateText: boolean) => {
-    drawText({
-      editorManger,
-      canvasRefs,
-      shouldUpdateText,
-    });
-  }, []);
 
   useEffect(() => {
     if (!isCursor) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       const shouldUpdateText = editorManger.keyEvent.keyDown(event);
-      console.log(shouldUpdateText);
 
       draw(shouldUpdateText);
     };
@@ -52,7 +41,7 @@ export function EditorCanvas({ pageSize, editorManger }: EditorCanvasProps) {
     <>
       {[...Array(pageSize)].map((_, index) => (
         <S.CanvasWrapper
-          key={uuidv4()}
+          key={index}
           $canvasWidth={editorManger.layout.canvasWidth}
           $canvasHeight={editorManger.layout.canvasHeight}
         >

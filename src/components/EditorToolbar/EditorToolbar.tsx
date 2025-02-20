@@ -4,15 +4,16 @@ import { cursorState } from "../../recoil";
 import { useCallback } from "react";
 import { useSetRecoilState } from "recoil";
 import { FontSize } from "./FontSize";
+import { useEditor } from "../../context/EditorContext";
 
-interface EditorToolbarProps {
-  editorManger: EditorManger;
-}
+export function EditorToolbar() {
+  const { editorManger } = useEditor();
 
-export function EditorToolbar({ editorManger }: EditorToolbarProps) {
   const setCursor = useSetRecoilState(cursorState);
 
   const toolbarClick = useCallback(() => {
+    editorManger.text.resetKoreanComposing();
+
     setCursor((prev) => {
       if (!prev) return prev;
 
@@ -23,7 +24,7 @@ export function EditorToolbar({ editorManger }: EditorToolbarProps) {
   return (
     <S.EditorToolbarContainer onClick={toolbarClick}>
       <S.EditorControlWrapper>
-        <FontSize editorManger={editorManger} />
+        <FontSize />
       </S.EditorControlWrapper>
     </S.EditorToolbarContainer>
   );

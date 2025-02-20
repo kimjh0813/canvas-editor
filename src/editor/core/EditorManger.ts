@@ -6,6 +6,7 @@ import { EditorLayout } from "./EditorLayout";
 import { KeyEvent } from "./KeyEvent";
 import { SelectRange } from "./SelectRange";
 import { TextManager } from "./TextManager";
+import { TextStyle } from "./TextStyle";
 
 export class EditorManger {
   text: TextManager;
@@ -13,6 +14,7 @@ export class EditorManger {
   select: SelectRange;
   layout: EditorLayout;
   keyEvent: KeyEvent;
+  textStyle: TextStyle;
 
   private _prevRowIndex: number | null; //TODO:인덱스 말고 넓이 기준으로 바
 
@@ -38,6 +40,7 @@ export class EditorManger {
       setPageSize
     );
     this.keyEvent = new KeyEvent(this);
+    this.textStyle = new TextStyle(this);
   }
 
   public get prevRowIndex() {
@@ -54,8 +57,23 @@ export class EditorManger {
     return Array.from(this._lineTexts.values());
   }
 
+  getLineText(index: number) {
+    const lineTextArr = this.getLineTextArray().flat();
+
+    for (let i = 0; i < lineTextArr.length; i++) {
+      const lineText = lineTextArr[i];
+
+      if (lineText.endIndex >= index || i === lineTextArr.length - 1) {
+        return lineText;
+      }
+    }
+  }
+
   canvasClick(clickX: number, clickY: number, pageIndex: number) {
     this.select.clearSelectedRange();
+    this.text.resetKoreanComposing();
+
+    console.log(this._lineTexts);
 
     if (this._prevRowIndex !== null) this.setPrevRowIndex(null);
 
@@ -139,21 +157,23 @@ export class EditorManger {
     this._lineTexts = new Map();
 
     const textFragments = this.text.textFragments;
-    const { canvasHeight, canvasWidth, defaultFontSize, marginX, marginY } =
-      this.layout;
+    const { canvasHeight, canvasWidth, marginX, marginY } = this.layout;
 
     let lineText: ITextFragment[] = [];
-    let maxFontSize = defaultFontSize;
+    let maxFontSize: number | null = null;
 
     let pageIndex = 0;
     let x = marginX;
     let y = marginY;
 
+    let cursor;
+
     for (let i = 0; i < textFragments.length; i++) {
       const _text = textFragments[i];
       const { text, fontSize } = _text;
 
-      if (maxFontSize < fontSize) maxFontSize = fontSize;
+      if (maxFontSize === null || maxFontSize < fontSize)
+        maxFontSize = fontSize;
 
       ctx.font = `500 ${fontSize}px Arial`;
       const textWidth = measureTextWidth(ctx, text);
@@ -176,9 +196,9 @@ export class EditorManger {
         y += maxFontSize * 1.48;
         x = marginX;
         lineText = [];
-        maxFontSize = defaultFontSize;
+        maxFontSize = null;
 
-        if (y + maxFontSize * 1.48 > canvasHeight - marginY) {
+        if (y + fontSize * 1.48 > canvasHeight - marginY) {
           pageIndex++;
           y = marginY;
         }
@@ -188,6 +208,8 @@ export class EditorManger {
       x += textWidth;
 
       if (text === "\n") {
+        maxFontSize = maxFontSize ?? fontSize;
+
         const currentPageText = this._lineTexts.get(pageIndex) || [];
         currentPageText.push({
           endIndex: i,
@@ -202,9 +224,9 @@ export class EditorManger {
         y += maxFontSize * 1.48;
         x = marginX;
         lineText = [];
-        maxFontSize = defaultFontSize;
+        maxFontSize = null;
 
-        if (y + maxFontSize * 1.48 > canvasHeight - marginY) {
+        if (y + fontSize * 1.48 > canvasHeight - marginY) {
           pageIndex++;
           y = marginY;
         }
@@ -214,7 +236,7 @@ export class EditorManger {
         const currentPageText = this._lineTexts.get(pageIndex) || [];
         currentPageText.push({
           endIndex: i,
-          maxFontSize,
+          maxFontSize: maxFontSize ?? fontSize,
           text: lineText,
           x: marginX,
           y,
@@ -223,21 +245,10 @@ export class EditorManger {
         this._lineTexts.set(pageIndex, currentPageText);
       }
 
-      const cursor = { x, y, fontSize, pageIndex };
-
-      if (this.cursor.index === 0 && i === 0) {
-        this.cursor.setCursor({
-          x: marginX,
-          y: marginY,
-          fontSize: cursor.fontSize,
-          pageIndex: cursor.pageIndex,
-        });
-
-        continue;
-      }
-
-      if (this.cursor.index === i + 1) this.cursor.setCursor(cursor);
+      if (this.cursor.index === i + 1) cursor = { x, y, fontSize, pageIndex };
     }
+
+    if (cursor) this.cursor.setCursor(cursor);
 
     if (this.layout.pageSize !== pageIndex + 1)
       this.layout.setPageSize(pageIndex + 1);
