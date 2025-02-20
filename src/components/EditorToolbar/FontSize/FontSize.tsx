@@ -161,7 +161,7 @@ export function FontSize() {
       const _fontSize =
         type === "plus" ? Number(fontSize) + 1 : Number(fontSize) - 1;
 
-      changeFontSize(_fontSize, type);
+      changeFontSize(_fontSize);
     }
   };
 
