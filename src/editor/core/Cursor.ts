@@ -40,14 +40,14 @@ export class Cursor {
     }
 
     const prevTextFragment = this.editor.text.getTextFragment(this._index - 1);
-    const nextTextFragment = this.editor.text.getTextFragment(this._index + 1);
+    const textFragment = this.editor.text.getTextFragment(this._index);
 
     let fontSize;
 
     if (prevTextFragment) {
       fontSize = prevTextFragment.fontSize;
-    } else if (nextTextFragment) {
-      fontSize = nextTextFragment.fontSize;
+    } else if (textFragment) {
+      fontSize = textFragment.fontSize;
     } else {
       fontSize = cursor.fontSize;
     }

@@ -24,12 +24,12 @@ export class TextStyle {
       fontSize = this.fontSize;
     } else {
       const prevTextFragment = this.editor.text.getTextFragment(index - 1);
-      const nextTextFragment = this.editor.text.getTextFragment(index + 1);
+      const textFragment = this.editor.text.getTextFragment(index);
 
       if (prevTextFragment) {
         fontSize = prevTextFragment.fontSize;
-      } else if (nextTextFragment) {
-        fontSize = nextTextFragment.fontSize;
+      } else if (textFragment) {
+        fontSize = textFragment.fontSize;
       } else {
         fontSize = this.editor.layout.defaultFontSize;
       }
