@@ -80,6 +80,8 @@ export class KeyEvent {
     if (this.editor.prevRowIndex !== null) this.editor.setPrevRowIndex(null);
 
     if (isCommandKey(event)) {
+      this.editor.text.resetKoreanComposing();
+
       const lineTextArr = this.editor.getLineTextArray().flat();
 
       let startIndex;
