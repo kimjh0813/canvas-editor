@@ -13,6 +13,7 @@
     "@formkit/auto-animate": "^0.8.2",
     "@vercel/analytics": "^1.4.1",
     "hangul-js": "^0.2.6",
+    "lucide-react": "^0.475.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "recoil": "^0.7.7",
