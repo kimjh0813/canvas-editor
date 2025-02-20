@@ -26,7 +26,7 @@ export function FontSize() {
     String(editorManger.layout.defaultFontSize)
   );
 
-  const changeFontSize = (size?: number, type?: "plus" | "minus") => {
+  const changeFontSize = (size?: number) => {
     let _fontSize = size ? size : Number(fontSize);
 
     if (!isValidInteger(_fontSize) || _fontSize === 0) {
@@ -64,6 +64,16 @@ export function FontSize() {
       });
     } else {
       if (editorManger.select.selectRange === null) {
+        let lineMaxFontSize;
+
+        const lineText = editorManger.getLineText(editorManger.cursor.index);
+
+        if (lineText && lineText.text.length > 0) {
+          lineMaxFontSize = lineText.maxFontSize;
+        } else {
+          lineMaxFontSize = _fontSize;
+        }
+
         editorManger.textStyle.updateStyle({ fontSize: _fontSize });
 
         setCursor((prev) => {
@@ -75,6 +85,7 @@ export function FontSize() {
           return {
             ...prev,
             fontSize: _fontSize,
+            lineMaxFontSize,
             isFocusCanvas: true,
           };
         });

@@ -1,4 +1,3 @@
-import { EditorLayout } from "./EditorLayout";
 import { EditorManger } from "./EditorManger";
 
 export class TextStyle {
