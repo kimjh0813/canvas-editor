@@ -74,6 +74,9 @@ export class EditorManger {
     this.text.resetKoreanComposing();
 
     console.log(this._lineTexts);
+    console.log(this.cursor.index);
+
+    console.log(clickX, clickY);
 
     if (this._prevRowIndex !== null) this.setPrevRowIndex(null);
 
@@ -104,6 +107,8 @@ export class EditorManger {
 
     if (!closestLine) return;
 
+    console.log(closestLine);
+
     let x = closestLine.x;
     let cursorIndex: number | null = null;
 
@@ -117,6 +122,7 @@ export class EditorManger {
       const textWidth = measureTextWidth(ctx, text);
       const charMid = x + textWidth / 2;
 
+      console.log(x, textWidth, charMid);
       if (clickX >= x && clickX <= x + textWidth) {
         if (clickX < charMid) {
           cursorIndex =
@@ -131,7 +137,7 @@ export class EditorManger {
       x += textWidth;
     }
 
-    if (!cursorIndex) {
+    if (cursorIndex === null) {
       if (clickX > this.layout.marginX) {
         // 마지막 줄일 경우 +1
         cursorIndex = isLastLine

@@ -47,6 +47,11 @@ export class SelectRange {
       endIndex = cursorIndex;
     }
 
+    if (startIndex === endIndex) {
+      this.clearSelectedRange();
+      return;
+    }
+
     this._selectRange = {
       start: startIndex,
       end: endIndex,

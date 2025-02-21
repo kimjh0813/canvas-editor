@@ -133,6 +133,8 @@ export class KeyEvent {
   }
 
   enter() {
+    this.editor.select.deleteSelectedRange();
+
     if (this.editor.prevRowIndex !== null) this.editor.setPrevRowIndex(null);
 
     const cursorIndex = this.editor.cursor.index;
@@ -151,8 +153,8 @@ export class KeyEvent {
   arrowUp(event: KeyboardEvent) {
     const cursorIndex = this.editor.cursor.index;
 
-    if (cursorIndex === 0 && !event.shiftKey) {
-      this.editor.select.clearSelectedRange();
+    if (cursorIndex === 0) {
+      if (!event.shiftKey) this.editor.select.clearSelectedRange();
 
       return;
     }
@@ -228,8 +230,11 @@ export class KeyEvent {
 
     const cursorIndex = this.editor.cursor.index;
 
-    if (cursorIndex >= this.editor.text.length() && !event.shiftKey) {
-      this.editor.select.clearSelectedRange();
+    if (cursorIndex >= this.editor.text.length()) {
+      if (!event.shiftKey) {
+        this.editor.select.clearSelectedRange();
+      }
+
       return;
     }
 
@@ -309,8 +314,8 @@ export class KeyEvent {
   arrowLeft = (event: KeyboardEvent) => {
     const cursorIndex = this.editor.cursor.index;
 
-    if (cursorIndex === 0 && !event.shiftKey) {
-      this.editor.select.clearSelectedRange();
+    if (cursorIndex === 0) {
+      if (!event.shiftKey) this.editor.select.clearSelectedRange();
       return;
     }
 
@@ -369,8 +374,8 @@ export class KeyEvent {
   arrowRight = (event: KeyboardEvent) => {
     const cursorIndex = this.editor.cursor.index;
 
-    if (cursorIndex >= this.editor.text.length() && !event.shiftKey) {
-      this.editor.select.clearSelectedRange();
+    if (cursorIndex >= this.editor.text.length()) {
+      if (!event.shiftKey) this.editor.select.clearSelectedRange();
       return;
     }
 

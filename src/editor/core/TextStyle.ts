@@ -45,6 +45,8 @@ export class TextStyle {
       endIndex
     );
 
+    if (textFragments.length === 0) return;
+
     const fontSize = textFragments[0].fontSize;
 
     for (let i = 0; i < textFragments.length; i++) {
