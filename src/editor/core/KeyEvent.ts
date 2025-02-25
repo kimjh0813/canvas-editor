@@ -203,23 +203,28 @@ export class KeyEvent {
     const selectRange = this.editor.select.selectRange;
 
     if (event.shiftKey) {
-      if (selectRange && selectRange.start <= targetIndex) {
-        endIndex = targetIndex;
-      } else if (
-        isCommandKey(event) &&
-        selectRange &&
-        selectRange.start > targetIndex
-      ) {
-        startIndex = targetIndex;
-        endIndex = endIndex =
-          selectRange.end > cursorIndex ? selectRange.end : selectRange.start;
+      if (selectRange) {
+        const { start, end } = selectRange;
+
+        if (isCommandKey(event)) {
+          startIndex = targetIndex;
+          endIndex = cursorIndex === start ? end : start;
+        } else if (targetIndex >= start) {
+          endIndex = targetIndex;
+        } else {
+          startIndex = targetIndex;
+          endIndex = cursorIndex > start ? start : end;
+        }
       } else {
         startIndex = targetIndex;
+        endIndex = cursorIndex;
       }
 
       this.editor.select.updateSelectedRange(startIndex, endIndex);
     } else {
-      this.editor.select.clearSelectedRange();
+      const result = this.editor.select.clearSelectedRange("start");
+
+      if (result) return;
     }
 
     this.editor.cursor.setCursorIndex(targetIndex);
@@ -231,9 +236,7 @@ export class KeyEvent {
     const cursorIndex = this.editor.cursor.index;
 
     if (cursorIndex >= this.editor.text.length()) {
-      if (!event.shiftKey) {
-        this.editor.select.clearSelectedRange();
-      }
+      if (!event.shiftKey) this.editor.select.clearSelectedRange();
 
       return;
     }
@@ -289,29 +292,36 @@ export class KeyEvent {
     const selectRange = this.editor.select.selectRange;
 
     if (event.shiftKey) {
-      if (selectRange && selectRange.end >= targetIndex) {
-        startIndex = targetIndex;
-      } else if (
-        isCommandKey(event) &&
-        selectRange &&
-        selectRange.end < targetIndex
-      ) {
-        startIndex =
-          selectRange.start < cursorIndex ? selectRange.start : selectRange.end;
-        endIndex = targetIndex;
+      if (selectRange) {
+        const { start, end } = selectRange;
+
+        if (isCommandKey(event)) {
+          startIndex = cursorIndex === end ? start : end;
+          endIndex = targetIndex;
+        } else if (end >= targetIndex) {
+          startIndex = targetIndex;
+        } else {
+          startIndex = cursorIndex > start ? start : end;
+          endIndex = targetIndex;
+        }
       } else {
+        startIndex = cursorIndex;
         endIndex = targetIndex;
       }
 
       this.editor.select.updateSelectedRange(startIndex, endIndex);
     } else {
-      this.editor.select.clearSelectedRange();
+      const result = this.editor.select.clearSelectedRange("end");
+
+      if (result) return;
     }
 
     this.editor.cursor.setCursorIndex(targetIndex);
   }
 
   arrowLeft = (event: KeyboardEvent) => {
+    this.editor.setPrevRowIndex(null);
+
     const cursorIndex = this.editor.cursor.index;
 
     if (cursorIndex === 0) {
@@ -365,13 +375,17 @@ export class KeyEvent {
 
       this.editor.select.updateSelectedRange(startIndex, endIndex);
     } else {
-      this.editor.select.clearSelectedRange();
+      const result = this.editor.select.clearSelectedRange("start");
+
+      if (result) return;
     }
-    this.editor.setPrevRowIndex(null);
+
     this.editor.cursor.setCursorIndex(targetIndex);
   };
 
   arrowRight = (event: KeyboardEvent) => {
+    this.editor.setPrevRowIndex(null);
+
     const cursorIndex = this.editor.cursor.index;
 
     if (cursorIndex >= this.editor.text.length()) {
@@ -424,9 +438,11 @@ export class KeyEvent {
 
       this.editor.select.updateSelectedRange(startIndex, endIndex);
     } else {
-      this.editor.select.clearSelectedRange();
+      const result = this.editor.select.clearSelectedRange("end");
+
+      if (result) return;
     }
-    this.editor.setPrevRowIndex(null);
+
     this.editor.cursor.setCursorIndex(targetIndex);
   };
 
@@ -435,6 +451,6 @@ export class KeyEvent {
 
     this.editor.select.updateSelectedRange(0, this.editor.text.length());
 
-    this.editor.cursor.setCursorIndex(0);
+    this.editor.cursor.setCursorIndex(this.editor.text.length());
   }
 }

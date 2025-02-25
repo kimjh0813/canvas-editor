@@ -63,7 +63,7 @@ export function Cursor({ scrollContainerRef }: CursorProps) {
     }
   }, [cursor, scrollContainerRef]);
 
-  if (!cursor || !isVisible) return null;
+  if (!cursor) return null;
 
   return (
     <S.Cursor

@@ -19,10 +19,22 @@ export class SelectRange {
     );
   }
 
-  clearSelectedRange() {
-    if (this._selectRange === null) return;
+  clearSelectedRange(type?: "start" | "end") {
+    if (this._selectRange === null) return false;
+
+    this.editor.setPrevRowIndex(null);
+
+    if (type === "start") {
+      this.editor.cursor.setCursorIndex(this._selectRange.start);
+    }
+
+    if (type === "end") {
+      this.editor.cursor.setCursorIndex(this._selectRange.end);
+    }
 
     this._selectRange = null;
+
+    return true;
   }
 
   updateSelectedRange(start?: number, end?: number) {
@@ -47,8 +59,11 @@ export class SelectRange {
       endIndex = cursorIndex;
     }
 
+    // console.log(start, end);
+    // console.log(startIndex, endIndex);
+
     if (startIndex === endIndex) {
-      this.clearSelectedRange();
+      this._selectRange = null;
       return;
     }
 

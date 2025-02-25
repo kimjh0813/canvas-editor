@@ -76,8 +76,6 @@ export class EditorManger {
     console.log(this._lineTexts);
     console.log(this.cursor.index);
 
-    console.log(clickX, clickY);
-
     if (this._prevRowIndex !== null) this.setPrevRowIndex(null);
 
     const lineTextArr = this._lineTexts.get(pageIndex);
@@ -107,8 +105,6 @@ export class EditorManger {
 
     if (!closestLine) return;
 
-    console.log(closestLine);
-
     let x = closestLine.x;
     let cursorIndex: number | null = null;
 
@@ -122,7 +118,6 @@ export class EditorManger {
       const textWidth = measureTextWidth(ctx, text);
       const charMid = x + textWidth / 2;
 
-      console.log(x, textWidth, charMid);
       if (clickX >= x && clickX <= x + textWidth) {
         if (clickX < charMid) {
           cursorIndex =
