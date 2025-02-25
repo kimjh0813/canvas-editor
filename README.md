@@ -1,50 +1,35 @@
-# React + TypeScript + Vite
+<h1 align="center">canvas-editor</h1>
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+<p align="center">
+ Tech Stack: React, TypeScript, Recoil, Vite
+</p>
+<p align="center">
+<img src="https://img.shields.io/badge/React-61dafb?style=flat&logo=React&logoColor=black">
+<img src="https://img.shields.io/badge/TypeScript-3178c6?style=flat&logo=TypeScript&logoColor=white">
+<img src="https://img.shields.io/badge/Recoil-0099FF?style=flat&logo=Recoil&logoColor=white">
+<img src="https://img.shields.io/badge/Vite-646CFF?style=flat&logo=Vite&logoColor=white">
+</p>
 
-Currently, two official plugins are available:
+## Introduction
+- This canvas-editor is a inspired by the design and features of Google Docs.
+- This project is a text editor built using only the canvas element.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
 
-## Expanding the ESLint configuration
+- Text Styling & Formatting (FontSize)
+- Select (Arrow select, All select)
+- Editor Configuration (Editor Margin, Editor Size)
+- Pagination
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
 
-- Configure the top-level `parserOptions` property like this:
+## Install
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ["./tsconfig.node.json", "./tsconfig.app.json"],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-});
-```
+`pnpm i`
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## Dev
 
-```js
-// eslint.config.js
-import react from "eslint-plugin-react";
+`pnpm dev`
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: "18.3" } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs["jsx-runtime"].rules,
-  },
-});
-```
+## Build
+
+`pnpm build`
