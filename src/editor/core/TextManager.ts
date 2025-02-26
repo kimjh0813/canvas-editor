@@ -4,7 +4,6 @@ import { ITextFragment } from "../types/text";
 
 import { EditorManger } from "./EditorManger";
 import { isKorean } from "../utils/key";
-import { TextStyle } from "./TextStyle";
 
 export class TextManager {
   private _textFragments: ITextFragment[];
@@ -67,7 +66,10 @@ export class TextManager {
     this._textFragments[index] = value;
   }
 
-  setTextFragmentStyle(index: number, newStyle: Partial<ITextFragment>) {
+  setTextFragmentStyle(
+    index: number,
+    newStyle: Partial<Omit<ITextFragment, "text">>
+  ) {
     if (!this._textFragments[index]) return;
 
     this._textFragments[index] = {

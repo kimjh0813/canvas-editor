@@ -1,6 +1,7 @@
 import { ICursor } from "../../recoil";
 import { ILineText, ITextFragment } from "../types/text";
 import { measureTextWidth } from "../utils/ctx";
+import { CanvasMouseManager } from "./CanvasMouseManager";
 import { Cursor } from "./Cursor";
 import { EditorLayout } from "./EditorLayout";
 import { KeyEvent } from "./KeyEvent";
@@ -15,6 +16,7 @@ export class EditorManger {
   layout: EditorLayout;
   keyEvent: KeyEvent;
   textStyle: TextStyle;
+  canvasMouse: CanvasMouseManager;
 
   private _prevRowIndex: number | null; //TODO:인덱스 말고 넓이 기준으로 바
 
@@ -41,10 +43,15 @@ export class EditorManger {
     );
     this.keyEvent = new KeyEvent(this);
     this.textStyle = new TextStyle(this);
+    this.canvasMouse = new CanvasMouseManager(this);
   }
 
   public get prevRowIndex() {
     return this._prevRowIndex;
+  }
+
+  public get lineTexts() {
+    return this._lineTexts;
   }
 
   setPrevRowIndex(rowIndex: number | null) {
@@ -67,83 +74,6 @@ export class EditorManger {
         return lineText;
       }
     }
-  }
-
-  canvasClick(clickX: number, clickY: number, pageIndex: number) {
-    this.select.clearSelectedRange();
-    this.text.resetKoreanComposing();
-
-    console.log(this._lineTexts);
-    console.log(this.cursor.index);
-
-    if (this._prevRowIndex !== null) this.setPrevRowIndex(null);
-
-    const lineTextArr = this._lineTexts.get(pageIndex);
-    if (!lineTextArr || lineTextArr.length === 0) {
-      this.cursor.resetCursorPosition(pageIndex);
-      return;
-    }
-
-    const lastLine = lineTextArr[lineTextArr.length - 1];
-
-    if (lastLine.y + lastLine.maxFontSize * 1.48 < clickY) {
-      this.cursor.setCursorIndex(this.text.length());
-      return;
-    }
-
-    let closestLine: ILineText | null = null;
-    let isLastLine = false;
-
-    for (let i = 0; i < lineTextArr.length; i++) {
-      const line = lineTextArr[i];
-      if (clickY >= line.y && clickY <= line.y + line.maxFontSize * 1.48) {
-        closestLine = line;
-        i === lineTextArr.length - 1 && (isLastLine = true);
-        break;
-      }
-    }
-
-    if (!closestLine) return;
-
-    let x = closestLine.x;
-    let cursorIndex: number | null = null;
-
-    for (let i = 0; i < closestLine.text.length; i++) {
-      const { text, fontSize } = closestLine.text[i];
-
-      const ctx = document.createElement("canvas").getContext("2d");
-      if (!ctx) return;
-      ctx.font = `500 ${fontSize}px Arial`;
-
-      const textWidth = measureTextWidth(ctx, text);
-      const charMid = x + textWidth / 2;
-
-      if (clickX >= x && clickX <= x + textWidth) {
-        if (clickX < charMid) {
-          cursorIndex =
-            closestLine.endIndex - (closestLine.text.length - i) + 1;
-        } else {
-          cursorIndex =
-            closestLine.endIndex - (closestLine.text.length - i) + 1 + 1;
-        }
-        break;
-      }
-
-      x += textWidth;
-    }
-
-    if (cursorIndex === null) {
-      if (clickX > this.layout.marginX) {
-        // 마지막 줄일 경우 +1
-        cursorIndex = isLastLine
-          ? closestLine.endIndex + 1
-          : closestLine.endIndex;
-      } else {
-        cursorIndex = closestLine.endIndex - closestLine.text.length + 1;
-      }
-    }
-
-    this.cursor.setCursorIndex(cursorIndex);
   }
 
   getCanvasData(

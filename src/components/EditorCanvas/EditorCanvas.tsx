@@ -48,8 +48,8 @@ export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
           <canvas
             width={editorManger.layout.canvasWidth}
             height={editorManger.layout.canvasHeight}
-            onClick={(e) => {
-              editorManger.canvasClick(
+            onMouseDown={(e) => {
+              editorManger.canvasMouse.down(
                 e.nativeEvent.offsetX,
                 e.nativeEvent.offsetY,
                 index
