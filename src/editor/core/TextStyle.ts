@@ -25,7 +25,7 @@ export class TextStyle {
       const prevTextFragment = this.editor.text.getTextFragment(index - 1);
       const textFragment = this.editor.text.getTextFragment(index);
 
-      if (prevTextFragment) {
+      if (prevTextFragment && prevTextFragment.text !== "\n") {
         fontSize = prevTextFragment.fontSize;
       } else if (textFragment) {
         fontSize = textFragment.fontSize;
@@ -59,6 +59,12 @@ export class TextStyle {
   }
 
   updateFontSize(startIndex: number, endIndex: number, type: "plus" | "minus") {
+    const textFragment = this.editor.text.getTextFragment(endIndex);
+
+    if (textFragment?.text === "\n") {
+      endIndex++;
+    }
+
     for (let i = startIndex; i < endIndex; i++) {
       const textFragment = this.editor.text.getTextFragment(i);
 
@@ -79,6 +85,12 @@ export class TextStyle {
     endIndex: number,
     newStyle: Partial<TextStyle>
   ) {
+    const textFragment = this.editor.text.getTextFragment(endIndex);
+
+    if (textFragment?.text === "\n") {
+      endIndex++;
+    }
+
     for (let i = startIndex; i < endIndex; i++) {
       this.editor.text.setTextFragmentStyle(i, newStyle);
     }

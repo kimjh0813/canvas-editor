@@ -44,7 +44,7 @@ export class Cursor {
 
     let fontSize;
 
-    if (prevTextFragment) {
+    if (prevTextFragment && prevTextFragment.text !== "\n") {
       fontSize = prevTextFragment.fontSize;
     } else if (textFragment) {
       fontSize = textFragment.fontSize;

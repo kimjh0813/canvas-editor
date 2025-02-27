@@ -91,7 +91,6 @@ export class EditorManger {
     const { canvasHeight, canvasWidth, marginX, marginY } = this.layout;
 
     let lineText: ITextFragment[] = [];
-    let maxFontSize: number | null = null;
 
     let pageIndex = 0;
     let x = marginX;
@@ -103,9 +102,6 @@ export class EditorManger {
       const _text = textFragments[i];
       const { text, fontSize } = _text;
 
-      if (maxFontSize === null || maxFontSize < fontSize)
-        maxFontSize = fontSize;
-
       ctx.font = `500 ${fontSize}px Arial`;
       const textWidth = measureTextWidth(ctx, text);
       const currentWidth = x + marginX + textWidth;
@@ -113,6 +109,12 @@ export class EditorManger {
       const isLastText = i === textFragments.length - 1;
 
       if (currentWidth > canvasWidth && text !== "\n") {
+        let maxFontSize = lineText.reduce((acc, cur) => {
+          return cur.text === "\n" ? acc : Math.max(acc, cur.fontSize);
+        }, 0);
+
+        if (maxFontSize === 0) maxFontSize = fontSize;
+
         const currentPageText = this._lineTexts.get(pageIndex) || [];
         currentPageText.push({
           endIndex: i - 1,
@@ -127,7 +129,6 @@ export class EditorManger {
         y += maxFontSize * 1.48;
         x = marginX;
         lineText = [];
-        maxFontSize = null;
 
         if (y + fontSize * 1.48 > canvasHeight - marginY) {
           pageIndex++;
@@ -139,7 +140,11 @@ export class EditorManger {
       x += textWidth;
 
       if (text === "\n") {
-        maxFontSize = maxFontSize ?? fontSize;
+        let maxFontSize = lineText.reduce((acc, cur) => {
+          return cur.text === "\n" ? acc : Math.max(acc, cur.fontSize);
+        }, 0);
+
+        if (maxFontSize === 0) maxFontSize = fontSize;
 
         const currentPageText = this._lineTexts.get(pageIndex) || [];
         currentPageText.push({
@@ -155,7 +160,6 @@ export class EditorManger {
         y += maxFontSize * 1.48;
         x = marginX;
         lineText = [];
-        maxFontSize = null;
 
         if (y + fontSize * 1.48 > canvasHeight - marginY) {
           pageIndex++;
@@ -164,10 +168,16 @@ export class EditorManger {
       }
 
       if (isLastText) {
+        let maxFontSize = lineText.reduce((acc, cur) => {
+          return cur.text === "\n" ? acc : Math.max(acc, cur.fontSize);
+        }, 0);
+
+        if (maxFontSize === 0) maxFontSize = fontSize;
+
         const currentPageText = this._lineTexts.get(pageIndex) || [];
         currentPageText.push({
           endIndex: i,
-          maxFontSize: maxFontSize ?? fontSize,
+          maxFontSize: maxFontSize,
           text: lineText,
           x: marginX,
           y,

@@ -139,6 +139,12 @@ export class KeyEvent {
 
     const cursorIndex = this.editor.cursor.index;
     const prevTextFragment = this.editor.text.getTextFragment(cursorIndex - 1);
+    const textFragment = this.editor.text.getTextFragment(cursorIndex);
+
+    if (textFragment?.text === "\n" && prevTextFragment) {
+      this.editor.text.textFragments[cursorIndex].fontSize =
+        prevTextFragment.fontSize;
+    }
 
     this.editor.text.insert(cursorIndex, 0, {
       text: "\n",
