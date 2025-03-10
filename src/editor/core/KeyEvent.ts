@@ -138,19 +138,36 @@ export class KeyEvent {
     if (this.editor.prevRowIndex !== null) this.editor.setPrevRowIndex(null);
 
     const cursorIndex = this.editor.cursor.index;
+    const fontStyle = this.editor.textStyle.getTextStyle(cursorIndex);
+
+    let fontSize;
+
     const prevTextFragment = this.editor.text.getTextFragment(cursorIndex - 1);
     const textFragment = this.editor.text.getTextFragment(cursorIndex);
 
-    if (textFragment?.text === "\n" && prevTextFragment) {
-      this.editor.text.textFragments[cursorIndex].fontSize =
-        prevTextFragment.fontSize;
+    if (
+      prevTextFragment &&
+      prevTextFragment.text !== "\n" &&
+      textFragment?.text === "\n"
+    ) {
+      this.editor.text.setTextFragmentStyle(cursorIndex, {
+        fontSize: prevTextFragment.fontSize,
+      });
+    }
+
+    if (prevTextFragment) {
+      if (fontStyle.fontSize !== prevTextFragment.fontSize) {
+        fontSize = fontStyle.fontSize;
+      } else {
+        fontSize = prevTextFragment.fontSize;
+      }
+    } else {
+      fontSize = this.editor.layout.defaultFontSize;
     }
 
     this.editor.text.insert(cursorIndex, 0, {
       text: "\n",
-      fontSize: prevTextFragment
-        ? prevTextFragment.fontSize
-        : this.editor.layout.defaultFontSize,
+      fontSize,
     });
 
     this.editor.cursor.setCursorIndex(cursorIndex + 1, false);

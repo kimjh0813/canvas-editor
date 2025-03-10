@@ -23,25 +23,6 @@ export class TextManager {
     return this._isKoreanComposing;
   }
 
-  addRandomAlphabetText(count: number = 500) {
-    const cursorIndex = this.editor.cursor.index;
-
-    const alphabet = "abcdefghijklmnopqrstuvwxyz";
-
-    for (let i = 0; i < count; i++) {
-      const randomChar = alphabet.charAt(
-        Math.floor(Math.random() * alphabet.length)
-      );
-
-      const newText = {
-        text: randomChar,
-        fontSize: this.editor.layout.defaultFontSize,
-      };
-
-      this.insert(cursorIndex, 0, newText);
-    }
-  }
-
   length() {
     return this._textFragments.length;
   }

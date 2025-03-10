@@ -25,7 +25,10 @@ export class TextStyle {
       const prevTextFragment = this.editor.text.getTextFragment(index - 1);
       const textFragment = this.editor.text.getTextFragment(index);
 
-      if (prevTextFragment && prevTextFragment.text !== "\n") {
+      if (
+        prevTextFragment &&
+        (prevTextFragment.text !== "\n" || !textFragment)
+      ) {
         fontSize = prevTextFragment.fontSize;
       } else if (textFragment) {
         fontSize = textFragment.fontSize;

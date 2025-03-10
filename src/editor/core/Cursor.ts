@@ -39,22 +39,11 @@ export class Cursor {
         this.editor.layout.defaultFontSize;
     }
 
-    const prevTextFragment = this.editor.text.getTextFragment(this._index - 1);
-    const textFragment = this.editor.text.getTextFragment(this._index);
-
-    let fontSize;
-
-    if (prevTextFragment && prevTextFragment.text !== "\n") {
-      fontSize = prevTextFragment.fontSize;
-    } else if (textFragment) {
-      fontSize = textFragment.fontSize;
-    } else {
-      fontSize = cursor.fontSize;
-    }
+    const fontStyle = this.editor.textStyle.getTextStyle(this._index);
 
     this._setCursor({
       ...cursor,
-      fontSize,
+      fontSize: fontStyle.fontSize,
       lineMaxFontSize,
       index: this._index,
       isFocusCanvas: true,
@@ -72,6 +61,7 @@ export class Cursor {
 
   setCursorIndex(cursorIndex: number, shouldUpdatePosition: boolean = true) {
     if (cursorIndex < 0 || this.editor.text.length() < cursorIndex) return;
+
     this._index = cursorIndex;
 
     //just update index function because run setCursor from draw function

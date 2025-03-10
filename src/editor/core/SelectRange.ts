@@ -38,6 +38,9 @@ export class SelectRange {
   }
 
   updateSelectedRange(start?: number, end?: number) {
+    if (this._selectRange?.start === start && this._selectRange?.end === end)
+      return;
+
     const cursorIndex = this.editor.cursor.index;
 
     let startIndex;
