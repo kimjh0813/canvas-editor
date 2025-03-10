@@ -47,8 +47,8 @@ export function Cursor({ scrollContainerRef }: CursorProps) {
 
     const currentScrollTop = scrollContainer.scrollTop;
 
-    const upperBound = containerHeight * 0.3;
-    const lowerBound = containerHeight * 0.7;
+    const upperBound = containerHeight * 0.1;
+    const lowerBound = containerHeight * 0.9;
 
     if (cursorPosition < currentScrollTop + upperBound) {
       scrollContainer.scrollTo({
@@ -61,7 +61,7 @@ export function Cursor({ scrollContainerRef }: CursorProps) {
         behavior: "smooth",
       });
     }
-  }, [cursor, scrollContainerRef]);
+  }, [cursor]);
 
   if (!cursor || !isVisible) return null;
 

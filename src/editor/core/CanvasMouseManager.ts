@@ -1,20 +1,52 @@
 import { ILineText } from "../types/text";
 import { measureTextWidth } from "../utils/ctx";
+import { getPageInfoFromY } from "../utils/mouse";
 import { EditorManger } from "./EditorManger";
 
-export class CanvasMouseManager {
-  constructor(private editor: EditorManger) {}
+const scrollBarWidth = 16;
 
-  getTargetIndex(clickX: number, clickY: number, lineTextArr: ILineText[]) {
+export class CanvasMouseManager {
+  private _downIndex: number | null;
+  private _isDragging: boolean;
+  private _scrollContainerRef: React.RefObject<HTMLDivElement>;
+
+  constructor(
+    private editor: EditorManger,
+    scrollContainerRef: React.RefObject<HTMLDivElement>
+  ) {
+    this._downIndex = null;
+    this._isDragging = false;
+    this._scrollContainerRef = scrollContainerRef;
+  }
+
+  hasScroll() {
+    const scrollContainer = this._scrollContainerRef.current;
+    if (scrollContainer) {
+      return scrollContainer.scrollHeight > scrollContainer.clientHeight;
+    }
+    return false;
+  }
+
+  getTargetIndex(mouseX: number, mouseY: number, lineTextArr: ILineText[]) {
+    const lastLine = lineTextArr[lineTextArr.length - 1];
+
+    if (lastLine.y + lastLine.maxFontSize * 1.48 < mouseY)
+      return lastLine.endIndex + 1;
+
     let closestLine: ILineText | null = null;
     let isLastLine = false;
 
-    for (let i = 0; i < lineTextArr.length; i++) {
-      const line = lineTextArr[i];
-      if (clickY >= line.y && clickY <= line.y + line.maxFontSize * 1.48) {
-        closestLine = line;
-        i === lineTextArr.length - 1 && (isLastLine = true);
-        break;
+    if (mouseY < this.editor.layout.marginY) {
+      closestLine = lineTextArr[0];
+      isLastLine = lineTextArr.length === 1;
+    } else {
+      for (let i = 0; i < lineTextArr.length; i++) {
+        const line = lineTextArr[i];
+        if (mouseY >= line.y && mouseY <= line.y + line.maxFontSize * 1.48) {
+          closestLine = line;
+          i === lineTextArr.length - 1 && (isLastLine = true);
+          break;
+        }
       }
     }
 
@@ -33,8 +65,8 @@ export class CanvasMouseManager {
       const textWidth = measureTextWidth(ctx, text);
       const charMid = x + textWidth / 2;
 
-      if (clickX >= x && clickX <= x + textWidth) {
-        if (clickX < charMid) {
+      if (mouseX >= x && mouseX <= x + textWidth) {
+        if (mouseX < charMid) {
           cursorIndex =
             closestLine.endIndex - (closestLine.text.length - i) + 1;
         } else {
@@ -48,8 +80,8 @@ export class CanvasMouseManager {
     }
 
     if (cursorIndex === null) {
-      if (clickX > this.editor.layout.marginX) {
-        // 마지막 줄일 경우 +1
+      if (mouseX > this.editor.layout.marginX) {
+        // if lastLine +1
         cursorIndex = isLastLine
           ? closestLine.endIndex + 1
           : closestLine.endIndex;
@@ -61,12 +93,10 @@ export class CanvasMouseManager {
     return cursorIndex;
   }
 
-  down(clickX: number, clickY: number, pageIndex: number) {
+  down(mouseX: number, mouseY: number, pageIndex: number) {
+    this._isDragging = true;
     this.editor.select.clearSelectedRange();
     this.editor.text.resetKoreanComposing();
-
-    console.log(this.editor.getLineTextArray());
-    console.log(this.editor.cursor.index);
 
     if (this.editor.prevRowIndex !== null) this.editor.setPrevRowIndex(null);
 
@@ -77,17 +107,78 @@ export class CanvasMouseManager {
       return;
     }
 
-    const lastLine = lineTextArr[lineTextArr.length - 1];
-
-    if (lastLine.y + lastLine.maxFontSize * 1.48 < clickY) {
-      this.editor.cursor.setCursorIndex(this.editor.text.length());
-      return;
-    }
-
-    const targetIndex = this.getTargetIndex(clickX, clickY, lineTextArr);
+    const targetIndex = this.getTargetIndex(mouseX, mouseY, lineTextArr);
 
     if (targetIndex === undefined) return;
 
+    this._downIndex = targetIndex;
     this.editor.cursor.setCursorIndex(targetIndex);
+  }
+
+  move(e: MouseEvent) {
+    if (!this._isDragging || this._downIndex === null) return false;
+
+    const scrollContainer = this._scrollContainerRef.current;
+
+    if (!scrollContainer) return;
+
+    const scrollTop = scrollContainer.scrollTop;
+    const containerTop = scrollContainer.getBoundingClientRect().top;
+    const paddingTop = parseFloat(
+      window.getComputedStyle(scrollContainer).paddingTop
+    );
+
+    const canvasWidth = this.editor.layout.canvasWidth;
+
+    let targetIndex: number | undefined;
+
+    const innerHeight = window.innerHeight;
+    const innerWidth = this.hasScroll()
+      ? window.innerWidth - scrollBarWidth
+      : window.innerWidth;
+
+    const pageMargin = (innerWidth - canvasWidth) / 2;
+
+    let mouseX = Math.round(e.pageX - pageMargin);
+    const mouseY = e.pageY - containerTop - paddingTop + scrollTop;
+
+    if (e.pageX < pageMargin) mouseX = 0;
+    if (e.pageX > innerWidth - pageMargin) mouseX = canvasWidth;
+
+    if (e.pageY < containerTop + paddingTop) {
+      targetIndex = 0;
+    } else if (e.pageY > innerHeight) {
+      targetIndex = this.editor.text.length();
+    } else {
+      const { canvasHeight, pageSize } = this.editor.layout;
+
+      const pageInfo = getPageInfoFromY(mouseY, canvasHeight, pageSize);
+      if (pageInfo === null) return;
+
+      const lineTextArr = this.editor.lineTexts.get(pageInfo.pageIndex);
+
+      if (!lineTextArr) return;
+
+      targetIndex = this.getTargetIndex(mouseX, pageInfo.y, lineTextArr);
+    }
+
+    if (targetIndex === undefined) return;
+
+    let startIndex =
+      targetIndex > this._downIndex ? this._downIndex : targetIndex;
+    let endIndex =
+      targetIndex > this._downIndex ? targetIndex : this._downIndex;
+
+    this.editor.select.updateSelectedRange(startIndex, endIndex);
+    this.editor.cursor.setCursorIndex(targetIndex);
+
+    return true;
+  }
+
+  up() {
+    if (!this._isDragging) return;
+
+    this._isDragging = false;
+    this._downIndex = null;
   }
 }

@@ -26,6 +26,7 @@ export class EditorManger {
     defaultFontSize: number,
     marginX: number,
     marginY: number,
+    scrollContainerRef: React.RefObject<HTMLDivElement>,
     setCursor: (cursor: ICursor) => void,
     setPageSize: (pageSize: number) => void
   ) {
@@ -43,7 +44,7 @@ export class EditorManger {
     );
     this.keyEvent = new KeyEvent(this);
     this.textStyle = new TextStyle(this);
-    this.canvasMouse = new CanvasMouseManager(this);
+    this.canvasMouse = new CanvasMouseManager(this, scrollContainerRef);
   }
 
   public get prevRowIndex() {

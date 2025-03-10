@@ -6,6 +6,7 @@ import { isCursorSelector } from "../../recoil/selector";
 
 import * as S from "./styled";
 import { useEditor } from "../../context/EditorContext";
+import { useMouseHandlers } from "../../hooks";
 
 interface EditorCanvasProps {
   pageSize: number;
@@ -16,6 +17,23 @@ export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
   const { editorManger, draw } = useEditor();
 
   const isCursor = useRecoilValue(isCursorSelector);
+
+  const { handleMouseDown, handleMouseMove, handleMouseUp } = useMouseHandlers(
+    editorManger,
+    draw
+  );
+
+  useEffect(() => {
+    if (isCursor) {
+      window.addEventListener("mousemove", handleMouseMove);
+      window.addEventListener("mouseup", handleMouseUp);
+    }
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isCursor, handleMouseUp]);
 
   useEffect(() => {
     if (!isCursor) return;
@@ -49,13 +67,8 @@ export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
             width={editorManger.layout.canvasWidth}
             height={editorManger.layout.canvasHeight}
             onMouseDown={(e) => {
-              editorManger.canvasMouse.down(
-                e.nativeEvent.offsetX,
-                e.nativeEvent.offsetY,
-                index
-              );
-
-              draw(false);
+              e.preventDefault();
+              handleMouseDown(e, index);
             }}
             ref={(el) => (canvasRefs.current[index] = el)}
           />

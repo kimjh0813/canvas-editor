@@ -31,6 +31,7 @@ export function Editor() {
       defaultFontSize,
       marginX,
       marginY,
+      scrollContainerRef,
       setCursor,
       setPageSize
     );
@@ -55,12 +56,6 @@ export function Editor() {
   return (
     <EditorContext.Provider value={{ editorManger, draw }}>
       <S.MainWrapper>
-        {/* <div
-        onClick={() => editorManger.addRandomAlphabetText(5000)}
-        style={{ cursor: "pointer" }}
-      >
-        btn
-      </div> */}
         <EditorToolbar />
         <S.CanvasScrollContainer ref={scrollContainerRef}>
           <S.CanvasContainer>
