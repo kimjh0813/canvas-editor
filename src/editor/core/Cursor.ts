@@ -32,18 +32,18 @@ export class Cursor {
     if (maxFontSize) {
       lineMaxFontSize = maxFontSize;
     } else if (this.editor.text.length() === 0) {
-      lineMaxFontSize = this.editor.layout.defaultFontSize;
+      lineMaxFontSize = this.editor.textStyle.defaultFontSize;
     } else {
       lineMaxFontSize =
         this.editor.getLineText(this._index)?.maxFontSize ??
-        this.editor.layout.defaultFontSize;
+        this.editor.textStyle.defaultFontSize;
     }
 
-    const fontStyle = this.editor.textStyle.getTextStyle(this._index);
+    const textStyle = this.editor.textStyle.getTextStyle(this._index);
 
     this._setCursor({
       ...cursor,
-      fontSize: fontStyle.fontSize,
+      fontSize: textStyle.fontSize,
       lineMaxFontSize,
       index: this._index,
       isFocusCanvas: true,
@@ -54,7 +54,7 @@ export class Cursor {
     this.setCursor({
       x: this.editor.layout.marginX,
       y: this.editor.layout.marginY,
-      fontSize: this.editor.layout.defaultFontSize,
+      fontSize: this.editor.textStyle.defaultFontSize,
       pageIndex: pageIndex ?? 0,
     });
   }
@@ -101,15 +101,19 @@ export class Cursor {
       targetLine.text.length - (targetLine.endIndex - this._index) - 1
     );
 
-    targetLine.text.slice(0, textSliceIndex).forEach(({ fontSize, text }) => {
-      ctx.font = `500 ${fontSize}px Arial`;
-      x += measureTextWidth(ctx, text);
-    });
+    targetLine.text
+      .slice(0, textSliceIndex)
+      .forEach(({ fontSize, text, fontFamily, bold }) => {
+        const fontWeight = bold ? "700" : "500";
+
+        ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+        x += measureTextWidth(ctx, text);
+      });
 
     this.setCursor({
       x,
       y: targetLine.y,
-      fontSize: this.editor.layout.defaultFontSize,
+      fontSize: this.editor.textStyle.defaultFontSize,
       pageIndex,
     });
   }

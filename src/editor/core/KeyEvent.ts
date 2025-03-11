@@ -138,9 +138,6 @@ export class KeyEvent {
     if (this.editor.prevRowIndex !== null) this.editor.setPrevRowIndex(null);
 
     const cursorIndex = this.editor.cursor.index;
-    const fontStyle = this.editor.textStyle.getTextStyle(cursorIndex);
-
-    let fontSize;
 
     const prevTextFragment = this.editor.text.getTextFragment(cursorIndex - 1);
     const textFragment = this.editor.text.getTextFragment(cursorIndex);
@@ -155,19 +152,11 @@ export class KeyEvent {
       });
     }
 
-    if (prevTextFragment) {
-      if (fontStyle.fontSize !== prevTextFragment.fontSize) {
-        fontSize = fontStyle.fontSize;
-      } else {
-        fontSize = prevTextFragment.fontSize;
-      }
-    } else {
-      fontSize = this.editor.layout.defaultFontSize;
-    }
+    const textStyle = this.editor.textStyle.getTextStyle(cursorIndex);
 
     this.editor.text.insert(cursorIndex, 0, {
       text: "\n",
-      fontSize,
+      ...textStyle,
     });
 
     this.editor.cursor.setCursorIndex(cursorIndex + 1, false);

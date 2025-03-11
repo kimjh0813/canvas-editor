@@ -1,26 +1,41 @@
+import { ITextStyle } from "../types/text";
 import { EditorManger } from "./EditorManger";
 
-export class TextStyle {
-  bold: boolean;
-  italic: boolean;
-  underline: boolean;
-  fontSize?: number;
-  backgroundColor?: string;
-  fontFamily: string;
+import omit from "lodash/omit";
 
-  constructor(private editor: EditorManger) {
-    this.bold = false;
-    this.italic = false;
-    this.underline = false;
-    this.backgroundColor = undefined;
-    this.fontSize = undefined;
-    this.fontFamily = "Arial";
+export class TextStyle {
+  private _defaultStyle: ITextStyle;
+  private _currentStyle: ITextStyle | undefined;
+
+  constructor(private editor: EditorManger, defaultFontSize: number) {
+    this._defaultStyle = {
+      fontSize: defaultFontSize,
+      fontFamily: "Arial",
+    };
+    this._currentStyle = undefined;
+  }
+
+  public get defaultFontSize() {
+    return this._defaultStyle.fontSize;
+  }
+
+  setDefaultStyle(newStyle: Partial<ITextStyle>) {
+    this._defaultStyle = { ...this._defaultStyle, ...newStyle };
+  }
+
+  setCurrentStyle(newStyle: Partial<ITextStyle>) {
+    if (!this._currentStyle) {
+      this._currentStyle = { ...this._defaultStyle, ...newStyle };
+    } else {
+      this._currentStyle = { ...this._currentStyle, ...newStyle };
+    }
   }
 
   getTextStyle(index: number) {
-    let fontSize;
-    if (this.fontSize) {
-      fontSize = this.fontSize;
+    let textStyle: ITextStyle;
+
+    if (this._currentStyle) {
+      textStyle = this._currentStyle;
     } else {
       const prevTextFragment = this.editor.text.getTextFragment(index - 1);
       const textFragment = this.editor.text.getTextFragment(index);
@@ -29,17 +44,15 @@ export class TextStyle {
         prevTextFragment &&
         (prevTextFragment.text !== "\n" || !textFragment)
       ) {
-        fontSize = prevTextFragment.fontSize;
+        textStyle = omit(prevTextFragment, "text");
       } else if (textFragment) {
-        fontSize = textFragment.fontSize;
+        textStyle = omit(textFragment, "text");
       } else {
-        fontSize = this.editor.layout.defaultFontSize;
+        textStyle = this._defaultStyle;
       }
     }
 
-    const fontStyle = { fontSize };
-
-    return fontStyle;
+    return textStyle;
   }
 
   checkTextStyle(startIndex: number, endIndex: number) {
@@ -50,15 +63,35 @@ export class TextStyle {
 
     if (textFragments.length === 0) return;
 
-    const fontSize = textFragments[0].fontSize;
+    const baseStyle: Partial<ITextStyle> = omit(textFragments[0], "text");
 
-    for (let i = 0; i < textFragments.length; i++) {
-      if (textFragments[i].fontSize !== fontSize) {
-        return undefined;
+    for (let i = 1; i < textFragments.length; i++) {
+      const fragment = textFragments[i];
+
+      for (const key of Object.keys(baseStyle) as (keyof ITextStyle)[]) {
+        if (baseStyle[key] !== fragment[key]) {
+          baseStyle[key] = undefined;
+        }
       }
     }
 
-    return fontSize;
+    return baseStyle;
+  }
+
+  updateTextFragmentsStyle(
+    startIndex: number,
+    endIndex: number,
+    newStyle: Partial<ITextStyle>
+  ) {
+    const textFragment = this.editor.text.getTextFragment(endIndex);
+
+    if (textFragment?.text === "\n") {
+      endIndex++;
+    }
+
+    for (let i = startIndex; i < endIndex; i++) {
+      this.editor.text.setTextFragmentStyle(i, newStyle);
+    }
   }
 
   updateFontSize(startIndex: number, endIndex: number, type: "plus" | "minus") {
@@ -83,32 +116,7 @@ export class TextStyle {
     }
   }
 
-  updateTextFragmentsStyle(
-    startIndex: number,
-    endIndex: number,
-    newStyle: Partial<TextStyle>
-  ) {
-    const textFragment = this.editor.text.getTextFragment(endIndex);
-
-    if (textFragment?.text === "\n") {
-      endIndex++;
-    }
-
-    for (let i = startIndex; i < endIndex; i++) {
-      this.editor.text.setTextFragmentStyle(i, newStyle);
-    }
-  }
-
-  updateStyle(newStyle: Partial<TextStyle>) {
-    Object.assign(this, newStyle);
-  }
-
   reset() {
-    this.bold = false;
-    this.italic = false;
-    this.underline = false;
-    this.fontSize = undefined;
-    this.backgroundColor = undefined;
-    this.fontFamily = "Arial";
+    this._currentStyle = undefined;
   }
 }

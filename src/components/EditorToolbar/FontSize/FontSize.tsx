@@ -10,6 +10,7 @@ import { useEditor } from "../../../context/EditorContext";
 
 import * as S from "./styled";
 import { MinusIcon, PlusIcon } from "lucide-react";
+import { IconWrapper } from "../styled";
 
 export function FontSize() {
   const { editorManger, draw } = useEditor();
@@ -23,14 +24,14 @@ export function FontSize() {
 
   const [isVisible, setIsVisible] = useState<boolean>(false);
   const [fontSize, setFontSize] = useState<string>(
-    String(editorManger.layout.defaultFontSize)
+    String(editorManger.textStyle.defaultFontSize)
   );
 
   const changeFontSize = (size?: number) => {
     let _fontSize = size ? size : Number(fontSize);
 
     if (!isValidInteger(_fontSize) || _fontSize === 0) {
-      setFontSize(String(editorManger.layout.defaultFontSize));
+      setFontSize(String(editorManger.textStyle.defaultFontSize));
       return;
     }
 
@@ -42,12 +43,12 @@ export function FontSize() {
     const isAllSelect = editorManger.select.isAllSelect();
 
     if (isAllSelect) {
-      editorManger.layout.setDefaultFontSize(_fontSize);
+      editorManger.textStyle.setDefaultStyle({ fontSize: _fontSize });
       setFontSize(String(_fontSize));
     }
 
-    if (editorManger.cursor.index === 0 && editorManger.text.length() === 0) {
-      editorManger.layout.setDefaultFontSize(_fontSize);
+    if (editorManger.text.length() === 0) {
+      editorManger.textStyle.setDefaultStyle({ fontSize: _fontSize });
 
       setCursor((prev) => {
         if (!prev) {
@@ -74,7 +75,7 @@ export function FontSize() {
           lineMaxFontSize = _fontSize;
         }
 
-        editorManger.textStyle.updateStyle({ fontSize: _fontSize });
+        editorManger.textStyle.setCurrentStyle({ fontSize: _fontSize });
 
         setCursor((prev) => {
           if (!prev) {
@@ -127,7 +128,7 @@ export function FontSize() {
           type === "plus" ? Number(fontSize) + 1 : Number(fontSize) - 1;
 
         if (isAllSelect) {
-          editorManger.layout.setDefaultFontSize(_fontSize);
+          editorManger.textStyle.setDefaultStyle({ fontSize: _fontSize });
         }
 
         setFontSize(String(_fontSize));
@@ -171,12 +172,12 @@ export function FontSize() {
     const selectRange = editorManger.select.selectRange;
 
     if (selectRange) {
-      const _fontSize = editorManger.textStyle.checkTextStyle(
+      const cTextStyle = editorManger.textStyle.checkTextStyle(
         selectRange.start,
         selectRange.end
       );
 
-      setFontSize(_fontSize ? String(_fontSize) : "");
+      setFontSize(cTextStyle?.fontSize ? String(cTextStyle.fontSize) : "");
     } else {
       setFontSize(String(cursor.fontSize));
     }
@@ -184,9 +185,9 @@ export function FontSize() {
 
   return (
     <S.Container>
-      <S.IconWrapper onClick={(e) => handleIconClick(e, "minus")}>
+      <IconWrapper onClick={(e) => handleIconClick(e, "minus")} $size={24}>
         <MinusIcon width={16} height={16} />
-      </S.IconWrapper>
+      </IconWrapper>
       <S.RelativeContainer>
         <div ref={triggerRef} onClick={() => setIsVisible(true)}>
           <S.FontSizeInput
@@ -232,9 +233,9 @@ export function FontSize() {
           )}
         </div>
       </S.RelativeContainer>
-      <S.IconWrapper onClick={(e) => handleIconClick(e, "plus")}>
+      <IconWrapper onClick={(e) => handleIconClick(e, "plus")} $size={24}>
         <PlusIcon width={16} height={16} />
-      </S.IconWrapper>
+      </IconWrapper>
     </S.Container>
   );
 }

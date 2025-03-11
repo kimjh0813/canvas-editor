@@ -1,7 +1,15 @@
-export interface ITextFragment {
-  text: string;
+export interface ITextStyle {
+  bold?: boolean;
+  italic?: boolean;
+  underline?: boolean;
   fontSize: number;
+  backgroundColor?: string;
+  fontFamily: string;
 }
+
+export type ITextFragment = {
+  text: string;
+} & ITextStyle;
 
 export interface ILineText {
   endIndex: number;

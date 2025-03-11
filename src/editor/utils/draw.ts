@@ -74,9 +74,11 @@ function drawLine({
 
   for (let i = 0; i < lineText.text.length; i++) {
     const index = lineText.endIndex - lineText.text.length + 1 + i;
-    const { fontSize, text } = lineText.text[i];
+    const { fontSize, bold, fontFamily, text } = lineText.text[i];
 
-    ctx.font = `500 ${fontSize}px Arial`;
+    const fontWeight = bold ? "700" : "500";
+
+    ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
 
     const textWidth = measureTextWidth(ctx, text);
     const maxFontSize = lineText.maxFontSize;

@@ -11,16 +11,16 @@
 </p>
 
 ## Introduction
+
 - This canvas-editor is a inspired by the design and features of Google Docs.
 - This project is a text editor built using only the canvas element.
 
 ## Features
 
-- Text Styling & Formatting (FontSize)
-- Select (Arrow select, All select)
+- Text Styling & Formatting (FontSize, FontBold)
+- Select (Arrow select, All select, drag select)
 - Editor Configuration (Editor Margin, Editor Size)
 - Pagination
-
 
 ## Install
 

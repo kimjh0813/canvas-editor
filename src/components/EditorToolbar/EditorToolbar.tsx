@@ -1,10 +1,10 @@
-import { EditorManger } from "../../editor/core/EditorManger";
 import * as S from "./styled";
 import { cursorState } from "../../recoil";
 import { useCallback } from "react";
 import { useSetRecoilState } from "recoil";
 import { FontSize } from "./FontSize";
 import { useEditor } from "../../context/EditorContext";
+import { FontBold } from "./FontBold";
 
 export function EditorToolbar() {
   const { editorManger } = useEditor();
@@ -24,7 +24,11 @@ export function EditorToolbar() {
   return (
     <S.EditorToolbarContainer onClick={toolbarClick}>
       <S.EditorControlWrapper>
+        <S.VerticalDivider />
         <FontSize />
+        <S.VerticalDivider />
+        <FontBold />
+        <S.VerticalDivider />
       </S.EditorControlWrapper>
     </S.EditorToolbarContainer>
   );

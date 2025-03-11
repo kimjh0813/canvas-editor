@@ -6,20 +6,6 @@ export const Container = styled.div`
   gap: 4px;
 `;
 
-export const IconWrapper = styled.div`
-  cursor: pointer;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 3px;
-
-  &:hover {
-    background-color: #e0e4ea;
-  }
-`;
-
 export const RelativeContainer = styled.div`
   position: relative;
 `;

@@ -36,14 +36,9 @@ export class EditorManger {
     this.text = new TextManager(this);
     this.cursor = new Cursor(this, setCursor);
     this.select = new SelectRange(this);
-    this.layout = new EditorLayout(
-      defaultFontSize,
-      marginX,
-      marginY,
-      setPageSize
-    );
+    this.layout = new EditorLayout(marginX, marginY, setPageSize);
     this.keyEvent = new KeyEvent(this);
-    this.textStyle = new TextStyle(this);
+    this.textStyle = new TextStyle(this, defaultFontSize);
     this.canvasMouse = new CanvasMouseManager(this, scrollContainerRef);
   }
 
@@ -101,9 +96,12 @@ export class EditorManger {
 
     for (let i = 0; i < textFragments.length; i++) {
       const _text = textFragments[i];
-      const { text, fontSize } = _text;
+      const { fontSize, bold, fontFamily, text } = _text;
 
-      ctx.font = `500 ${fontSize}px Arial`;
+      const fontWeight = bold ? "700" : "500";
+
+      ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+
       const textWidth = measureTextWidth(ctx, text);
       const currentWidth = x + marginX + textWidth;
 

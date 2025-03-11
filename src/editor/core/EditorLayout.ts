@@ -2,8 +2,6 @@ export class EditorLayout {
   private _canvasWidth: number;
   private _canvasHeight: number;
 
-  private _defaultFontSize: number;
-
   private _marginX: number;
   private _marginY: number;
 
@@ -11,15 +9,12 @@ export class EditorLayout {
   private _setPageSize: (pageSize: number) => void;
 
   constructor(
-    defaultFontSize: number,
     marginX: number,
     marginY: number,
     setPageSize: (pageSize: number) => void
   ) {
     this._canvasWidth = 794;
     this._canvasHeight = 1123;
-
-    this._defaultFontSize = defaultFontSize;
 
     this._marginX = marginX;
     this._marginY = marginY;
@@ -36,10 +31,6 @@ export class EditorLayout {
     return this._canvasHeight;
   }
 
-  public get defaultFontSize() {
-    return this._defaultFontSize;
-  }
-
   public get marginX() {
     return this._marginX;
   }
@@ -50,10 +41,6 @@ export class EditorLayout {
 
   public get pageSize() {
     return this._pageSize;
-  }
-
-  setDefaultFontSize(fontSize: number) {
-    this._defaultFontSize = fontSize;
   }
 
   setPageSize(page: number) {

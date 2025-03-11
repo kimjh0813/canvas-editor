@@ -56,11 +56,13 @@ export class CanvasMouseManager {
     let cursorIndex: number | null = null;
 
     for (let i = 0; i < closestLine.text.length; i++) {
-      const { text, fontSize } = closestLine.text[i];
-
       const ctx = document.createElement("canvas").getContext("2d");
       if (!ctx) return;
-      ctx.font = `500 ${fontSize}px Arial`;
+
+      const { fontSize, bold, fontFamily, text } = closestLine.text[i];
+      const fontWeight = bold ? "700" : "500";
+
+      ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
 
       const textWidth = measureTextWidth(ctx, text);
       const charMid = x + textWidth / 2;
