@@ -166,8 +166,7 @@ export class KeyEvent {
     const cursorIndex = this.editor.cursor.index;
 
     if (cursorIndex === 0) {
-      if (!event.shiftKey) this.editor.select.clearSelectedRange();
-
+      if (!event.shiftKey) this.editor.select.clearSelectedRange("start");
       return;
     }
 
@@ -248,7 +247,7 @@ export class KeyEvent {
     const cursorIndex = this.editor.cursor.index;
 
     if (cursorIndex >= this.editor.text.length()) {
-      if (!event.shiftKey) this.editor.select.clearSelectedRange();
+      if (!event.shiftKey) this.editor.select.clearSelectedRange("end");
 
       return;
     }
@@ -337,7 +336,7 @@ export class KeyEvent {
     const cursorIndex = this.editor.cursor.index;
 
     if (cursorIndex === 0) {
-      if (!event.shiftKey) this.editor.select.clearSelectedRange();
+      if (!event.shiftKey) this.editor.select.clearSelectedRange("start");
       return;
     }
 
@@ -401,7 +400,7 @@ export class KeyEvent {
     const cursorIndex = this.editor.cursor.index;
 
     if (cursorIndex >= this.editor.text.length()) {
-      if (!event.shiftKey) this.editor.select.clearSelectedRange();
+      if (!event.shiftKey) this.editor.select.clearSelectedRange("end");
       return;
     }
 
