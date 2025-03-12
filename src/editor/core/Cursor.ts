@@ -1,6 +1,7 @@
 import { ICursor } from "../../recoil";
 import { ILineText } from "../types/text";
 import { createCanvasElement, measureTextWidth } from "../utils/ctx";
+import { getFontStyle } from "../utils/text";
 import { EditorManger } from "./EditorManger";
 
 export class Cursor {
@@ -22,20 +23,20 @@ export class Cursor {
   }
 
   setCursor(
-    cursor: Omit<ICursor, "isFocusCanvas" | "index" | "lineMaxFontSize">,
-    maxFontSize?: number
+    cursor: Omit<
+      ICursor,
+      "isFocusCanvas" | "index" | "lineMaxFontSize" | "fontSize"
+    >
   ) {
     this.editor.textStyle.reset();
 
     let lineMaxFontSize;
 
-    if (maxFontSize) {
-      lineMaxFontSize = maxFontSize;
-    } else if (this.editor.text.length() === 0) {
+    if (this.editor.text.length() === 0) {
       lineMaxFontSize = this.editor.textStyle.defaultFontSize;
     } else {
       lineMaxFontSize =
-        this.editor.getLineText(this._index)?.maxFontSize ??
+        this.editor.text.getLineText(this._index)?.maxFontSize ??
         this.editor.textStyle.defaultFontSize;
     }
 
@@ -50,27 +51,18 @@ export class Cursor {
     });
   }
 
-  resetCursorPosition(pageIndex?: number) {
-    this.setCursor({
-      x: this.editor.layout.marginX,
-      y: this.editor.layout.marginY,
-      fontSize: this.editor.textStyle.defaultFontSize,
-      pageIndex: pageIndex ?? 0,
-    });
-  }
-
   setCursorIndex(cursorIndex: number, shouldUpdatePosition: boolean = true) {
     if (cursorIndex < 0 || this.editor.text.length() < cursorIndex) return;
 
     this._index = cursorIndex;
 
-    //just update index function because run setCursor from draw function
+    //just update index function because run setCursor from getCanvasData function
     if (!shouldUpdatePosition) return;
 
     const ctx = createCanvasElement();
     if (!ctx) return;
 
-    const lineTextArr = this.editor.getLineTextArray();
+    const lineTextArr = this.editor.text.getLineTextArray();
 
     let targetLine: ILineText | null = null;
     let pageIndex = 0;
@@ -101,20 +93,23 @@ export class Cursor {
       targetLine.text.length - (targetLine.endIndex - this._index) - 1
     );
 
-    targetLine.text
-      .slice(0, textSliceIndex)
-      .forEach(({ fontSize, text, fontFamily, bold }) => {
-        const fontWeight = bold ? "700" : "500";
-
-        ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
-        x += measureTextWidth(ctx, text);
-      });
+    targetLine.text.slice(0, textSliceIndex).forEach((textFragment) => {
+      ctx.font = getFontStyle(textFragment);
+      x += measureTextWidth(ctx, textFragment.text);
+    });
 
     this.setCursor({
       x,
       y: targetLine.y,
-      fontSize: this.editor.textStyle.defaultFontSize,
       pageIndex,
+    });
+  }
+
+  resetCursorToPage(pageIndex?: number) {
+    this.setCursor({
+      x: this.editor.layout.marginX,
+      y: this.editor.layout.marginY,
+      pageIndex: pageIndex ?? 0,
     });
   }
 }

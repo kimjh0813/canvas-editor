@@ -26,12 +26,21 @@ export function Editor() {
 
   const [pageSize, setPageSize] = useState<number>(0);
 
+  const draw = useCallback((shouldUpdateText: boolean) => {
+    drawText({
+      editorManger,
+      canvasRefs,
+      shouldUpdateText,
+    });
+  }, []);
+
   const editorManger = useMemo(() => {
     const handler = new EditorManger(
       defaultFontSize,
       marginX,
       marginY,
       scrollContainerRef,
+      draw,
       setCursor,
       setPageSize
     );
@@ -42,15 +51,7 @@ export function Editor() {
   }, []);
 
   useEffect(() => {
-    editorManger.cursor.resetCursorPosition();
-  }, []);
-
-  const draw = useCallback((shouldUpdateText: boolean) => {
-    drawText({
-      editorManger,
-      canvasRefs,
-      shouldUpdateText,
-    });
+    editorManger.cursor.resetCursorToPage();
   }, []);
 
   return (

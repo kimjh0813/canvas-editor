@@ -18,10 +18,8 @@ export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
 
   const isCursor = useRecoilValue(isCursorSelector);
 
-  const { handleMouseDown, handleMouseMove, handleMouseUp } = useMouseHandlers(
-    editorManger,
-    draw
-  );
+  const { handleMouseDown, handleMouseMove, handleMouseUp } =
+    useMouseHandlers(editorManger);
 
   useEffect(() => {
     if (isCursor) {
@@ -39,9 +37,7 @@ export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
     if (!isCursor) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      const shouldUpdateText = editorManger.keyEvent.keyDown(event);
-
-      draw(shouldUpdateText);
+      editorManger.keyEvent.keyDown(event);
     };
 
     window.addEventListener("keydown", handleKeyDown);

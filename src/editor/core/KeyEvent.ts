@@ -9,7 +9,7 @@ export class KeyEvent {
 
   keyDown(event: KeyboardEvent) {
     // for change textArr
-    let result = false;
+    let shouldUpdateText = false;
 
     if (!functionKey.includes(event.key)) event.preventDefault();
 
@@ -24,24 +24,22 @@ export class KeyEvent {
             location.reload();
             break;
           default:
-            break;
+            return;
         }
       } else {
-        result = true;
+        shouldUpdateText = true;
         this.editor.text.addText(event);
       }
-
-      return result;
     } else {
       switch (event.key) {
         case "Backspace":
           this.backSpace(event);
-          result = true;
+          shouldUpdateText = true;
           break;
         case "Enter":
           this.enter();
           this.editor.text.resetKoreanComposing();
-          result = true;
+          shouldUpdateText = true;
           break;
         case "ArrowDown":
           this.arrowDown(event);
@@ -61,11 +59,11 @@ export class KeyEvent {
           break;
         default:
           console.log(`Unhandled special key: ${event.key}`);
-          break;
+          return;
       }
-
-      return result;
     }
+
+    this.editor.draw(shouldUpdateText);
   }
 
   backSpace(event: KeyboardEvent) {
@@ -82,7 +80,7 @@ export class KeyEvent {
     if (isCommandKey(event)) {
       this.editor.text.resetKoreanComposing();
 
-      const lineTextArr = this.editor.getLineTextArray().flat();
+      const lineTextArr = this.editor.text.getLineTextArray().flat();
 
       let startIndex;
 
@@ -98,10 +96,6 @@ export class KeyEvent {
       if (startIndex !== undefined) {
         this.editor.text.remove(startIndex, cursorIndex - startIndex);
         this.editor.cursor.setCursorIndex(startIndex, false);
-      }
-
-      if (this.editor.text.length() === 0) {
-        this.editor.cursor.resetCursorPosition();
       }
     } else {
       if (this.editor.text.isKoreanComposing) {
@@ -126,9 +120,6 @@ export class KeyEvent {
       } else {
         this.editor.text.deleteText();
       }
-
-      if (this.editor.cursor.index === 0)
-        this.editor.cursor.resetCursorPosition();
     }
   }
 
@@ -165,48 +156,16 @@ export class KeyEvent {
   arrowUp(event: KeyboardEvent) {
     const cursorIndex = this.editor.cursor.index;
 
-    if (cursorIndex === 0) {
-      if (!event.shiftKey) this.editor.select.clearSelectedRange("start");
-      return;
-    }
+    const isEnd = this.editor.select.arrowClearSelectRange(
+      event.shiftKey,
+      "start"
+    );
+    if (isEnd) return;
 
-    let targetIndex = 0;
-
-    const lineTextArr = this.editor.getLineTextArray().flat();
-
-    if (isCommandKey(event)) {
-      targetIndex = 0;
-    } else {
-      for (let i = 0; i < lineTextArr.length; i++) {
-        const lineText = lineTextArr[i];
-
-        // endIndex가 cursorIndex보다 크거나 혹은 마지막 줄일때(가장 끝에 커서가 잡혀있을때는 글자가 있는공간이 아니라 글자를 작성할 공간 인덱스에 있음)
-        if (lineText.endIndex >= cursorIndex || i === lineTextArr.length - 1) {
-          if (i === 0) {
-            targetIndex = 0;
-          } else {
-            const targetLineText = lineTextArr[i - 1];
-
-            if (this.editor.prevRowIndex === null)
-              this.editor.setPrevRowIndex(
-                cursorIndex - (targetLineText.endIndex + 1)
-              );
-
-            const prevRowIndex = this.editor.prevRowIndex ?? 0;
-
-            const targetRowStartIndex =
-              targetLineText.endIndex - targetLineText.text.length + 1;
-
-            targetIndex = targetRowStartIndex + prevRowIndex;
-
-            if (targetLineText.endIndex < targetIndex) {
-              targetIndex = targetLineText.endIndex;
-            }
-          }
-          break;
-        }
-      }
-    }
+    const targetIndex = this.editor.text.getRelativeLineTargetIndex(
+      isCommandKey(event),
+      "up"
+    );
 
     let startIndex;
     let endIndex;
@@ -246,56 +205,16 @@ export class KeyEvent {
 
     const cursorIndex = this.editor.cursor.index;
 
-    if (cursorIndex >= this.editor.text.length()) {
-      if (!event.shiftKey) this.editor.select.clearSelectedRange("end");
+    const isEnd = this.editor.select.arrowClearSelectRange(
+      event.shiftKey,
+      "end"
+    );
+    if (isEnd) return;
 
-      return;
-    }
-
-    let targetIndex = 0;
-
-    if (isCommandKey(event)) {
-      targetIndex = this.editor.text.length();
-    } else {
-      const lineTextArr = this.editor.getLineTextArray().flat();
-
-      for (let i = 0; i < lineTextArr.length; i++) {
-        const lineText = lineTextArr[i];
-
-        if (lineText.endIndex >= cursorIndex) {
-          if (i === lineTextArr.length - 1) {
-            targetIndex = this.editor.text.length();
-          } else {
-            const targetLineText = lineTextArr[i + 1];
-
-            if (this.editor.prevRowIndex === null)
-              this.editor.setPrevRowIndex(
-                cursorIndex - (lineText.endIndex - lineText.text.length + 1)
-              );
-
-            const prevRowIndex = this.editor.prevRowIndex ?? 0;
-
-            const targetRowStartIndex =
-              targetLineText.endIndex - targetLineText.text.length + 1;
-
-            targetIndex = targetRowStartIndex + prevRowIndex;
-
-            if (targetLineText.endIndex < targetIndex) {
-              if (
-                i === lineTextArr.length - 2 &&
-                targetIndex >= this.editor.text.length()
-              ) {
-                targetIndex = this.editor.text.length();
-              } else {
-                targetIndex = targetLineText.endIndex;
-              }
-            }
-          }
-
-          break;
-        }
-      }
-    }
+    const targetIndex = this.editor.text.getRelativeLineTargetIndex(
+      isCommandKey(event),
+      "down"
+    );
 
     let startIndex;
     let endIndex;
@@ -335,32 +254,16 @@ export class KeyEvent {
 
     const cursorIndex = this.editor.cursor.index;
 
-    if (cursorIndex === 0) {
-      if (!event.shiftKey) this.editor.select.clearSelectedRange("start");
-      return;
-    }
+    const isEnd = this.editor.select.arrowClearSelectRange(
+      event.shiftKey,
+      "start"
+    );
+    if (isEnd) return;
 
-    let targetIndex = 0;
-
-    if (isCommandKey(event)) {
-      const lineTextArr = this.editor.getLineTextArray().flat();
-
-      for (let i = 0; i < lineTextArr.length; i++) {
-        const lineText = lineTextArr[i];
-
-        if (lineText.endIndex >= cursorIndex || i === lineTextArr.length - 1) {
-          if (i === 0) {
-            targetIndex = 0;
-          } else {
-            targetIndex = lineText.endIndex - lineText.text.length + 1;
-          }
-
-          break;
-        }
-      }
-    } else {
-      targetIndex = cursorIndex - 1;
-    }
+    const targetIndex = this.editor.text.getCurrentLineTargetIndex(
+      isCommandKey(event),
+      "left"
+    );
 
     if (targetIndex === cursorIndex) return;
 
@@ -399,31 +302,16 @@ export class KeyEvent {
 
     const cursorIndex = this.editor.cursor.index;
 
-    if (cursorIndex >= this.editor.text.length()) {
-      if (!event.shiftKey) this.editor.select.clearSelectedRange("end");
-      return;
-    }
+    const isEnd = this.editor.select.arrowClearSelectRange(
+      event.shiftKey,
+      "end"
+    );
+    if (isEnd) return;
 
-    let targetIndex = 0;
-
-    if (isCommandKey(event)) {
-      const lineTextArr = this.editor.getLineTextArray().flat();
-
-      for (let i = 0; i < lineTextArr.length; i++) {
-        const lineText = lineTextArr[i];
-
-        if (lineText.endIndex >= cursorIndex) {
-          targetIndex =
-            i === lineTextArr.length - 1
-              ? lineText.endIndex + 1
-              : lineText.endIndex;
-
-          break;
-        }
-      }
-    } else {
-      targetIndex = cursorIndex + 1;
-    }
+    const targetIndex = this.editor.text.getCurrentLineTargetIndex(
+      isCommandKey(event),
+      "right"
+    );
 
     if (targetIndex === cursorIndex) return;
 
@@ -458,10 +346,11 @@ export class KeyEvent {
   };
 
   selectAll() {
-    if (this.editor.text.length() === 0) return;
+    const textLength = this.editor.text.length();
 
-    this.editor.select.updateSelectedRange(0, this.editor.text.length());
+    if (textLength === 0) return;
 
-    this.editor.cursor.setCursorIndex(this.editor.text.length());
+    this.editor.select.updateSelectedRange(0, textLength);
+    this.editor.cursor.setCursorIndex(textLength);
   }
 }

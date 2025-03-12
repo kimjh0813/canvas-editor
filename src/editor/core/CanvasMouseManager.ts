@@ -1,6 +1,7 @@
 import { ILineText } from "../types/text";
 import { measureTextWidth } from "../utils/ctx";
 import { getPageInfoFromY } from "../utils/mouse";
+import { getFontStyle } from "../utils/text";
 import { EditorManger } from "./EditorManger";
 
 const scrollBarWidth = 16;
@@ -58,13 +59,11 @@ export class CanvasMouseManager {
     for (let i = 0; i < closestLine.text.length; i++) {
       const ctx = document.createElement("canvas").getContext("2d");
       if (!ctx) return;
+      const textFragment = closestLine.text[i];
 
-      const { fontSize, bold, fontFamily, text } = closestLine.text[i];
-      const fontWeight = bold ? "700" : "500";
+      ctx.font = getFontStyle(textFragment);
 
-      ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
-
-      const textWidth = measureTextWidth(ctx, text);
+      const textWidth = measureTextWidth(ctx, textFragment.text);
       const charMid = x + textWidth / 2;
 
       if (mouseX >= x && mouseX <= x + textWidth) {
@@ -102,10 +101,10 @@ export class CanvasMouseManager {
 
     if (this.editor.prevRowIndex !== null) this.editor.setPrevRowIndex(null);
 
-    const lineTextArr = this.editor.lineTexts.get(pageIndex);
+    const lineTextArr = this.editor.text.lineTexts.get(pageIndex);
 
     if (!lineTextArr || lineTextArr.length === 0) {
-      this.editor.cursor.resetCursorPosition(pageIndex);
+      this.editor.cursor.resetCursorToPage(pageIndex);
       return;
     }
 
@@ -115,10 +114,12 @@ export class CanvasMouseManager {
 
     this._downIndex = targetIndex;
     this.editor.cursor.setCursorIndex(targetIndex);
+
+    this.editor.draw(false);
   }
 
   move(e: MouseEvent) {
-    if (!this._isDragging || this._downIndex === null) return false;
+    if (!this._isDragging || this._downIndex === null) return;
 
     const scrollContainer = this._scrollContainerRef.current;
 
@@ -157,7 +158,7 @@ export class CanvasMouseManager {
       const pageInfo = getPageInfoFromY(mouseY, canvasHeight, pageSize);
       if (pageInfo === null) return;
 
-      const lineTextArr = this.editor.lineTexts.get(pageInfo.pageIndex);
+      const lineTextArr = this.editor.text.lineTexts.get(pageInfo.pageIndex);
 
       if (!lineTextArr) return;
 
@@ -174,7 +175,7 @@ export class CanvasMouseManager {
     this.editor.select.updateSelectedRange(startIndex, endIndex);
     this.editor.cursor.setCursorIndex(targetIndex);
 
-    return true;
+    this.editor.draw(false);
   }
 
   up() {

@@ -2,10 +2,7 @@ import { useCallback } from "react";
 import { EditorManger } from "../editor/core/EditorManger";
 import { throttle } from "lodash";
 
-export function useMouseHandlers(
-  editorManger: EditorManger,
-  draw: (shouldUpdateText: boolean) => void
-) {
+export function useMouseHandlers(editorManger: EditorManger) {
   const handleMouseDown = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>, index: number) => {
       editorManger.canvasMouse.down(
@@ -13,18 +10,14 @@ export function useMouseHandlers(
         e.nativeEvent.offsetY,
         index
       );
-
-      draw(false);
     },
-    [editorManger, draw]
+    [editorManger]
   );
 
   const handleMouseMove = useCallback(
     throttle(
       (e: MouseEvent) => {
-        const isDraw = editorManger.canvasMouse.move(e);
-
-        isDraw && draw(false);
+        editorManger.canvasMouse.move(e);
       },
       30,
       { trailing: true }

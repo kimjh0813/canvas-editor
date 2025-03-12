@@ -37,6 +37,21 @@ export class SelectRange {
     return true;
   }
 
+  arrowClearSelectRange(shiftKey: boolean, type: "start" | "end") {
+    const checkCursorIndex =
+      type === "start"
+        ? this.editor.cursor.index === 0
+        : this.editor.cursor.index >= this.editor.text.length();
+
+    if (checkCursorIndex) {
+      if (!shiftKey) this.clearSelectedRange(type);
+
+      return true;
+    }
+
+    return false;
+  }
+
   updateSelectedRange(start?: number, end?: number) {
     if (this._selectRange?.start === start && this._selectRange?.end === end)
       return;
@@ -62,9 +77,6 @@ export class SelectRange {
       endIndex = cursorIndex;
     }
 
-    // console.log(start, end);
-    // console.log(startIndex, endIndex);
-
     if (startIndex === endIndex) {
       this._selectRange = null;
       return;
@@ -88,7 +100,7 @@ export class SelectRange {
     this.editor.cursor.setCursorIndex(start, false);
 
     if (this.editor.text.length() === 0) {
-      this.editor.cursor.resetCursorPosition();
+      this.editor.cursor.resetCursorToPage();
     }
 
     return true;

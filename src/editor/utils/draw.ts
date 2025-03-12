@@ -3,6 +3,7 @@ import { EditorManger } from "../core/EditorManger";
 import { ISelectRange } from "../types/selectRange";
 import { ILineText } from "../types/text";
 import { measureTextWidth } from "./ctx";
+import { getFontStyle } from "./text";
 
 interface DrawTextParams {
   editorManger: EditorManger;
@@ -74,13 +75,11 @@ function drawLine({
 
   for (let i = 0; i < lineText.text.length; i++) {
     const index = lineText.endIndex - lineText.text.length + 1 + i;
-    const { fontSize, bold, fontFamily, text } = lineText.text[i];
+    const textFragment = lineText.text[i];
 
-    const fontWeight = bold ? "700" : "500";
+    ctx.font = getFontStyle(textFragment);
 
-    ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
-
-    const textWidth = measureTextWidth(ctx, text);
+    const textWidth = measureTextWidth(ctx, textFragment.text);
     const maxFontSize = lineText.maxFontSize;
 
     // ctx.fillStyle = "green";
@@ -94,7 +93,7 @@ function drawLine({
 
     //draw text
     ctx.fillStyle = "black";
-    ctx.fillText(text, lineX, lineText.y + maxFontSize);
+    ctx.fillText(textFragment.text, lineX, lineText.y + maxFontSize);
 
     //draw isComposing
     if (composingIndex === index) {

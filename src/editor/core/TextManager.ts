@@ -1,26 +1,155 @@
 import Hangul from "hangul-js";
 
-import { ITextFragment } from "../types/text";
+import { ILineText, ITextFragment } from "../types/text";
 
 import { EditorManger } from "./EditorManger";
 import { isKorean } from "../utils/key";
 
 export class TextManager {
   private _textFragments: ITextFragment[];
+  private _lineTexts: Map<number, ILineText[]>;
 
   private _isKoreanComposing: boolean;
 
   constructor(private editor: EditorManger) {
     this._textFragments = [];
     this._isKoreanComposing = false;
+    this._lineTexts = new Map();
   }
 
   public get textFragments() {
     return this._textFragments;
   }
 
+  public get lineTexts() {
+    return this._lineTexts;
+  }
+
   public get isKoreanComposing() {
     return this._isKoreanComposing;
+  }
+
+  getLineTextArray() {
+    return Array.from(this._lineTexts.values());
+  }
+
+  getLineText(index: number) {
+    const lineTextArr = this.getLineTextArray().flat();
+
+    for (let i = 0; i < lineTextArr.length; i++) {
+      const lineText = lineTextArr[i];
+
+      if (lineText.endIndex >= index || i === lineTextArr.length - 1) {
+        return lineText;
+      }
+    }
+  }
+
+  getCurrentLineTargetIndex(isCommandKey: boolean, type: "left" | "right") {
+    const isLeft = type === "left";
+    const cursorIndex = this.editor.cursor.index;
+
+    if (!isCommandKey) {
+      return isLeft ? cursorIndex - 1 : cursorIndex + 1;
+    }
+
+    let targetIndex = 0;
+
+    const lineTextArr = this.editor.text.getLineTextArray().flat();
+
+    for (let i = 0; i < lineTextArr.length; i++) {
+      const lineText = lineTextArr[i];
+
+      const isCursorInLine = isLeft
+        ? lineText.endIndex >= cursorIndex || i === lineTextArr.length - 1
+        : lineText.endIndex >= cursorIndex;
+
+      if (isCursorInLine) {
+        const isLastLine = isLeft ? i === 0 : i === lineTextArr.length - 1;
+
+        if (isLastLine) {
+          targetIndex = isLeft ? 0 : lineText.endIndex + 1;
+        } else {
+          targetIndex = isLeft
+            ? lineText.endIndex - lineText.text.length + 1
+            : lineText.endIndex;
+        }
+
+        break;
+      }
+    }
+
+    return targetIndex;
+  }
+
+  getRelativeLineTargetIndex(isCommandKey: boolean, type: "up" | "down") {
+    const isUp = type === "up";
+    const textLength = this.editor.text.length();
+
+    if (isCommandKey) {
+      return isUp ? 0 : textLength;
+    }
+
+    const cursorIndex = this.editor.cursor.index;
+    const lineTextArr = this.getLineTextArray().flat();
+
+    let targetIndex: number = 0;
+    let targetLineText: ILineText | undefined;
+
+    for (let i = 0; i < lineTextArr.length; i++) {
+      const lineText = lineTextArr[i];
+
+      const isCursorInLine = isUp
+        ? lineText.endIndex >= cursorIndex || i === lineTextArr.length - 1
+        : lineText.endIndex >= cursorIndex;
+
+      if (isCursorInLine) {
+        const isLastLine = isUp ? i === 0 : i === lineTextArr.length - 1;
+
+        if (isLastLine) {
+          targetIndex = isUp ? 0 : textLength;
+        } else {
+          targetLineText = isUp ? lineTextArr[i - 1] : lineTextArr[i + 1];
+
+          if (this.editor.prevRowIndex === null) {
+            const prevRow = isUp
+              ? cursorIndex - (targetLineText.endIndex + 1)
+              : cursorIndex - (lineText.endIndex - lineText.text.length + 1);
+
+            this.editor.setPrevRowIndex(prevRow);
+          }
+
+          const prevRowIndex = this.editor.prevRowIndex ?? 0;
+
+          const targetRowStartIndex =
+            targetLineText.endIndex - targetLineText.text.length + 1;
+
+          targetIndex = targetRowStartIndex + prevRowIndex;
+
+          if (isUp) {
+            if (targetLineText.endIndex < targetIndex) {
+              targetIndex = targetLineText.endIndex;
+            }
+          } else {
+            if (targetLineText.endIndex < targetIndex) {
+              if (i === lineTextArr.length - 2 && targetIndex >= textLength) {
+                targetIndex = textLength;
+              } else {
+                targetIndex = targetLineText.endIndex;
+              }
+            }
+          }
+        }
+
+        break;
+      }
+    }
+
+    return targetIndex;
+  }
+
+  resetLineTexts() {
+    this._lineTexts = new Map();
   }
 
   length() {
@@ -119,7 +248,7 @@ export class TextManager {
     this.remove(cursorIndex - 1, 1);
 
     if (this._textFragments.length === 0) {
-      this.editor.cursor.resetCursorPosition();
+      this.editor.cursor.resetCursorToPage();
     }
 
     this.editor.cursor.setCursorIndex(cursorIndex - 1, false);

@@ -67,7 +67,9 @@ export function FontSize() {
       if (editorManger.select.selectRange === null) {
         let lineMaxFontSize;
 
-        const lineText = editorManger.getLineText(editorManger.cursor.index);
+        const lineText = editorManger.text.getLineText(
+          editorManger.cursor.index
+        );
 
         if (lineText && lineText.text.length > 0) {
           lineMaxFontSize = lineText.maxFontSize;
