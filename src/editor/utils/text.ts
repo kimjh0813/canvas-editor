@@ -5,5 +5,7 @@ export function getFontStyle(textFragment: ITextFragment) {
 
   const fontWeight = bold ? "700" : "500";
 
-  return `${fontWeight} ${fontSize}px ${fontFamily}`;
+  const italicStyle = italic ? "italic" : "normal";
+
+  return `${italicStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
 }

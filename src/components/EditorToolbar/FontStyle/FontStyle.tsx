@@ -7,10 +7,12 @@ import { cursorState } from "../../../recoil";
 import { useEffect, useState } from "react";
 import { Size } from "./Size";
 import { isEqual } from "lodash";
+import { Italic } from "./Italic";
 
 export interface CursorStyle {
   fontSize: string;
   isBold: boolean;
+  isItalic: boolean;
 }
 
 export function FontStyle() {
@@ -21,6 +23,7 @@ export function FontStyle() {
   const [cursorStyle, setCursorStyle] = useState<CursorStyle>({
     fontSize: "",
     isBold: false,
+    isItalic: false,
   });
 
   useEffect(() => {
@@ -39,6 +42,7 @@ export function FontStyle() {
       newCursorStyle = {
         fontSize: cTextStyle?.fontSize ? String(cTextStyle.fontSize) : "",
         isBold: !!cTextStyle?.bold,
+        isItalic: !!cTextStyle?.italic,
       };
     } else {
       const fontStyle = editorManger.textStyle.getTextStyle(cursor.index);
@@ -46,6 +50,7 @@ export function FontStyle() {
       newCursorStyle = {
         fontSize: String(fontStyle.fontSize || ""),
         isBold: !!fontStyle.bold,
+        isItalic: !!fontStyle.italic,
       };
     }
 
@@ -61,6 +66,7 @@ export function FontStyle() {
       <VerticalDivider />
       <Bold isBold={cursorStyle.isBold} setCursorStyle={setCursorStyle} />
       <VerticalDivider />
+      <Italic isItalic={cursorStyle.isItalic} setCursorStyle={setCursorStyle} />
       <VerticalDivider />
     </>
   );

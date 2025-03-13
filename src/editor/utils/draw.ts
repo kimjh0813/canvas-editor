@@ -1,4 +1,3 @@
-import { FontSize } from "../../components/EditorToolbar/FontStyle/FontSize";
 import { EditorManger } from "../core/EditorManger";
 import { ISelectRange } from "../types/selectRange";
 import { ILineText } from "../types/text";
@@ -72,24 +71,35 @@ function drawLine({
   composingIndex,
 }: DrawLineParams) {
   let lineX = lineText.x;
+  const maxFontSize = lineText.maxFontSize;
 
   for (let i = 0; i < lineText.text.length; i++) {
     const index = lineText.endIndex - lineText.text.length + 1 + i;
     const textFragment = lineText.text[i];
 
     ctx.font = getFontStyle(textFragment);
-
     const textWidth = measureTextWidth(ctx, textFragment.text);
-    const maxFontSize = lineText.maxFontSize;
 
-    // ctx.fillStyle = "green";
-    // ctx.fillRect(lineX, lineText.y, textWidth, textHeight * 1.48);
+    // ctx.fillStyle = "yellow";
+    // ctx.fillRect(lineX, lineText.y, textWidth, maxFontSize * 1.21);
 
     //draw select
     if (selectRange && index >= selectRange.start && index < selectRange.end) {
-      ctx.fillStyle = "#B2CEF9";
+      ctx.fillStyle = "rgba(140, 174, 241, 0.5)";
       ctx.fillRect(lineX, lineText.y, textWidth, maxFontSize * 1.48);
     }
+
+    lineX += textWidth;
+  }
+
+  lineX = lineText.x;
+
+  for (let i = 0; i < lineText.text.length; i++) {
+    const index = lineText.endIndex - lineText.text.length + 1 + i;
+    const textFragment = lineText.text[i];
+
+    ctx.font = getFontStyle(textFragment);
+    const textWidth = measureTextWidth(ctx, textFragment.text);
 
     //draw text
     ctx.fillStyle = "black";
