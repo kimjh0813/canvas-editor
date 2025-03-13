@@ -2,7 +2,7 @@ import { useRecoilValue } from "recoil";
 import { cursorState } from "../../recoil";
 
 import * as S from "./styled";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useEditor } from "../../context/EditorContext";
 
 interface CursorProps {
@@ -15,16 +15,9 @@ export function Cursor({ scrollContainerRef }: CursorProps) {
   const cursor = useRecoilValue(cursorState);
 
   const [isBlinking, setIsBlinking] = useState<boolean>(false);
-  const [isVisible, setIsVisible] = useState<boolean>(false);
 
-  useEffect(() => {
-    if (!cursor) return;
-
-    if (editorManger.select.selectRange) {
-      setIsVisible(false);
-    } else {
-      setIsVisible(true);
-    }
+  const isVisible = useMemo(() => {
+    return cursor && !editorManger.select.selectRange;
   }, [cursor]);
 
   useEffect(() => {
