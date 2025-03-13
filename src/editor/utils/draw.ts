@@ -105,10 +105,18 @@ function drawLine({
     ctx.fillStyle = "black";
     ctx.fillText(textFragment.text, lineX, lineText.y + maxFontSize);
 
+    const isUnderLine = textFragment.underline && textFragment.text !== "\n";
+
     //draw isComposing
-    if (composingIndex === index) {
+    if (composingIndex === index || isUnderLine) {
       const underlineY = lineText.y + maxFontSize * 0.1 + maxFontSize;
-      drawTextUnderLine({ ctx, underlineY, lineX, textWidth });
+      drawTextUnderLine({
+        ctx,
+        underlineY,
+        lineX,
+        textWidth,
+        fontSize: textFragment.fontSize,
+      });
     }
 
     lineX += textWidth;
@@ -120,17 +128,19 @@ interface DrawTextUnderLine {
   underlineY: number;
   lineX: number;
   textWidth: number;
+  fontSize: number;
 }
 function drawTextUnderLine({
   ctx,
   underlineY,
   lineX,
   textWidth,
+  fontSize,
 }: DrawTextUnderLine) {
   ctx.beginPath();
   ctx.moveTo(lineX, underlineY);
   ctx.lineTo(lineX + textWidth, underlineY);
-  ctx.lineWidth = 1;
+  ctx.lineWidth = Math.max(1, fontSize * 0.08);
   ctx.strokeStyle = "black";
   ctx.stroke();
 }

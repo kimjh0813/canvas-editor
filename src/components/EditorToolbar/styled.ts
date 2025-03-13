@@ -38,6 +38,7 @@ export const IconWrapper = styled.div<{ $isActive?: boolean; $size?: number }>`
   align-items: center;
   justify-content: center;
   border-radius: 3px;
+  margin: 0 1px;
 
   ${({ $isActive }) =>
     $isActive
