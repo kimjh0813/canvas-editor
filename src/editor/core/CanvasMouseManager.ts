@@ -99,6 +99,8 @@ export class CanvasMouseManager {
     this.editor.select.clearSelectedRange();
     this.editor.text.resetKoreanComposing();
 
+    console.log(this.editor.text.textFragments);
+
     if (this.editor.prevRowIndex !== null) this.editor.setPrevRowIndex(null);
 
     const lineTextArr = this.editor.text.lineTexts.get(pageIndex);

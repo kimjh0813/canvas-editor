@@ -1,11 +1,11 @@
 import { useRecoilValue } from "recoil";
 import { useEditor } from "../../../context/EditorContext";
 import { VerticalDivider } from "../styled";
-import { FontBold } from "./FontBold";
+import { Bold } from "./Bold";
 
 import { cursorState } from "../../../recoil";
 import { useEffect, useState } from "react";
-import { FontSize } from "./FontSize";
+import { Size } from "./Size";
 import { isEqual } from "lodash";
 
 export interface CursorStyle {
@@ -37,15 +37,15 @@ export function FontStyle() {
       );
 
       newCursorStyle = {
-        isBold: !!cTextStyle?.bold,
         fontSize: cTextStyle?.fontSize ? String(cTextStyle.fontSize) : "",
+        isBold: !!cTextStyle?.bold,
       };
     } else {
       const fontStyle = editorManger.textStyle.getTextStyle(cursor.index);
 
       newCursorStyle = {
-        isBold: !!fontStyle.bold,
         fontSize: String(fontStyle.fontSize || ""),
+        isBold: !!fontStyle.bold,
       };
     }
 
@@ -57,12 +57,10 @@ export function FontStyle() {
   return (
     <>
       <VerticalDivider />
-      <FontSize
-        fontSize={cursorStyle.fontSize}
-        setCursorStyle={setCursorStyle}
-      />
+      <Size fontSize={cursorStyle.fontSize} setCursorStyle={setCursorStyle} />
       <VerticalDivider />
-      <FontBold isBold={cursorStyle.isBold} setCursorStyle={setCursorStyle} />
+      <Bold isBold={cursorStyle.isBold} setCursorStyle={setCursorStyle} />
+      <VerticalDivider />
       <VerticalDivider />
     </>
   );

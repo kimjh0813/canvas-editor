@@ -1,13 +1,13 @@
 import styled from "styled-components";
 
-export const Container = styled.div`
+export const RelativeContainer = styled.div`
+  position: relative;
+`;
+
+export const FontSizeContainer = styled.div`
   display: flex;
   align-items: center;
   gap: 4px;
-`;
-
-export const RelativeContainer = styled.div`
-  position: relative;
 `;
 
 export const FontSizeInput = styled.input`

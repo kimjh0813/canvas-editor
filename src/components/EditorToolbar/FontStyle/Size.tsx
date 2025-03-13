@@ -1,24 +1,24 @@
 import { useRef, useState } from "react";
 
 import { useSetRecoilState } from "recoil";
-import { cursorState } from "../../../../recoil";
-import { isValidInteger } from "../../../../utils/isValidInteger";
-import { fontSizeList } from "../../../../constants/toolbar";
-import { DropDownContent } from "../../../ui";
+import { cursorState } from "../../../recoil";
+import { isValidInteger } from "../../../utils/isValidInteger";
+import { fontSizeList } from "../../../constants/toolbar";
+import { DropDownContent } from "../../ui";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
-import { useEditor } from "../../../../context/EditorContext";
+import { useEditor } from "../../../context/EditorContext";
 
 import * as S from "./styled";
 import { MinusIcon, PlusIcon } from "lucide-react";
-import { IconWrapper } from "../../styled";
-import { CursorStyle } from "../FontStyle";
+import { IconWrapper } from "../styled";
+import { CursorStyle } from "./FontStyle";
 
-interface FontSizeProps {
+interface SizeProps {
   fontSize: string;
   setCursorStyle: React.Dispatch<React.SetStateAction<CursorStyle>>;
 }
 
-export function FontSize({ fontSize, setCursorStyle }: FontSizeProps) {
+export function Size({ fontSize, setCursorStyle }: SizeProps) {
   const { editorManger, draw } = useEditor();
 
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -122,7 +122,7 @@ export function FontSize({ fontSize, setCursorStyle }: FontSizeProps) {
   };
 
   return (
-    <S.Container>
+    <S.FontSizeContainer>
       <IconWrapper onClick={(e) => handleIconClick(e, "minus")} $size={24}>
         <MinusIcon width={16} height={16} />
       </IconWrapper>
@@ -177,6 +177,6 @@ export function FontSize({ fontSize, setCursorStyle }: FontSizeProps) {
       <IconWrapper onClick={(e) => handleIconClick(e, "plus")} $size={24}>
         <PlusIcon width={16} height={16} />
       </IconWrapper>
-    </S.Container>
+    </S.FontSizeContainer>
   );
 }

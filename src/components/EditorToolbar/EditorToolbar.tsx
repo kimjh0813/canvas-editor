@@ -2,9 +2,7 @@ import * as S from "./styled";
 import { cursorState } from "../../recoil";
 import { useCallback } from "react";
 import { useSetRecoilState } from "recoil";
-import { FontSize } from "./FontStyle/FontSize";
 import { useEditor } from "../../context/EditorContext";
-import { FontBold } from "./FontStyle/FontBold";
 import { FontStyle } from "./FontStyle";
 
 export function EditorToolbar() {
