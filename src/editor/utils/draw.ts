@@ -1,4 +1,4 @@
-import { FontSize } from "../../components/EditorToolbar/FontSize";
+import { FontSize } from "../../components/EditorToolbar/FontStyle/FontSize";
 import { EditorManger } from "../core/EditorManger";
 import { ISelectRange } from "../types/selectRange";
 import { ILineText } from "../types/text";

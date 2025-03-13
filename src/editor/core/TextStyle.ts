@@ -94,7 +94,11 @@ export class TextStyle {
     }
   }
 
-  updateFontSize(startIndex: number, endIndex: number, type: "plus" | "minus") {
+  adjustSelectedFontSize(
+    startIndex: number,
+    endIndex: number,
+    type: "plus" | "minus"
+  ) {
     const textFragment = this.editor.text.getTextFragment(endIndex);
 
     if (textFragment?.text === "\n") {

@@ -1,18 +1,21 @@
 import { Bold } from "lucide-react";
 
-import { IconWrapper } from "../styled";
-import { useEditor } from "../../../context/EditorContext";
-import { useEffect, useState } from "react";
-import { useRecoilState } from "recoil";
-import { cursorState } from "../../../recoil";
+import { IconWrapper } from "../../styled";
+import { useEditor } from "../../../../context/EditorContext";
 
-interface FontBoldProps {}
+import { useSetRecoilState } from "recoil";
+import { cursorState } from "../../../../recoil";
+import { CursorStyle } from "../FontStyle";
 
-export function FontBold({}: FontBoldProps) {
+interface FontBoldProps {
+  isBold: boolean;
+  setCursorStyle: React.Dispatch<React.SetStateAction<CursorStyle>>;
+}
+
+export function FontBold({ isBold, setCursorStyle }: FontBoldProps) {
   const { editorManger, draw } = useEditor();
 
-  const [cursor, setCursor] = useRecoilState(cursorState);
-  const [isBold, setIsBold] = useState<boolean>(false);
+  const setCursor = useSetRecoilState(cursorState);
 
   const handelClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
@@ -39,7 +42,7 @@ export function FontBold({}: FontBoldProps) {
       }
     }
 
-    setIsBold(!isBold);
+    setCursorStyle((prev) => ({ ...prev, isBold: !isBold }));
     setCursor((prev) => {
       if (!prev) return prev;
 
@@ -49,30 +52,6 @@ export function FontBold({}: FontBoldProps) {
       };
     });
   };
-
-  useEffect(() => {
-    if (!cursor) return;
-    let cursorIsBold;
-
-    const selectRange = editorManger.select.selectRange;
-
-    if (selectRange) {
-      const cTextStyle = editorManger.textStyle.checkTextStyle(
-        selectRange.start,
-        selectRange.end
-      );
-
-      cursorIsBold = !!cTextStyle?.bold;
-    } else {
-      const fontStyle = editorManger.textStyle.getTextStyle(cursor.index);
-
-      cursorIsBold = !!fontStyle.bold;
-    }
-
-    if (cursorIsBold !== isBold) {
-      setIsBold(cursorIsBold);
-    }
-  }, [cursor]);
 
   return (
     <IconWrapper onClick={handelClick} $isActive={isBold}>
