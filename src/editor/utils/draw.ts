@@ -73,6 +73,9 @@ function drawLine({
   let lineX = lineText.x;
   const maxFontSize = lineText.maxFontSize;
 
+  let selectStartX: number | null = null;
+  let selectWidth = 0;
+
   for (let i = 0; i < lineText.text.length; i++) {
     const index = lineText.endIndex - lineText.text.length + 1 + i;
     const textFragment = lineText.text[i];
@@ -83,16 +86,21 @@ function drawLine({
     //draw background
     if (textFragment.backgroundColor && textFragment.text !== "\n") {
       ctx.fillStyle = textFragment.backgroundColor;
-      ctx.fillRect(lineX, lineText.y, textWidth, maxFontSize * 1.2);
+      ctx.fillRect(lineX, lineText.y, textWidth + 1, maxFontSize * 1.2);
     }
 
-    //draw select
     if (selectRange && index >= selectRange.start && index < selectRange.end) {
-      ctx.fillStyle = "rgba(140, 174, 241, 0.5)";
-      ctx.fillRect(lineX, lineText.y, textWidth, maxFontSize * 1.48);
+      if (selectStartX === null) selectStartX = lineX;
+      selectWidth += textWidth;
     }
 
     lineX += textWidth;
+  }
+
+  // draw select
+  if (selectStartX) {
+    ctx.fillStyle = "rgba(140, 174, 241, 0.5)";
+    ctx.fillRect(selectStartX, lineText.y, selectWidth + 1, maxFontSize * 1.48);
   }
 
   lineX = lineText.x;

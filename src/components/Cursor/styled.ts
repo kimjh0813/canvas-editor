@@ -24,13 +24,12 @@ export const Cursor = styled.div.attrs<{
     }px`,
     left: `${$x}px`,
     height: `${$fontSize}px`,
-    backgroundColor: `${$color}`,
+    borderLeft: `2px solid ${$color}`,
   },
 }))<{
   $isBlinking: boolean;
 }>`
   position: absolute;
-  width: 2px;
 
   ${({ $isBlinking }) =>
     $isBlinking &&
