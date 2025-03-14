@@ -1,5 +1,20 @@
 export const fontSizeList = [12, 14, 16, 18, 24, 30, 36, 48, 60, 72, 96];
 
+export const fontFamilyList = [
+  "Arial",
+  "Verdana",
+  "Georgia",
+  "Courier New",
+  "Impact",
+  "Comic Sans MS",
+  "Times New Roman",
+  "Nanum Gothic",
+  "Nanum Myeongjo",
+  "Trebuchet MS",
+  "Tahoma",
+  "Garamond",
+];
+
 export const needBorderColors = [
   "#EDEDED",
   "#F1F1F1",

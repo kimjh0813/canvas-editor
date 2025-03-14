@@ -11,8 +11,10 @@ import { Italic } from "./Italic";
 import { Underline } from "./Underline";
 import { Color } from "./Color";
 import { BgColor } from "./BgColor";
+import { Family } from "./Family";
 
 export interface CursorStyle {
+  fontFamily: string;
   fontSize: string;
   isBold: boolean;
   isItalic: boolean;
@@ -27,6 +29,7 @@ export function FontStyle() {
   const cursor = useRecoilValue(cursorState);
 
   const [cursorStyle, setCursorStyle] = useState<CursorStyle>({
+    fontFamily: "Arial",
     fontSize: "",
     isBold: false,
     isItalic: false,
@@ -48,6 +51,7 @@ export function FontStyle() {
       );
 
       newCursorStyle = {
+        fontFamily: cTextStyle?.fontFamily ?? "",
         fontSize: cTextStyle?.fontSize ? String(cTextStyle.fontSize) : "",
         isBold: !!cTextStyle?.bold,
         isItalic: !!cTextStyle?.italic,
@@ -59,6 +63,7 @@ export function FontStyle() {
       const fontStyle = editorManger.textStyle.getTextStyle(cursor.index);
 
       newCursorStyle = {
+        fontFamily: fontStyle.fontFamily,
         fontSize: String(fontStyle.fontSize || ""),
         isBold: !!fontStyle.bold,
         isItalic: !!fontStyle.italic,
@@ -75,6 +80,11 @@ export function FontStyle() {
 
   return (
     <>
+      <VerticalDivider />
+      <Family
+        fontFamily={cursorStyle.fontFamily}
+        setCursorStyle={setCursorStyle}
+      />
       <VerticalDivider />
       <Size fontSize={cursorStyle.fontSize} setCursorStyle={setCursorStyle} />
       <VerticalDivider />

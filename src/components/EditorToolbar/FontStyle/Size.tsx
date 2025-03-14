@@ -122,13 +122,13 @@ export function Size({ fontSize, setCursorStyle }: SizeProps) {
   };
 
   return (
-    <S.FontSizeContainer>
+    <S.SizeContainer>
       <IconWrapper onClick={(e) => handleIconClick(e, "minus")} $size={24}>
         <MinusIcon width={16} height={16} />
       </IconWrapper>
       <S.RelativeContainer>
         <div ref={triggerRef} onClick={() => setIsVisible(true)}>
-          <S.FontSizeInput
+          <S.SizeInput
             ref={inputRef}
             value={fontSize}
             onChange={({ target: { value } }) => {
@@ -156,7 +156,7 @@ export function Size({ fontSize, setCursorStyle }: SizeProps) {
                 inputRef.current?.blur();
               }}
             >
-              <S.FontSizeListWrapper>
+              <S.SizeListWrapper>
                 {fontSizeList.map((v) => (
                   <div
                     key={v}
@@ -169,7 +169,7 @@ export function Size({ fontSize, setCursorStyle }: SizeProps) {
                     {v}
                   </div>
                 ))}
-              </S.FontSizeListWrapper>
+              </S.SizeListWrapper>
             </DropDownContent>
           )}
         </div>
@@ -177,6 +177,6 @@ export function Size({ fontSize, setCursorStyle }: SizeProps) {
       <IconWrapper onClick={(e) => handleIconClick(e, "plus")} $size={24}>
         <PlusIcon width={16} height={16} />
       </IconWrapper>
-    </S.FontSizeContainer>
+    </S.SizeContainer>
   );
 }

@@ -4,18 +4,18 @@ export const RelativeContainer = styled.div`
   position: relative;
 `;
 
-export const FontSizeContainer = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 4px;
-`;
-
 export const ColorContainer = styled.div`
   display: flex;
   align-items: center;
 `;
 
-export const FontSizeInput = styled.input`
+export const SizeContainer = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+`;
+
+export const SizeInput = styled.input`
   width: 28px;
   height: 19px;
   text-align: center;
@@ -24,7 +24,7 @@ export const FontSizeInput = styled.input`
   border-radius: 3px;
 `;
 
-export const FontSizeListWrapper = styled.div`
+export const SizeListWrapper = styled.div`
   display: flex;
   flex-direction: column;
   padding: 6px 0;
@@ -52,5 +52,52 @@ export const RemoveBgColorButton = styled.div`
 
   &:hover {
     background-color: #eff1f2;
+  }
+`;
+
+export const FamilyTriggerWrapper = styled.div`
+  display: flex;
+  width: 90px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 6px 10px;
+  align-items: center;
+  gap: 2px;
+
+  &:hover {
+    background-color: #e0e4ea;
+  }
+
+  .family-text {
+    flex: 1;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+`;
+
+export const FamilyListWrapper = styled.div`
+  padding: 6px 1px;
+  font-size: 14px;
+
+  .family-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 18px;
+    padding: 6px 12px;
+    cursor: pointer;
+
+    .icon-wrapper {
+      display: flex;
+      align-items: center;
+      min-width: 16px;
+    }
+
+    &:hover {
+      background-color: #eff1f2;
+    }
   }
 `;
