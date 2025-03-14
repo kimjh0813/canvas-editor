@@ -17,7 +17,7 @@
 
 ## Features
 
-- Text Styling & Formatting (Size, Bold, Italic, Underline)
+- Text Styling & Formatting (Size, Bold, Italic, Underline, Color, BgColor)
 - Select (Arrow select, All select, mouse drag select)
 - Editor Configuration (Editor Margin, Editor Size)
 - Pagination

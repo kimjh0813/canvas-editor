@@ -5,7 +5,6 @@ export const Container = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: 14px 12px;
 `;
 
 export const ColorListWrapper = styled.div`

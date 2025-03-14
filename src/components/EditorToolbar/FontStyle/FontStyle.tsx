@@ -10,13 +10,15 @@ import { isEqual } from "lodash";
 import { Italic } from "./Italic";
 import { Underline } from "./Underline";
 import { Color } from "./Color";
+import { BgColor } from "./BgColor";
 
 export interface CursorStyle {
   fontSize: string;
   isBold: boolean;
   isItalic: boolean;
   isUnderline: boolean;
-  color: string;
+  color?: string;
+  bgColor?: string;
 }
 
 export function FontStyle() {
@@ -50,7 +52,8 @@ export function FontStyle() {
         isBold: !!cTextStyle?.bold,
         isItalic: !!cTextStyle?.italic,
         isUnderline: !!cTextStyle?.underline,
-        color: cTextStyle?.color || "#000000",
+        color: cTextStyle?.color,
+        bgColor: cTextStyle?.backgroundColor,
       };
     } else {
       const fontStyle = editorManger.textStyle.getTextStyle(cursor.index);
@@ -61,6 +64,7 @@ export function FontStyle() {
         isItalic: !!fontStyle.italic,
         isUnderline: !!fontStyle?.underline,
         color: fontStyle.color,
+        bgColor: fontStyle?.backgroundColor,
       };
     }
 
@@ -81,6 +85,7 @@ export function FontStyle() {
         setCursorStyle={setCursorStyle}
       />
       <Color color={cursorStyle.color} setCursorStyle={setCursorStyle} />
+      <BgColor bgColor={cursorStyle.bgColor} setCursorStyle={setCursorStyle} />
       <VerticalDivider />
     </>
   );

@@ -41,3 +41,16 @@ export const FontSizeListWrapper = styled.div`
     background-color: #eff1f2;
   }
 `;
+
+export const RemoveBgColorButton = styled.div`
+  display: flex;
+  align-items: center;
+  padding: 8px 14px;
+  cursor: pointer;
+  gap: 8px;
+  margin-bottom: 3px;
+
+  &:hover {
+    background-color: #eff1f2;
+  }
+`;

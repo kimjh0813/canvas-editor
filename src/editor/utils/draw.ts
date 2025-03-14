@@ -80,8 +80,11 @@ function drawLine({
     ctx.font = getFontStyle(textFragment);
     const textWidth = measureTextWidth(ctx, textFragment.text);
 
-    // ctx.fillStyle = "yellow";
-    // ctx.fillRect(lineX, lineText.y, textWidth, maxFontSize * 1.21);
+    //draw background
+    if (textFragment.backgroundColor && textFragment.text !== "\n") {
+      ctx.fillStyle = textFragment.backgroundColor;
+      ctx.fillRect(lineX, lineText.y, textWidth, maxFontSize * 1.2);
+    }
 
     //draw select
     if (selectRange && index >= selectRange.start && index < selectRange.end) {
@@ -105,10 +108,12 @@ function drawLine({
     ctx.fillStyle = textFragment.color;
     ctx.fillText(textFragment.text, lineX, lineText.y + maxFontSize);
 
-    const isUnderLine = textFragment.underline && textFragment.text !== "\n";
+    const isDrawUnderLine =
+      composingIndex === index ||
+      (textFragment.underline && textFragment.text !== "\n");
 
     //draw isComposing
-    if (composingIndex === index || isUnderLine) {
+    if (isDrawUnderLine) {
       const underlineY = lineText.y + maxFontSize * 0.1 + maxFontSize;
       drawTextUnderLine({
         ctx,
