@@ -45,7 +45,7 @@ export function Underline({ isUnderline, setCursorStyle }: UnderlineProps) {
 
   return (
     <IconWrapper onClick={handelClick} $isActive={isUnderline}>
-      <UnderlineIcon width={18} height={18} strokeWidth={2} />
+      <UnderlineIcon width={16} height={16} strokeWidth={2} />
     </IconWrapper>
   );
 }

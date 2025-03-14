@@ -12,7 +12,7 @@ import { EditorManger } from "../../editor/core/EditorManger";
 import { EditorContext, useEditor } from "../../context/EditorContext";
 import { drawText } from "../../editor/utils/draw";
 
-const defaultFontSize = 14;
+const defaultFontSize = 16;
 const marginX = 96;
 const marginY = 96;
 
