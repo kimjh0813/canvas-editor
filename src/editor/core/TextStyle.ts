@@ -26,8 +26,8 @@ export class TextStyle {
 
   setCurrentStyle(newStyle: Partial<ITextStyle>) {
     if (!this._currentStyle) {
-      const prevTextStyle = this.getTextStyle(this.editor.cursor.index - 1);
-      const textStyle = prevTextStyle ? prevTextStyle : this._defaultStyle;
+      const _textStyle = this.getTextStyle(this.editor.cursor.index);
+      const textStyle = _textStyle ? _textStyle : this._defaultStyle;
 
       this._currentStyle = { ...textStyle, ...newStyle };
     } else {
