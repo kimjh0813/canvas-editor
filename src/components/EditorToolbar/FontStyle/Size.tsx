@@ -138,7 +138,6 @@ export function Size({ fontSize, setCursorStyle }: SizeProps) {
               }));
             }}
             onFocus={(e) => e.target.select()}
-            onBlur={() => {}}
             onKeyDown={(e) => {
               if (e.key === "Enter") {
                 e.stopPropagation();
@@ -154,6 +153,7 @@ export function Size({ fontSize, setCursorStyle }: SizeProps) {
               triggerRef={triggerRef}
               onClickOutside={() => {
                 setIsVisible(false);
+                inputRef.current?.blur();
               }}
             >
               <S.FontSizeListWrapper>

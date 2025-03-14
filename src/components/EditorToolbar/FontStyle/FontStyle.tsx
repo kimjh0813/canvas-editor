@@ -9,12 +9,14 @@ import { Size } from "./Size";
 import { isEqual } from "lodash";
 import { Italic } from "./Italic";
 import { Underline } from "./Underline";
+import { Color } from "./Color";
 
 export interface CursorStyle {
   fontSize: string;
   isBold: boolean;
   isItalic: boolean;
   isUnderline: boolean;
+  color: string;
 }
 
 export function FontStyle() {
@@ -27,6 +29,7 @@ export function FontStyle() {
     isBold: false,
     isItalic: false,
     isUnderline: false,
+    color: "#000000",
   });
 
   useEffect(() => {
@@ -47,6 +50,7 @@ export function FontStyle() {
         isBold: !!cTextStyle?.bold,
         isItalic: !!cTextStyle?.italic,
         isUnderline: !!cTextStyle?.underline,
+        color: cTextStyle?.color || "#000000",
       };
     } else {
       const fontStyle = editorManger.textStyle.getTextStyle(cursor.index);
@@ -56,6 +60,7 @@ export function FontStyle() {
         isBold: !!fontStyle.bold,
         isItalic: !!fontStyle.italic,
         isUnderline: !!fontStyle?.underline,
+        color: fontStyle.color,
       };
     }
 
@@ -75,6 +80,7 @@ export function FontStyle() {
         isUnderline={cursorStyle.isUnderline}
         setCursorStyle={setCursorStyle}
       />
+      <Color color={cursorStyle.color} setCursorStyle={setCursorStyle} />
       <VerticalDivider />
     </>
   );

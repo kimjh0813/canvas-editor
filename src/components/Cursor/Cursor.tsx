@@ -20,6 +20,12 @@ export function Cursor({ scrollContainerRef }: CursorProps) {
     return cursor && !editorManger.select.selectRange;
   }, [cursor]);
 
+  const color = useMemo(() => {
+    if (!cursor) return "#000000";
+
+    return editorManger.textStyle.getTextStyle(cursor.index).color;
+  }, [cursor]);
+
   useEffect(() => {
     if (!cursor) return;
 
@@ -66,6 +72,7 @@ export function Cursor({ scrollContainerRef }: CursorProps) {
       $fontSize={cursor.fontSize}
       $lineMaxFontSize={cursor.lineMaxFontSize}
       $isBlinking={isBlinking}
+      $color={color}
     />
   );
 }

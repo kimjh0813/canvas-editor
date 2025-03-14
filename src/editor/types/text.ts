@@ -3,6 +3,7 @@ export interface ITextStyle {
   italic?: boolean;
   underline?: boolean;
   fontSize: number;
+  color: string;
   backgroundColor?: string;
   fontFamily: string;
 }

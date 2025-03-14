@@ -10,6 +10,11 @@ export const FontSizeContainer = styled.div`
   gap: 4px;
 `;
 
+export const ColorContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
 export const FontSizeInput = styled.input`
   width: 28px;
   height: 19px;

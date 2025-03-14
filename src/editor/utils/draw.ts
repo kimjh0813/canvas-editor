@@ -102,7 +102,7 @@ function drawLine({
     const textWidth = measureTextWidth(ctx, textFragment.text);
 
     //draw text
-    ctx.fillStyle = "black";
+    ctx.fillStyle = textFragment.color;
     ctx.fillText(textFragment.text, lineX, lineText.y + maxFontSize);
 
     const isUnderLine = textFragment.underline && textFragment.text !== "\n";
@@ -116,6 +116,7 @@ function drawLine({
         lineX,
         textWidth,
         fontSize: textFragment.fontSize,
+        color: textFragment.color,
       });
     }
 
@@ -129,6 +130,7 @@ interface DrawTextUnderLine {
   lineX: number;
   textWidth: number;
   fontSize: number;
+  color: string;
 }
 function drawTextUnderLine({
   ctx,
@@ -136,11 +138,12 @@ function drawTextUnderLine({
   lineX,
   textWidth,
   fontSize,
+  color,
 }: DrawTextUnderLine) {
   ctx.beginPath();
   ctx.moveTo(lineX, underlineY);
   ctx.lineTo(lineX + textWidth, underlineY);
   ctx.lineWidth = Math.max(1, fontSize * 0.08);
-  ctx.strokeStyle = "black";
+  ctx.strokeStyle = color;
   ctx.stroke();
 }

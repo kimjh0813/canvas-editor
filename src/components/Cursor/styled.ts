@@ -12,7 +12,8 @@ export const Cursor = styled.div.attrs<{
   $fontSize: number;
   $pageIndex: number;
   $lineMaxFontSize: number;
-}>(({ $pageIndex, $fontSize, $lineMaxFontSize, $x, $y }) => ({
+  $color: string;
+}>(({ $pageIndex, $fontSize, $lineMaxFontSize, $x, $y, $color }) => ({
   style: {
     top: `${
       $pageIndex * (1123 + 20) +
@@ -23,13 +24,13 @@ export const Cursor = styled.div.attrs<{
     }px`,
     left: `${$x}px`,
     height: `${$fontSize}px`,
+    backgroundColor: `${$color}`,
   },
 }))<{
   $isBlinking: boolean;
 }>`
   position: absolute;
   width: 2px;
-  background-color: black;
 
   ${({ $isBlinking }) =>
     $isBlinking &&

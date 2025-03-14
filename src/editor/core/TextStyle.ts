@@ -11,6 +11,7 @@ export class TextStyle {
     this._defaultStyle = {
       fontSize: defaultFontSize,
       fontFamily: "Arial",
+      color: "#000000",
     };
     this._currentStyle = undefined;
   }
