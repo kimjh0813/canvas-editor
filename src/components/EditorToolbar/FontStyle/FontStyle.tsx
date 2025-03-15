@@ -19,7 +19,7 @@ export interface CursorStyle {
   isBold: boolean;
   isItalic: boolean;
   isUnderline: boolean;
-  color?: string;
+  color: string;
   bgColor?: string;
 }
 
@@ -56,7 +56,7 @@ export function FontStyle() {
         isBold: !!cTextStyle?.bold,
         isItalic: !!cTextStyle?.italic,
         isUnderline: !!cTextStyle?.underline,
-        color: cTextStyle?.color,
+        color: cTextStyle?.color ?? "#000000",
         bgColor: cTextStyle?.backgroundColor,
       };
     } else {

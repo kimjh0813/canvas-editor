@@ -1,6 +1,6 @@
 import { ICursor } from "../../recoil";
 import { ILineText, ITextFragment } from "../types/text";
-import { measureTextWidth } from "../utils/ctx";
+import { createCanvasElement } from "../utils/ctx";
 import { getFontStyle } from "../utils/text";
 import { CanvasMouseManager } from "./CanvasMouseManager";
 import { Cursor } from "./Cursor";
@@ -51,18 +51,18 @@ export class EditorManger {
     this._prevRowIndex = rowIndex;
   }
 
-  getCanvasData(
+  getLineTextsFormTextFragments(
     shouldUpdateText: boolean
   ): Map<number, ILineText[]> | undefined {
     if (!shouldUpdateText) return this.text.lineTexts;
 
-    const ctx = document.createElement("canvas").getContext("2d");
+    const ctx = createCanvasElement();
+    const measureCtx = createCanvasElement();
 
-    if (!ctx) return;
+    if (!ctx || !measureCtx) return;
 
     this.text.resetLineTexts();
 
-    const cursorIndex = this.cursor.index;
     const textFragments = this.text.textFragments;
     const { canvasHeight, canvasWidth, marginX, marginY } = this.layout;
 
@@ -72,11 +72,6 @@ export class EditorManger {
     let x = marginX;
     let y = marginY;
 
-    let cursor;
-
-    if (textFragments.length === 0 || cursorIndex === 0)
-      this.cursor.resetCursorToPage();
-
     for (let i = 0; i < textFragments.length; i++) {
       const textFragment = textFragments[i];
 
@@ -84,10 +79,13 @@ export class EditorManger {
 
       ctx.font = getFontStyle(textFragment);
 
-      const textWidth = measureTextWidth(ctx, text);
+      const textWidth = ctx.measureText(text).width;
+
       const currentWidth = x + marginX + textWidth;
 
       const isLastText = i === textFragments.length - 1;
+
+      let isSpaceLineWrap = false;
 
       if (currentWidth > canvasWidth && text !== "\n") {
         let maxFontSize = lineText.reduce((acc, cur) => {
@@ -96,11 +94,24 @@ export class EditorManger {
 
         if (maxFontSize === 0) maxFontSize = fontSize;
 
+        const lastSpaceIndex = lineText
+          .map((t) => t.text)
+          .join("")
+          .lastIndexOf(" ");
+
+        const hasSpace = lastSpaceIndex !== -1;
+        isSpaceLineWrap = hasSpace;
+        const _text = hasSpace
+          ? lineText.slice(0, lastSpaceIndex + 1)
+          : lineText;
+
         const currentPageText = this.text.lineTexts.get(pageIndex) || [];
         currentPageText.push({
-          endIndex: i - 1,
+          endIndex: hasSpace
+            ? i - (lineText.length - lastSpaceIndex) + 1 - 1
+            : i - 1,
           maxFontSize,
-          text: lineText,
+          text: _text,
           x: marginX,
           y,
         });
@@ -109,12 +120,20 @@ export class EditorManger {
 
         y += maxFontSize * 1.48;
         x = marginX;
-        lineText = [];
+        lineText = hasSpace ? lineText.slice(lastSpaceIndex + 1) : [];
 
         if (y + fontSize * 1.48 > canvasHeight - marginY) {
           pageIndex++;
           y = marginY;
         }
+      }
+
+      if (lineText.length > 0 && isSpaceLineWrap) {
+        x += lineText.reduce((acc, cur) => {
+          measureCtx.font = getFontStyle(cur);
+
+          return acc + measureCtx.measureText(cur.text).width;
+        }, 0);
       }
 
       lineText.push(textFragment);
@@ -166,11 +185,9 @@ export class EditorManger {
 
         this.text.lineTexts.set(pageIndex, currentPageText);
       }
-
-      if (cursorIndex === i + 1) cursor = { x, y, pageIndex };
     }
 
-    if (cursor) this.cursor.setCursor(cursor);
+    this.cursor.setCursorIndex(this.cursor.index);
 
     if (this.layout.pageSize !== pageIndex + 1)
       this.layout.setPageSize(pageIndex + 1);

@@ -211,6 +211,7 @@ export class TextManager {
       };
 
       this.insert(cursorIndex, 0, newText);
+
       this.editor.cursor.setCursorIndex(cursorIndex + 1, false);
     } else {
       const text = this._textFragments[cursorIndex - 1].text;
@@ -230,6 +231,7 @@ export class TextManager {
             text: assembleText[i],
             ...fontStyle,
           });
+
           this.editor.cursor.setCursorIndex(cursorIndex + 1, false);
         }
       }

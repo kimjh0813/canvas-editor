@@ -1,7 +1,7 @@
 import { EditorManger } from "../core/EditorManger";
 import { ISelectRange } from "../types/selectRange";
 import { ILineText } from "../types/text";
-import { measureTextWidth } from "./ctx";
+
 import { getFontStyle } from "./text";
 
 interface DrawTextParams {
@@ -16,7 +16,8 @@ export function drawText({
   shouldUpdateText,
 }: DrawTextParams) {
   // const start = performance.now();
-  const lineTexts = editorManger.getCanvasData(shouldUpdateText);
+  const lineTexts =
+    editorManger.getLineTextsFormTextFragments(shouldUpdateText);
 
   // const end = performance.now();
   // console.log(`get lineTexts 함수 실행 시간: ${(end - start).toFixed(2)}ms`);
@@ -81,7 +82,7 @@ function drawLine({
     const textFragment = lineText.text[i];
 
     ctx.font = getFontStyle(textFragment);
-    const textWidth = measureTextWidth(ctx, textFragment.text);
+    const textWidth = ctx.measureText(textFragment.text).width;
 
     //draw background
     if (textFragment.backgroundColor && textFragment.text !== "\n") {
@@ -110,7 +111,7 @@ function drawLine({
     const textFragment = lineText.text[i];
 
     ctx.font = getFontStyle(textFragment);
-    const textWidth = measureTextWidth(ctx, textFragment.text);
+    const textWidth = ctx.measureText(textFragment.text).width;
 
     //draw text
     ctx.fillStyle = textFragment.color;
@@ -127,7 +128,7 @@ function drawLine({
         ctx,
         underlineY,
         lineX,
-        textWidth,
+        textWidth: textWidth + 1,
         fontSize: textFragment.fontSize,
         color: textFragment.color,
       });

@@ -1,5 +1,4 @@
 import { ILineText } from "../types/text";
-import { measureTextWidth } from "../utils/ctx";
 import { getPageInfoFromY } from "../utils/mouse";
 import { getFontStyle } from "../utils/text";
 import { EditorManger } from "./EditorManger";
@@ -63,7 +62,7 @@ export class CanvasMouseManager {
 
       ctx.font = getFontStyle(textFragment);
 
-      const textWidth = measureTextWidth(ctx, textFragment.text);
+      const textWidth = ctx.measureText(textFragment.text).width;
       const charMid = x + textWidth / 2;
 
       if (mouseX >= x && mouseX <= x + textWidth) {
@@ -99,7 +98,7 @@ export class CanvasMouseManager {
     this.editor.select.clearSelectedRange();
     this.editor.text.resetKoreanComposing();
 
-    console.log(this.editor.text.textFragments);
+    console.log(this.editor.text.lineTexts);
 
     if (this.editor.prevRowIndex !== null) this.editor.setPrevRowIndex(null);
 

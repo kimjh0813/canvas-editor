@@ -1,6 +1,6 @@
 import { ICursor } from "../../recoil";
 import { ILineText } from "../types/text";
-import { createCanvasElement, measureTextWidth } from "../utils/ctx";
+import { createCanvasElement } from "../utils/ctx";
 import { getFontStyle } from "../utils/text";
 import { EditorManger } from "./EditorManger";
 
@@ -59,6 +59,8 @@ export class Cursor {
     //just update index function because run setCursor from getCanvasData function
     if (!shouldUpdatePosition) return;
 
+    if (cursorIndex === 0) return this.resetCursorToPage();
+
     const ctx = createCanvasElement();
     if (!ctx) return;
 
@@ -95,7 +97,8 @@ export class Cursor {
 
     targetLine.text.slice(0, textSliceIndex).forEach((textFragment) => {
       ctx.font = getFontStyle(textFragment);
-      x += measureTextWidth(ctx, textFragment.text);
+
+      x += ctx.measureText(textFragment.text).width;
     });
 
     this.setCursor({
