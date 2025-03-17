@@ -10,7 +10,7 @@ import * as S from "./styled";
 import { EditorToolbar } from "../EditorToolbar";
 import { EditorManger } from "../../editor/core/EditorManger";
 import { EditorContext, useEditor } from "../../context/EditorContext";
-import { drawText } from "../../editor/utils/draw";
+import { drawTextFragments } from "../../editor/utils/draw";
 
 const defaultFontSize = 16;
 const marginX = 96;
@@ -27,7 +27,7 @@ export function Editor() {
   const [pageSize, setPageSize] = useState<number>(0);
 
   const draw = useCallback((shouldUpdateText: boolean) => {
-    drawText({
+    drawTextFragments({
       editorManger,
       canvasRefs,
       shouldUpdateText,

@@ -1,20 +1,21 @@
 import { EditorManger } from "../core/EditorManger";
+import { IBgSegment, IUlSegment } from "../types/draw";
 import { ISelectRange } from "../types/selectRange";
 import { ILineText } from "../types/text";
 
 import { getFontStyle } from "./text";
 
-interface DrawTextParams {
+interface DrawTextFragmentsParams {
   editorManger: EditorManger;
   canvasRefs: React.MutableRefObject<(HTMLCanvasElement | null)[]>;
   shouldUpdateText: boolean;
 }
 
-export function drawText({
+export function drawTextFragments({
   editorManger,
   canvasRefs,
   shouldUpdateText,
-}: DrawTextParams) {
+}: DrawTextFragmentsParams) {
   // const start = performance.now();
   const lineTexts =
     editorManger.getLineTextsFormTextFragments(shouldUpdateText);
@@ -65,6 +66,7 @@ interface DrawLineParams {
   selectRange: ISelectRange | null;
   composingIndex?: number;
 }
+
 function drawLine({
   lineText,
   ctx,
@@ -74,20 +76,25 @@ function drawLine({
   let lineX = lineText.x;
   const maxFontSize = lineText.maxFontSize;
 
+  const bgSegments: IBgSegment[] = [];
+  const ulSegments: IUlSegment[] = [];
   let selectStartX: number | null = null;
   let selectWidth = 0;
 
   for (let i = 0; i < lineText.text.length; i++) {
     const index = lineText.endIndex - lineText.text.length + 1 + i;
-    const textFragment = lineText.text[i];
+    const { text, underline, backgroundColor, color, fontSize } =
+      lineText.text[i];
 
-    ctx.font = getFontStyle(textFragment);
-    const textWidth = ctx.measureText(textFragment.text).width;
+    ctx.font = getFontStyle(lineText.text[i]);
+    const textWidth = ctx.measureText(text).width;
 
-    //draw background
-    if (textFragment.backgroundColor && textFragment.text !== "\n") {
-      ctx.fillStyle = textFragment.backgroundColor;
-      ctx.fillRect(lineX, lineText.y, textWidth + 1, maxFontSize * 1.2);
+    if (backgroundColor && text !== "\n") {
+      addSegment(bgSegments, ["backgroundColor"], {
+        backgroundColor,
+        startX: lineX,
+        endX: lineX + textWidth,
+      });
     }
 
     if (selectRange && index >= selectRange.start && index < selectRange.end) {
@@ -95,69 +102,105 @@ function drawLine({
       selectWidth += textWidth;
     }
 
-    lineX += textWidth;
-  }
-
-  // draw select
-  if (selectStartX) {
-    ctx.fillStyle = "rgba(140, 174, 241, 0.5)";
-    ctx.fillRect(selectStartX, lineText.y, selectWidth + 1, maxFontSize * 1.48);
-  }
-
-  lineX = lineText.x;
-
-  for (let i = 0; i < lineText.text.length; i++) {
-    const index = lineText.endIndex - lineText.text.length + 1 + i;
-    const textFragment = lineText.text[i];
-
-    ctx.font = getFontStyle(textFragment);
-    const textWidth = ctx.measureText(textFragment.text).width;
-
-    //draw text
-    ctx.fillStyle = textFragment.color;
-    ctx.fillText(textFragment.text, lineX, lineText.y + maxFontSize);
-
     const isDrawUnderLine =
-      composingIndex === index ||
-      (textFragment.underline && textFragment.text !== "\n");
+      composingIndex === index || (underline && text !== "\n");
 
-    //draw isComposing
     if (isDrawUnderLine) {
-      const underlineY = lineText.y + maxFontSize * 0.1 + maxFontSize;
-      drawTextUnderLine({
-        ctx,
-        underlineY,
-        lineX,
-        textWidth: textWidth + 1,
-        fontSize: textFragment.fontSize,
-        color: textFragment.color,
+      addSegment(ulSegments, ["color", "fontSize"], {
+        color,
+        fontSize,
+        startX: lineX,
+        endX: lineX + textWidth,
       });
     }
 
     lineX += textWidth;
   }
+
+  drawTextBackground(ctx, bgSegments, lineText.y, maxFontSize);
+  drawSelection(ctx, selectStartX, selectWidth, lineText.y, maxFontSize);
+  drawText(ctx, lineText, maxFontSize);
+  drawTextUnderLine(ctx, ulSegments, lineText.y, maxFontSize);
 }
 
-interface DrawTextUnderLine {
-  ctx: CanvasRenderingContext2D;
-  underlineY: number;
-  lineX: number;
-  textWidth: number;
-  fontSize: number;
-  color: string;
+function addSegment<T extends { endX: number }>(
+  segments: T[],
+  keys: (keyof T)[],
+  newSegment: T
+) {
+  if (
+    segments.length > 0 &&
+    keys.every((key) => segments[segments.length - 1][key] === newSegment[key])
+  ) {
+    segments[segments.length - 1].endX = newSegment.endX;
+  } else {
+    segments.push(newSegment);
+  }
 }
-function drawTextUnderLine({
-  ctx,
-  underlineY,
-  lineX,
-  textWidth,
-  fontSize,
-  color,
-}: DrawTextUnderLine) {
-  ctx.beginPath();
-  ctx.moveTo(lineX, underlineY);
-  ctx.lineTo(lineX + textWidth, underlineY);
-  ctx.lineWidth = Math.max(1, fontSize * 0.08);
-  ctx.strokeStyle = color;
-  ctx.stroke();
+
+function drawTextBackground(
+  ctx: CanvasRenderingContext2D,
+  bgSegments: IBgSegment[],
+  y: number,
+  maxFontSize: number
+) {
+  if (bgSegments.length < 1) return;
+
+  bgSegments.forEach(({ backgroundColor, startX, endX }) => {
+    ctx.fillStyle = backgroundColor;
+    ctx.fillRect(startX, y, Math.ceil(endX - startX), maxFontSize * 1.25);
+  });
+}
+
+function drawSelection(
+  ctx: CanvasRenderingContext2D,
+  selectStartX: number | null,
+  selectWidth: number,
+  y: number,
+  maxFontSize: number
+) {
+  if (selectStartX !== null) {
+    ctx.fillStyle = "rgba(140, 174, 241, 0.5)";
+    ctx.fillRect(selectStartX, y, selectWidth + 1, maxFontSize * 1.48);
+  }
+}
+
+function drawText(
+  ctx: CanvasRenderingContext2D,
+  lineText: ILineText,
+  maxFontSize: number
+) {
+  let lineX = lineText.x;
+
+  for (let i = 0; i < lineText.text.length; i++) {
+    const textFragment = lineText.text[i];
+
+    ctx.font = getFontStyle(textFragment);
+    const textWidth = ctx.measureText(textFragment.text).width;
+
+    ctx.fillStyle = textFragment.color;
+    ctx.fillText(textFragment.text, lineX, lineText.y + maxFontSize);
+
+    lineX += textWidth;
+  }
+}
+
+function drawTextUnderLine(
+  ctx: CanvasRenderingContext2D,
+  ulSegments: IUlSegment[],
+  y: number,
+  maxFontSize: number
+) {
+  if (ulSegments.length < 1) return;
+
+  ulSegments.forEach(({ color, startX, endX, fontSize }) => {
+    const underlineY = y + maxFontSize * 0.1 + maxFontSize;
+
+    ctx.strokeStyle = color;
+    ctx.lineWidth = Math.max(1, Math.round(fontSize * 0.08));
+    ctx.beginPath();
+    ctx.moveTo(startX, underlineY);
+    ctx.lineTo(endX, underlineY);
+    ctx.stroke();
+  });
 }
