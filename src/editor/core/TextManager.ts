@@ -244,6 +244,20 @@ export class TextManager {
     }
   }
 
+  addTexts(textFragments: ITextFragment[]) {
+    this.editor.select.deleteSelectedRange();
+
+    if (this.editor.prevRowIndex !== null) this.editor.setPrevRowIndex(null);
+
+    const cursorIndex = this.editor.cursor.index;
+    this.insert(cursorIndex, 0, ...textFragments);
+
+    this.editor.cursor.setCursorIndex(
+      cursorIndex + textFragments.length,
+      false
+    );
+  }
+
   deleteText() {
     const cursorIndex = this.editor.cursor.index;
 

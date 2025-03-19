@@ -3,11 +3,13 @@ import Hangul from "hangul-js";
 import { isCommandKey } from "../utils/key";
 import { EditorManger } from "./EditorManger";
 import { functionKey } from "../../constants/key";
+import { convertHTMLToText, convertTextToHTML } from "../utils/text";
+import { ITextFragment } from "../types/text";
 
 export class KeyEvent {
   constructor(private editor: EditorManger) {}
 
-  keyDown(event: KeyboardEvent) {
+  async keyDown(event: KeyboardEvent) {
     // for change textArr
     let shouldUpdateText = false;
 
@@ -17,6 +19,17 @@ export class KeyEvent {
       if (isCommandKey(event)) {
         this.editor.text.resetKoreanComposing();
         switch (event.code) {
+          case "KeyC":
+            this.copy();
+            break;
+          case "KeyX":
+            shouldUpdateText = true;
+            await this.cut();
+            break;
+          case "KeyV":
+            shouldUpdateText = true;
+            await this.paste();
+            break;
           case "KeyA":
             this.selectAll();
             break;
@@ -33,13 +46,13 @@ export class KeyEvent {
     } else {
       switch (event.key) {
         case "Backspace":
-          this.backSpace(event);
           shouldUpdateText = true;
+          this.backSpace(event);
           break;
         case "Enter":
+          shouldUpdateText = true;
           this.enter();
           this.editor.text.resetKoreanComposing();
-          shouldUpdateText = true;
           break;
         case "ArrowDown":
           this.arrowDown(event);
@@ -151,6 +164,68 @@ export class KeyEvent {
     });
 
     this.editor.cursor.setCursorIndex(cursorIndex + 1, false);
+  }
+
+  async copy() {
+    const selectRange = this.editor.select.selectRange;
+    if (!selectRange) return;
+
+    const selectedText = this.editor.text.textFragments.slice(
+      selectRange.start,
+      selectRange.end
+    );
+
+    const htmlString = convertTextToHTML(selectedText);
+
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        "text/plain": new Blob([selectedText.map((t) => t.text).join("")], {
+          type: "text/plain",
+        }),
+        "text/html": new Blob([htmlString], { type: "text/html" }),
+      }),
+    ]);
+  }
+
+  async cut() {
+    await this.copy();
+
+    this.editor.select.deleteSelectedRange();
+  }
+
+  async paste() {
+    try {
+      const clipboardItems = await navigator.clipboard.read();
+
+      for (const item of clipboardItems) {
+        if (item.types.includes("text/html")) {
+          const blob = await item.getType("text/html");
+          const htmlText = await blob.text();
+          //TODO: vscode copy case
+          const textFragments = convertHTMLToText(
+            htmlText,
+            this.editor.textStyle.defaultStyle
+          );
+
+          this.editor.text.addTexts(textFragments);
+        } else if (item.types.includes("text/plain")) {
+          const blob = await item.getType("text/plain");
+          const plainText = await blob.text();
+
+          const textStyle = this.editor.textStyle.getTextStyle(
+            this.editor.cursor.index
+          );
+
+          const textFragments: ITextFragment[] = plainText
+            .split("")
+            .map((v) => ({ text: v, ...textStyle }));
+
+          this.editor.text.addTexts(textFragments);
+        }
+      }
+    } catch (error) {
+      console.error(error);
+    }
   }
 
   arrowUp(event: KeyboardEvent) {

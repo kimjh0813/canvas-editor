@@ -16,6 +16,10 @@ export class TextStyle {
     this._currentStyle = undefined;
   }
 
+  public get defaultStyle() {
+    return this._defaultStyle;
+  }
+
   public get defaultFontSize() {
     return this._defaultStyle.fontSize;
   }

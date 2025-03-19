@@ -19,6 +19,7 @@
 
 - Text Styling & Formatting (Size, Bold, Italic, Underline, Color, BgColor, FontFamily)
 - Select (Arrow select, All select, mouse drag select)
+- Clipboard (Copy, Cut, Paste) with HTML Formatting
 - Editor Configuration (Editor Margin, Editor Size)
 - Pagination
 
