@@ -22,28 +22,26 @@ export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
     useMouseHandlers(editorManger);
 
   useEffect(() => {
-    if (isCursor) {
-      window.addEventListener("mousemove", handleMouseMove);
-      window.addEventListener("mouseup", handleMouseUp);
-    }
-
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
-    };
-  }, [isCursor, handleMouseUp]);
-
-  useEffect(() => {
     if (!isCursor) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       editorManger.keyEvent.keyDown(event);
     };
 
+    const handlePaste = (event: ClipboardEvent) => {
+      editorManger.keyEvent.paste(event);
+    };
+
     window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("paste", handlePaste);
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("mouseup", handleMouseUp);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("paste", handlePaste);
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("mouseup", handleMouseUp);
     };
   }, [draw, isCursor]);
 

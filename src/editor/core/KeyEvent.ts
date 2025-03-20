@@ -13,8 +13,6 @@ export class KeyEvent {
     // for change textArr
     let shouldUpdateText = false;
 
-    if (!functionKey.includes(event.key)) event.preventDefault();
-
     if (event.key.length === 1) {
       if (isCommandKey(event)) {
         this.editor.text.resetKoreanComposing();
@@ -26,11 +24,8 @@ export class KeyEvent {
             shouldUpdateText = true;
             await this.cut();
             break;
-          case "KeyV":
-            shouldUpdateText = true;
-            await this.paste();
-            break;
           case "KeyA":
+            event.preventDefault();
             this.selectAll();
             break;
           case "KeyR":
@@ -70,7 +65,12 @@ export class KeyEvent {
           this.arrowRight(event);
           this.editor.text.resetKoreanComposing();
           break;
+        case "F12":
+          this.arrowRight(event);
+          this.editor.text.resetKoreanComposing();
+          break;
         default:
+          event.preventDefault();
           console.log(`Unhandled special key: ${event.key}`);
           return;
       }
@@ -193,36 +193,48 @@ export class KeyEvent {
     this.editor.select.deleteSelectedRange();
   }
 
-  async paste() {
+  async paste(event?: ClipboardEvent) {
     try {
-      const clipboardItems = await navigator.clipboard.read();
+      let htmlText = "";
+      let plainText = "";
+      console.log(event);
 
-      for (const item of clipboardItems) {
-        if (item.types.includes("text/html")) {
-          const blob = await item.getType("text/html");
-          const htmlText = await blob.text();
-          //TODO: vscode copy case
-          const textFragments = convertHTMLToText(
-            htmlText,
-            this.editor.textStyle.defaultStyle
-          );
-
-          this.editor.text.addTexts(textFragments);
-        } else if (item.types.includes("text/plain")) {
-          const blob = await item.getType("text/plain");
-          const plainText = await blob.text();
-
-          const textStyle = this.editor.textStyle.getTextStyle(
-            this.editor.cursor.index
-          );
-
-          const textFragments: ITextFragment[] = plainText
-            .split("")
-            .map((v) => ({ text: v, ...textStyle }));
-
-          this.editor.text.addTexts(textFragments);
+      if (event?.clipboardData) {
+        event.preventDefault();
+        htmlText = event.clipboardData.getData("text/html");
+        plainText = event.clipboardData.getData("text/plain");
+      } else {
+        const clipboardItems = await navigator.clipboard.read();
+        for (const item of clipboardItems) {
+          if (item.types.includes("text/html")) {
+            const blob = await item.getType("text/html");
+            htmlText = await blob.text();
+          } else if (item.types.includes("text/plain")) {
+            const blob = await item.getType("text/plain");
+            plainText = await blob.text();
+          }
         }
       }
+
+      let textFragments: ITextFragment[];
+
+      if (htmlText) {
+        textFragments = convertHTMLToText(
+          htmlText,
+          this.editor.textStyle.defaultStyle
+        );
+      } else {
+        const textStyle = this.editor.textStyle.getTextStyle(
+          this.editor.cursor.index
+        );
+
+        textFragments = plainText
+          .split("")
+          .map((char) => ({ text: char, ...textStyle }));
+      }
+
+      this.editor.text.addTexts(textFragments);
+      this.editor.draw(true);
     } catch (error) {
       console.error(error);
     }

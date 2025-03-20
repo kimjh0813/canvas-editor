@@ -1,7 +1,7 @@
 import { ICursor } from "../../recoil";
 import { ILineText, ITextFragment } from "../types/text";
 import { createCanvasElement } from "../utils/ctx";
-import { getFontStyle } from "../utils/text";
+import { convertHTMLToText, getFontStyle } from "../utils/text";
 import { CanvasMouseManager } from "./CanvasMouseManager";
 import { Cursor } from "./Cursor";
 import { EditorLayout } from "./EditorLayout";
