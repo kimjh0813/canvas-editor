@@ -94,11 +94,13 @@ export function convertHTMLToText(
     const element = node as HTMLElement;
 
     if (element.tagName === "P" && fragments.length > 0) {
-      fragments.push({ text: "\n", ...newStyle });
+      const style = getLastTextStyle(fragments, defaultStyle);
+      fragments.push({ text: "\n", ...style });
     }
 
     if (element.tagName === "BR") {
-      fragments.push({ text: "\n", ...newStyle });
+      const style = getLastTextStyle(fragments, defaultStyle);
+      fragments.push({ text: "\n", ...style });
 
       return;
     }
@@ -116,6 +118,25 @@ export function convertHTMLToText(
 
   return fragments;
 }
+
+const getLastTextStyle = (
+  fragments: ITextFragment[],
+  defaultStyle: ITextStyle
+) => {
+  const lastText = [...fragments].reverse().find((f) => f.text !== "\n");
+
+  return lastText
+    ? {
+        fontSize: lastText.fontSize,
+        fontFamily: lastText.fontFamily,
+        color: lastText.color,
+        backgroundColor: lastText.backgroundColor,
+        bold: lastText.bold,
+        italic: lastText.italic,
+        underline: lastText.underline,
+      }
+    : defaultStyle;
+};
 
 function extractStyle(element: HTMLElement, baseStyle: ITextStyle): ITextStyle {
   return {

@@ -39,6 +39,8 @@ export class KeyEvent {
         this.editor.text.addText(event);
       }
     } else {
+      if (!functionKey.includes(event.key)) event.preventDefault();
+
       switch (event.key) {
         case "Backspace":
           shouldUpdateText = true;
@@ -65,12 +67,7 @@ export class KeyEvent {
           this.arrowRight(event);
           this.editor.text.resetKoreanComposing();
           break;
-        case "F12":
-          this.arrowRight(event);
-          this.editor.text.resetKoreanComposing();
-          break;
         default:
-          event.preventDefault();
           console.log(`Unhandled special key: ${event.key}`);
           return;
       }
