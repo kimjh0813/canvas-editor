@@ -8,9 +8,14 @@ export interface ITextStyle {
   fontFamily: string;
 }
 
+export interface ILineStyle {
+  align: "left" | "center" | "right";
+}
+
 export type ITextFragment = {
   text: string;
-} & ITextStyle;
+} & ITextStyle &
+  ILineStyle;
 
 export interface ILineText {
   endIndex: number;

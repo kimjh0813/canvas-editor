@@ -204,10 +204,12 @@ export class TextManager {
 
     if (!this._isKoreanComposing || cursorIndex === 0) {
       const fontStyle = this.editor.textStyle.getTextStyle(cursorIndex);
+      const lineStyle = this.editor.lineStyle.getLineStyle(cursorIndex);
 
       const newText = {
         text: key,
         ...fontStyle,
+        ...lineStyle,
       };
 
       this.insert(cursorIndex, 0, newText);
@@ -225,11 +227,13 @@ export class TextManager {
         this._textFragments[cursorIndex - 1].text = assembleText[0];
 
         const fontStyle = this.editor.textStyle.getTextStyle(cursorIndex);
+        const lineStyle = this.editor.lineStyle.getLineStyle(cursorIndex);
 
         for (let i = 1; i < assembleText.length; i++) {
           this.insert(cursorIndex, 0, {
             text: assembleText[i],
             ...fontStyle,
+            ...lineStyle,
           });
 
           this.editor.cursor.setCursorIndex(cursorIndex + 1, false);

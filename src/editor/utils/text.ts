@@ -69,14 +69,14 @@ export function convertTextToHTML(textFragments: ITextFragment[]): string {
 
 export function convertHTMLToText(
   html: string,
-  defaultStyle: ITextStyle
+  defaultStyle: Omit<ITextFragment, "text">
 ): ITextFragment[] {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, "text/html");
 
   const fragments: ITextFragment[] = [];
 
-  function parseNode(node: Node, currentStyle: ITextStyle) {
+  function parseNode(node: Node, currentStyle: Omit<ITextFragment, "text">) {
     const newStyle =
       node.nodeType === Node.ELEMENT_NODE
         ? extractStyle(node as HTMLElement, currentStyle)
@@ -121,12 +121,13 @@ export function convertHTMLToText(
 
 const getLastTextStyle = (
   fragments: ITextFragment[],
-  defaultStyle: ITextStyle
-) => {
+  defaultStyle: Omit<ITextFragment, "text">
+): Omit<ITextFragment, "text"> => {
   const lastText = [...fragments].reverse().find((f) => f.text !== "\n");
 
   return lastText
     ? {
+        align: "left",
         fontSize: lastText.fontSize,
         fontFamily: lastText.fontFamily,
         color: lastText.color,
@@ -138,8 +139,12 @@ const getLastTextStyle = (
     : defaultStyle;
 };
 
-function extractStyle(element: HTMLElement, baseStyle: ITextStyle): ITextStyle {
+function extractStyle(
+  element: HTMLElement,
+  baseStyle: Omit<ITextFragment, "text">
+): Omit<ITextFragment, "text"> {
   return {
+    align: "left",
     fontSize: element.style.fontSize
       ? parseFloat(element.style.fontSize)
       : baseStyle.fontSize,

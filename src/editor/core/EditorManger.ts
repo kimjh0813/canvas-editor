@@ -6,6 +6,7 @@ import { CanvasMouseManager } from "./CanvasMouseManager";
 import { Cursor } from "./Cursor";
 import { EditorLayout } from "./EditorLayout";
 import { KeyEvent } from "./KeyEvent";
+import { LineStyle } from "./LineStyle";
 import { SelectRange } from "./SelectRange";
 import { TextManager } from "./TextManager";
 import { TextStyle } from "./TextStyle";
@@ -18,6 +19,7 @@ export class EditorManger {
   keyEvent: KeyEvent;
   textStyle: TextStyle;
   canvasMouse: CanvasMouseManager;
+  lineStyle: LineStyle;
 
   private _prevRowIndex: number | null; //TODO:인덱스 말고 넓이 기준으로 바
 
@@ -38,6 +40,7 @@ export class EditorManger {
     this.layout = new EditorLayout(marginX, marginY, setPageSize);
     this.keyEvent = new KeyEvent(this);
     this.textStyle = new TextStyle(this, defaultFontSize);
+    this.lineStyle = new LineStyle(this);
     this.canvasMouse = new CanvasMouseManager(this, scrollContainerRef);
   }
 
@@ -72,6 +75,55 @@ export class EditorManger {
     let x = marginX;
     let y = marginY;
 
+    const pushLine = (
+      _lineText: ITextFragment[],
+      endIndex: number,
+      fontSize: number,
+      shouldReset?: boolean
+    ) => {
+      let maxFontSize = _lineText.reduce((acc, cur) => {
+        return cur.text === "\n" ? acc : Math.max(acc, cur.fontSize);
+      }, 0);
+
+      if (maxFontSize === 0) maxFontSize = fontSize;
+
+      let lineWidth = 0;
+      let xPos = marginX;
+      for (const fragment of _lineText) {
+        measureCtx.font = getFontStyle(fragment);
+        lineWidth += measureCtx.measureText(fragment.text).width;
+      }
+
+      const align = _lineText[0].align;
+
+      if (align === "center") {
+        xPos = (canvasWidth - lineWidth) / 2;
+      } else if (align === "right") {
+        xPos = canvasWidth - lineWidth - marginX;
+      }
+
+      const currentPageText = this.text.lineTexts.get(pageIndex) || [];
+      currentPageText.push({
+        endIndex,
+        maxFontSize,
+        text: _lineText,
+        x: xPos,
+        y,
+      });
+
+      this.text.lineTexts.set(pageIndex, currentPageText);
+
+      if (!shouldReset) return;
+
+      x = marginX;
+      y += maxFontSize * 1.48;
+
+      if (y + fontSize * 1.48 > canvasHeight - marginY) {
+        y = marginY;
+        pageIndex++;
+      }
+    };
+
     for (let i = 0; i < textFragments.length; i++) {
       const textFragment = textFragments[i];
 
@@ -80,52 +132,29 @@ export class EditorManger {
       ctx.font = getFontStyle(textFragment);
 
       const textWidth = ctx.measureText(text).width;
-
       const currentWidth = x + marginX + textWidth;
-
       const isLastText = i === textFragments.length - 1;
 
       let isSpaceLineWrap = false;
 
       if (currentWidth > canvasWidth && text !== "\n") {
-        let maxFontSize = lineText.reduce((acc, cur) => {
-          return cur.text === "\n" ? acc : Math.max(acc, cur.fontSize);
-        }, 0);
-
-        if (maxFontSize === 0) maxFontSize = fontSize;
-
         const lastSpaceIndex = lineText
           .map((t) => t.text)
           .join("")
           .lastIndexOf(" ");
 
         const hasSpace = lastSpaceIndex !== -1;
-        isSpaceLineWrap = hasSpace;
-        const _text = hasSpace
+        const _lineText = hasSpace
           ? lineText.slice(0, lastSpaceIndex + 1)
           : lineText;
+        const endIndex = hasSpace
+          ? i - (lineText.length - lastSpaceIndex) + 1 - 1
+          : i - 1;
 
-        const currentPageText = this.text.lineTexts.get(pageIndex) || [];
-        currentPageText.push({
-          endIndex: hasSpace
-            ? i - (lineText.length - lastSpaceIndex) + 1 - 1
-            : i - 1,
-          maxFontSize,
-          text: _text,
-          x: marginX,
-          y,
-        });
+        pushLine(_lineText, endIndex, fontSize, true);
 
-        this.text.lineTexts.set(pageIndex, currentPageText);
-
-        y += maxFontSize * 1.48;
-        x = marginX;
+        isSpaceLineWrap = hasSpace;
         lineText = hasSpace ? lineText.slice(lastSpaceIndex + 1) : [];
-
-        if (y + fontSize * 1.48 > canvasHeight - marginY) {
-          pageIndex++;
-          y = marginY;
-        }
       }
 
       if (lineText.length > 0 && isSpaceLineWrap) {
@@ -140,50 +169,13 @@ export class EditorManger {
       x += textWidth;
 
       if (text === "\n") {
-        let maxFontSize = lineText.reduce((acc, cur) => {
-          return cur.text === "\n" ? acc : Math.max(acc, cur.fontSize);
-        }, 0);
+        pushLine(lineText, i, fontSize, true);
 
-        if (maxFontSize === 0) maxFontSize = fontSize;
-
-        const currentPageText = this.text.lineTexts.get(pageIndex) || [];
-        currentPageText.push({
-          endIndex: i,
-          maxFontSize,
-          text: lineText,
-          x: marginX,
-          y,
-        });
-
-        this.text.lineTexts.set(pageIndex, currentPageText);
-
-        y += maxFontSize * 1.48;
-        x = marginX;
         lineText = [];
-
-        if (y + fontSize * 1.48 > canvasHeight - marginY) {
-          pageIndex++;
-          y = marginY;
-        }
       }
 
       if (isLastText) {
-        let maxFontSize = lineText.reduce((acc, cur) => {
-          return cur.text === "\n" ? acc : Math.max(acc, cur.fontSize);
-        }, 0);
-
-        if (maxFontSize === 0) maxFontSize = fontSize;
-
-        const currentPageText = this.text.lineTexts.get(pageIndex) || [];
-        currentPageText.push({
-          endIndex: i,
-          maxFontSize: maxFontSize,
-          text: lineText,
-          x: marginX,
-          y,
-        });
-
-        this.text.lineTexts.set(pageIndex, currentPageText);
+        pushLine(lineText, i, fontSize);
       }
     }
 

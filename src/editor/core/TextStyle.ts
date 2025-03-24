@@ -39,30 +39,6 @@ export class TextStyle {
     }
   }
 
-  getTextStyle(index: number) {
-    let textStyle: ITextStyle;
-
-    if (this._currentStyle) {
-      textStyle = this._currentStyle;
-    } else {
-      const prevTextFragment = this.editor.text.getTextFragment(index - 1);
-      const textFragment = this.editor.text.getTextFragment(index);
-
-      if (
-        prevTextFragment &&
-        (prevTextFragment.text !== "\n" || !textFragment)
-      ) {
-        textStyle = omit(prevTextFragment, "text");
-      } else if (textFragment) {
-        textStyle = omit(textFragment, "text");
-      } else {
-        textStyle = this._defaultStyle;
-      }
-    }
-
-    return textStyle;
-  }
-
   checkTextStyle(startIndex: number, endIndex: number) {
     const textFragments = this.editor.text.textFragments.slice(
       startIndex,
@@ -126,6 +102,30 @@ export class TextStyle {
             : textFragment.fontSize - 1,
       });
     }
+  }
+
+  getTextStyle(index: number) {
+    let textStyle: ITextStyle;
+
+    if (this._currentStyle) {
+      textStyle = this._currentStyle;
+    } else {
+      const prevTextFragment = this.editor.text.getTextFragment(index - 1);
+      const textFragment = this.editor.text.getTextFragment(index);
+
+      if (
+        prevTextFragment &&
+        (prevTextFragment.text !== "\n" || !textFragment)
+      ) {
+        textStyle = omit(prevTextFragment, "text");
+      } else if (textFragment) {
+        textStyle = omit(textFragment, "text");
+      } else {
+        textStyle = this._defaultStyle;
+      }
+    }
+
+    return textStyle;
   }
 
   reset() {

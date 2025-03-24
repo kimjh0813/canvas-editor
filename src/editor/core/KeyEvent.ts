@@ -37,6 +37,7 @@ export class KeyEvent {
       } else {
         shouldUpdateText = true;
         this.editor.text.addText(event);
+        event.preventDefault();
       }
     } else {
       if (!functionKey.includes(event.key)) event.preventDefault();
@@ -154,10 +155,12 @@ export class KeyEvent {
     }
 
     const textStyle = this.editor.textStyle.getTextStyle(cursorIndex);
+    const lineStyle = this.editor.lineStyle.getLineStyle(cursorIndex);
 
     this.editor.text.insert(cursorIndex, 0, {
       text: "\n",
       ...textStyle,
+      ...lineStyle,
     });
 
     this.editor.cursor.setCursorIndex(cursorIndex + 1, false);
@@ -216,18 +219,23 @@ export class KeyEvent {
       let textFragments: ITextFragment[];
 
       if (htmlText) {
-        textFragments = convertHTMLToText(
-          htmlText,
-          this.editor.textStyle.defaultStyle
-        );
+        const defaultStyle = {
+          ...this.editor.textStyle.defaultStyle,
+          ...this.editor.lineStyle.defaultStyle,
+        };
+
+        textFragments = convertHTMLToText(htmlText, defaultStyle);
       } else {
         const textStyle = this.editor.textStyle.getTextStyle(
+          this.editor.cursor.index
+        );
+        const lineStyle = this.editor.lineStyle.getLineStyle(
           this.editor.cursor.index
         );
 
         textFragments = plainText
           .split("")
-          .map((char) => ({ text: char, ...textStyle }));
+          .map((char) => ({ text: char, ...textStyle, ...lineStyle }));
       }
 
       this.editor.text.addTexts(textFragments);
