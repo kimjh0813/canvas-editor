@@ -82,8 +82,6 @@ export class EditorManger {
       fontSize: number,
       shouldReset?: boolean
     ) => {
-      if (_lineText.length < 1) return;
-
       let maxFontSize = _lineText.reduce((acc, cur) => {
         return cur.text === "\n" ? acc : Math.max(acc, cur.fontSize);
       }, 0);
@@ -97,7 +95,12 @@ export class EditorManger {
         lineWidth += measureCtx.measureText(fragment.text).width;
       }
 
-      const align = _lineText[0].align;
+      let align;
+      if (_lineText[0]) {
+        align = _lineText[0];
+      } else {
+        align = textFragments[textFragments.length - 1].align;
+      }
 
       if (align === "center") {
         xPos = (canvasWidth - lineWidth) / 2;
