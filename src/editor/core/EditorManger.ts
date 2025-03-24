@@ -81,6 +81,8 @@ export class EditorManger {
       fontSize: number,
       shouldReset?: boolean
     ) => {
+      if (_lineText.length < 1) return;
+
       let maxFontSize = _lineText.reduce((acc, cur) => {
         return cur.text === "\n" ? acc : Math.max(acc, cur.fontSize);
       }, 0);
