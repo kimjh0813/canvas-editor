@@ -1,7 +1,5 @@
-import { useSetRecoilState } from "recoil";
-
 import { useEditor } from "../../../context/EditorContext";
-import { cursorState } from "../../../recoil";
+
 import { IconWrapper } from "../styled";
 import { ColorPicker } from "../../ColorPicker";
 
@@ -9,7 +7,7 @@ import * as S from "./styled";
 import { useRef, useState } from "react";
 import { useAutoAnimate } from "@formkit/auto-animate/react";
 import { DropDownContent } from "../../ui";
-import { CursorStyle } from "./FontStyle";
+
 import { DropletOff } from "lucide-react";
 
 function BrushIcon({ color = "transparent" }: { color?: string }) {
@@ -45,43 +43,25 @@ function BrushIcon({ color = "transparent" }: { color?: string }) {
 
 interface BgColorProps {
   bgColor?: string;
-  setCursorStyle: React.Dispatch<React.SetStateAction<CursorStyle>>;
 }
 
-export function BgColor({ bgColor, setCursorStyle }: BgColorProps) {
-  const { editorManger, draw } = useEditor();
+export function BgColor({ bgColor }: BgColorProps) {
+  const { editorManger } = useEditor();
 
   const triggerRef = useRef<HTMLDivElement>(null);
 
   const [animate] = useAutoAnimate({ duration: 40, easing: "linear" });
 
-  const setCursor = useSetRecoilState(cursorState);
-
   const [isVisible, setIsVisible] = useState<boolean>(false);
 
-  const handelClick = (bgColor?: string) => {
-    const isAllSelect = editorManger.select.isAllSelect();
-    const isTextEmpty = editorManger.text.length() === 0;
-
-    if (isAllSelect || isTextEmpty) {
-      editorManger.textStyle.setDefaultStyle({ backgroundColor: bgColor });
-    }
-
-    if (editorManger.select.selectRange === null) {
-      editorManger.textStyle.setCurrentStyle({ backgroundColor: bgColor });
-    } else {
-      const { start, end } = editorManger.select.selectRange;
-
-      editorManger.textStyle.updateTextFragmentsStyle(start, end, {
-        backgroundColor: bgColor,
-      });
-
-      draw(true);
-    }
-
-    setCursorStyle((prev) => ({ ...prev, bgColor }));
-    setCursor((prev) => (prev ? { ...prev, isFocusCanvas: true } : prev));
+  const closeDropDown = () => {
     setIsVisible(false);
+  };
+
+  const handelClick = (backgroundColor?: string) => {
+    editorManger.textStyle.updateTextStyle({ backgroundColor });
+
+    closeDropDown();
   };
 
   return (
@@ -97,9 +77,7 @@ export function BgColor({ bgColor, setCursorStyle }: BgColorProps) {
           {isVisible && (
             <DropDownContent
               triggerRef={triggerRef}
-              onClickOutside={() => {
-                setIsVisible(false);
-              }}
+              onClickOutside={closeDropDown}
               style={{ width: "218px", padding: "14px 12px" }}
             >
               <S.RemoveBgColorButton

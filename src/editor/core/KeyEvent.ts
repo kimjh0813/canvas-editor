@@ -3,7 +3,11 @@ import Hangul from "hangul-js";
 import { isCommandKey } from "../utils/key";
 import { EditorManger } from "./EditorManger";
 import { functionKey } from "../../constants/key";
-import { convertHTMLToText, convertTextToHTML } from "../utils/text";
+import {
+  convertHTMLToText,
+  convertTextToHTML,
+  getCurrentStyleValue,
+} from "../utils/text";
 import { ITextFragment } from "../types/text";
 
 export class KeyEvent {
@@ -14,11 +18,35 @@ export class KeyEvent {
     let shouldUpdateText = false;
 
     if (event.key.length === 1) {
-      if (isCommandKey(event)) {
+      if (isCommandKey(event) && event.shiftKey) {
+        this.editor.text.resetKoreanComposing();
+        event.preventDefault();
+        switch (event.code) {
+          case "Period":
+            this.stepFontSize("plus");
+            break;
+          case "Comma":
+            this.stepFontSize("minus");
+            break;
+          default:
+            return;
+        }
+      } else if (isCommandKey(event)) {
         this.editor.text.resetKoreanComposing();
         switch (event.code) {
+          case "KeyB":
+            this.bold();
+            break;
+          case "KeyI":
+            this.italic();
+            break;
+          case "KeyU":
+            this.underLine();
+            break;
           case "KeyC":
             this.copy();
+            break;
+          case "KeyV":
             break;
           case "KeyX":
             shouldUpdateText = true;
@@ -32,6 +60,7 @@ export class KeyEvent {
             location.reload();
             break;
           default:
+            event.preventDefault();
             return;
         }
       } else {
@@ -42,7 +71,7 @@ export class KeyEvent {
     } else {
       if (!functionKey.includes(event.key)) event.preventDefault();
 
-      switch (event.key) {
+      switch (event.code) {
         case "Backspace":
           shouldUpdateText = true;
           this.backSpace(event);
@@ -243,6 +272,30 @@ export class KeyEvent {
     } catch (error) {
       console.error(error);
     }
+  }
+
+  bold() {
+    const isBold = getCurrentStyleValue(this.editor, "bold");
+
+    this.editor.textStyle.updateTextStyle({ bold: !isBold });
+  }
+
+  italic() {
+    const isItalic = getCurrentStyleValue(this.editor, "italic");
+
+    this.editor.textStyle.updateTextStyle({ italic: !isItalic });
+  }
+
+  underLine() {
+    const isUnderline = getCurrentStyleValue(this.editor, "underline");
+
+    this.editor.textStyle.updateTextStyle({ underline: !isUnderline });
+  }
+
+  stepFontSize(type: "plus" | "minus") {
+    const fontSize = getCurrentStyleValue(this.editor, "fontSize");
+
+    this.editor.textStyle.adjustFontSize(type, fontSize);
   }
 
   arrowUp(event: KeyboardEvent) {

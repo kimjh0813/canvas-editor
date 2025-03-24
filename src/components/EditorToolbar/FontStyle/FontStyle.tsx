@@ -1,4 +1,4 @@
-import { useRecoilValue } from "recoil";
+import { useRecoilState, useRecoilValue } from "recoil";
 import { useEditor } from "../../../context/EditorContext";
 import { VerticalDivider } from "../styled";
 import { Bold } from "./Bold";
@@ -14,28 +14,57 @@ import { BgColor } from "./BgColor";
 import { Family } from "./Family";
 
 export interface CursorStyle {
-  fontFamily: string;
+  bold: boolean;
+  italic: boolean;
+  underline: boolean;
   fontSize: string;
-  isBold: boolean;
-  isItalic: boolean;
-  isUnderline: boolean;
   color: string;
-  bgColor?: string;
+  fontFamily: string;
+  backgroundColor?: string;
 }
 
 export function FontStyle() {
   const { editorManger } = useEditor();
 
-  const cursor = useRecoilValue(cursorState);
+  const [cursor, setCursor] = useRecoilState(cursorState);
 
   const [cursorStyle, setCursorStyle] = useState<CursorStyle>({
     fontFamily: "Arial",
     fontSize: "",
-    isBold: false,
-    isItalic: false,
-    isUnderline: false,
+    bold: false,
+    italic: false,
+    underline: false,
     color: "#000000",
   });
+
+  useEffect(() => {
+    const handleCursorStyleChange = (e: Event) => {
+      const detail = (e as CustomEvent).detail as Partial<CursorStyle>;
+
+      setCursorStyle((prev) => ({
+        ...prev,
+        ...detail,
+      }));
+
+      setCursor((prev) => {
+        if (!prev || !prev.isFocusCanvas) return prev;
+
+        return { ...prev, isFocusCanvas: true };
+      });
+    };
+
+    window.addEventListener(
+      "editor:cursorStyleChange",
+      handleCursorStyleChange
+    );
+
+    return () => {
+      window.removeEventListener(
+        "editor:cursorStyleChange",
+        handleCursorStyleChange
+      );
+    };
+  }, [setCursor]);
 
   useEffect(() => {
     if (!cursor) return;
@@ -53,23 +82,23 @@ export function FontStyle() {
       newCursorStyle = {
         fontFamily: cTextStyle?.fontFamily ?? "",
         fontSize: cTextStyle?.fontSize ? String(cTextStyle.fontSize) : "",
-        isBold: !!cTextStyle?.bold,
-        isItalic: !!cTextStyle?.italic,
-        isUnderline: !!cTextStyle?.underline,
+        bold: !!cTextStyle?.bold,
+        italic: !!cTextStyle?.italic,
+        underline: !!cTextStyle?.underline,
         color: cTextStyle?.color ?? "#000000",
-        bgColor: cTextStyle?.backgroundColor,
+        backgroundColor: cTextStyle?.backgroundColor,
       };
     } else {
-      const fontStyle = editorManger.textStyle.getTextStyle(cursor.index);
+      const textStyle = editorManger.textStyle.getTextStyle(cursor.index);
 
       newCursorStyle = {
-        fontFamily: fontStyle.fontFamily,
-        fontSize: String(fontStyle.fontSize || ""),
-        isBold: !!fontStyle.bold,
-        isItalic: !!fontStyle.italic,
-        isUnderline: !!fontStyle?.underline,
-        color: fontStyle.color,
-        bgColor: fontStyle?.backgroundColor,
+        fontFamily: textStyle.fontFamily,
+        fontSize: String(textStyle.fontSize || ""),
+        bold: !!textStyle.bold,
+        italic: !!textStyle.italic,
+        underline: !!textStyle?.underline,
+        color: textStyle.color,
+        backgroundColor: textStyle?.backgroundColor,
       };
     }
 
@@ -81,21 +110,15 @@ export function FontStyle() {
   return (
     <>
       <VerticalDivider />
-      <Family
-        fontFamily={cursorStyle.fontFamily}
-        setCursorStyle={setCursorStyle}
-      />
+      <Family fontFamily={cursorStyle.fontFamily} />
       <VerticalDivider />
       <Size fontSize={cursorStyle.fontSize} setCursorStyle={setCursorStyle} />
       <VerticalDivider />
-      <Bold isBold={cursorStyle.isBold} setCursorStyle={setCursorStyle} />
-      <Italic isItalic={cursorStyle.isItalic} setCursorStyle={setCursorStyle} />
-      <Underline
-        isUnderline={cursorStyle.isUnderline}
-        setCursorStyle={setCursorStyle}
-      />
-      <Color color={cursorStyle.color} setCursorStyle={setCursorStyle} />
-      <BgColor bgColor={cursorStyle.bgColor} setCursorStyle={setCursorStyle} />
+      <Bold isBold={cursorStyle.bold} />
+      <Italic isItalic={cursorStyle.italic} />
+      <Underline isUnderline={cursorStyle.underline} />
+      <Color color={cursorStyle.color} />
+      <BgColor bgColor={cursorStyle.backgroundColor} />
       <VerticalDivider />
     </>
   );

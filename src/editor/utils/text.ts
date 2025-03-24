@@ -1,5 +1,8 @@
 import { fontFamilyList } from "../../constants/toolbar";
+import { EditorManger } from "../core/EditorManger";
 import { ITextFragment, ITextStyle } from "../types/text";
+
+export const isValidFontSize = (size: number) => size >= 1 && size <= 120;
 
 export function getFontStyle(textFragment: ITextFragment) {
   const { fontSize, fontFamily, bold, italic } = textFragment;
@@ -9,6 +12,22 @@ export function getFontStyle(textFragment: ITextFragment) {
   const italicStyle = italic ? "italic" : "normal";
 
   return `${italicStyle} ${fontWeight} ${fontSize}px ${fontFamily}`;
+}
+
+export function getCurrentStyleValue<K extends keyof ITextStyle>(
+  editor: EditorManger,
+  key: K
+) {
+  const { select, cursor, textStyle } = editor;
+
+  if (select.selectRange) {
+    return textStyle.checkTextStyle(
+      select.selectRange.start,
+      select.selectRange.end
+    )?.[key];
+  }
+
+  return textStyle.getTextStyle(cursor.index)[key];
 }
 
 export function convertTextToHTML(textFragments: ITextFragment[]): string {

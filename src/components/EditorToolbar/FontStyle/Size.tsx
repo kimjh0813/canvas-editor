@@ -1,7 +1,5 @@
 import { useRef, useState } from "react";
 
-import { useSetRecoilState } from "recoil";
-import { cursorState } from "../../../recoil";
 import { isValidInteger } from "../../../utils/isValidInteger";
 import { fontSizeList } from "../../../constants/toolbar";
 import { DropDownContent } from "../../ui";
@@ -19,21 +17,23 @@ interface SizeProps {
 }
 
 export function Size({ fontSize, setCursorStyle }: SizeProps) {
-  const { editorManger, draw } = useEditor();
+  const { editorManger } = useEditor();
 
   const triggerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [animate] = useAutoAnimate({ duration: 80, easing: "linear" });
 
-  const setCursor = useSetRecoilState(cursorState);
-
   const [isVisible, setIsVisible] = useState<boolean>(false);
+
+  const closeDropDown = () => {
+    setIsVisible(false);
+  };
 
   const changeFontSize = (size?: number) => {
     let _fontSize = size ? size : Number(fontSize);
 
-    if (!isValidInteger(_fontSize) || _fontSize === 0) {
+    if (!isValidInteger(_fontSize) || _fontSize < 1) {
       setCursorStyle((prev) => ({
         ...prev,
         fontSize: String(editorManger.textStyle.defaultFontSize),
@@ -44,51 +44,8 @@ export function Size({ fontSize, setCursorStyle }: SizeProps) {
 
     if (_fontSize > 120) _fontSize = 120;
 
-    const isAllSelect = editorManger.select.isAllSelect();
-    const isTextEmpty = editorManger.text.length() === 0;
-    const selectRange = editorManger.select.selectRange;
-
-    if (isAllSelect || isTextEmpty) {
-      editorManger.textStyle.setDefaultStyle({ fontSize: _fontSize });
-    }
-
-    if (isTextEmpty || !selectRange) {
-      const lineText = editorManger.text.getLineText(editorManger.cursor.index);
-      const lineMaxFontSize = lineText?.text.length
-        ? lineText.maxFontSize
-        : _fontSize;
-
-      editorManger.textStyle.setCurrentStyle({ fontSize: _fontSize });
-
-      setCursor((prev) =>
-        prev
-          ? {
-              ...prev,
-              fontSize: _fontSize,
-              lineMaxFontSize,
-              isFocusCanvas: true,
-            }
-          : prev
-      );
-    } else {
-      editorManger.textStyle.updateTextFragmentsStyle(
-        selectRange.start,
-        selectRange.end,
-        {
-          fontSize: _fontSize,
-        }
-      );
-
-      setCursor((prev) => (prev ? { ...prev, isFocusCanvas: true } : prev));
-      draw(true);
-    }
-
-    setCursorStyle((prev) => ({
-      ...prev,
-      fontSize: String(_fontSize),
-    }));
-
-    setIsVisible(false);
+    editorManger.textStyle.updateFontSize(_fontSize);
+    closeDropDown();
   };
 
   const handleIconClick = (
@@ -97,28 +54,7 @@ export function Size({ fontSize, setCursorStyle }: SizeProps) {
   ) => {
     e.stopPropagation();
 
-    const selectRange = editorManger.select.selectRange;
-    const isAllSelect = editorManger.select.isAllSelect();
-    const newFontSize = (Number(fontSize) || 0) + (type === "plus" ? 1 : -1);
-
-    if (selectRange) {
-      if (isAllSelect) {
-        editorManger.textStyle.setDefaultStyle({ fontSize: newFontSize });
-      }
-
-      editorManger.textStyle.adjustSelectedFontSize(
-        selectRange.start,
-        selectRange.end,
-        type
-      );
-
-      setCursorStyle((prev) => ({ ...prev, fontSize: String(newFontSize) }));
-      setCursor((prev) => (prev ? { ...prev, isFocusCanvas: true } : prev));
-
-      draw(true);
-    } else {
-      changeFontSize(newFontSize);
-    }
+    editorManger.keyEvent.stepFontSize(type);
   };
 
   return (

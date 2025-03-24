@@ -1,3 +1,4 @@
+import { SetterOrUpdater } from "recoil";
 import { ICursor } from "../../recoil";
 import { ILineText } from "../types/text";
 import { createCanvasElement } from "../utils/ctx";
@@ -7,22 +8,18 @@ import { EditorManger } from "./EditorManger";
 export class Cursor {
   private _index: number;
 
-  private _setCursor: (cursor: ICursor) => void;
-
   constructor(
     private editor: EditorManger,
-    setCursor: (cursor: ICursor) => void
+    public setCursor: SetterOrUpdater<ICursor | undefined>
   ) {
     this._index = 0;
-
-    this._setCursor = setCursor;
   }
 
   public get index() {
     return this._index;
   }
 
-  setCursor(
+  updateCursorState(
     cursor: Omit<
       ICursor,
       "isFocusCanvas" | "index" | "lineMaxFontSize" | "fontSize"
@@ -42,7 +39,7 @@ export class Cursor {
 
     const textStyle = this.editor.textStyle.getTextStyle(this._index);
 
-    this._setCursor({
+    this.setCursor({
       ...cursor,
       fontSize: textStyle.fontSize,
       lineMaxFontSize,
@@ -101,7 +98,7 @@ export class Cursor {
       x += ctx.measureText(textFragment.text).width;
     });
 
-    this.setCursor({
+    this.updateCursorState({
       x,
       y: targetLine.y,
       pageIndex,
@@ -109,7 +106,7 @@ export class Cursor {
   }
 
   resetCursorToPage(pageIndex?: number) {
-    this.setCursor({
+    this.updateCursorState({
       x: this.editor.layout.marginX,
       y: this.editor.layout.marginY,
       pageIndex: pageIndex ?? 0,

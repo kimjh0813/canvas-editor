@@ -1,3 +1,4 @@
+import { SetterOrUpdater } from "recoil";
 import { ICursor } from "../../recoil";
 import { ILineText, ITextFragment } from "../types/text";
 import { createCanvasElement } from "../utils/ctx";
@@ -29,7 +30,7 @@ export class EditorManger {
     marginY: number,
     scrollContainerRef: React.RefObject<HTMLDivElement>,
     public draw: (shouldUpdateText: boolean) => void,
-    setCursor: (cursor: ICursor) => void,
+    setCursor: SetterOrUpdater<ICursor | undefined>,
     setPageSize: (pageSize: number) => void
   ) {
     this._prevRowIndex = null;

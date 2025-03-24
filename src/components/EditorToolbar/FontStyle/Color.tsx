@@ -1,10 +1,5 @@
-import { Bold as BoldIcon } from "lucide-react";
-
-import { useSetRecoilState } from "recoil";
-
-import { CursorStyle } from ".";
 import { useEditor } from "../../../context/EditorContext";
-import { cursorState } from "../../../recoil";
+
 import { IconWrapper } from "../styled";
 import { ColorPicker } from "../../ColorPicker";
 
@@ -39,43 +34,25 @@ function BaselineIcon({ color = "transparent" }: { color?: string }) {
 
 interface ColorProps {
   color?: string;
-  setCursorStyle: React.Dispatch<React.SetStateAction<CursorStyle>>;
 }
 
-export function Color({ color, setCursorStyle }: ColorProps) {
-  const { editorManger, draw } = useEditor();
+export function Color({ color }: ColorProps) {
+  const { editorManger } = useEditor();
 
   const triggerRef = useRef<HTMLDivElement>(null);
 
   const [animate] = useAutoAnimate({ duration: 40, easing: "linear" });
 
-  const setCursor = useSetRecoilState(cursorState);
-
   const [isVisible, setIsVisible] = useState<boolean>(false);
 
-  const handelClick = (selectColor: string) => {
-    const isAllSelect = editorManger.select.isAllSelect();
-    const isTextEmpty = editorManger.text.length() === 0;
-
-    if (isAllSelect || isTextEmpty) {
-      editorManger.textStyle.setDefaultStyle({ color: selectColor });
-    }
-
-    if (editorManger.select.selectRange === null) {
-      editorManger.textStyle.setCurrentStyle({ color: selectColor });
-    } else {
-      const { start, end } = editorManger.select.selectRange;
-
-      editorManger.textStyle.updateTextFragmentsStyle(start, end, {
-        color: selectColor,
-      });
-
-      draw(true);
-    }
-
-    setCursorStyle((prev) => ({ ...prev, color: selectColor }));
-    setCursor((prev) => (prev ? { ...prev, isFocusCanvas: true } : prev));
+  const closeDropDown = () => {
     setIsVisible(false);
+  };
+
+  const handelClick = (selectColor: string) => {
+    editorManger.textStyle.updateTextStyle({ color: selectColor });
+
+    closeDropDown();
   };
 
   return (
@@ -91,9 +68,7 @@ export function Color({ color, setCursorStyle }: ColorProps) {
           {isVisible && (
             <DropDownContent
               triggerRef={triggerRef}
-              onClickOutside={() => {
-                setIsVisible(false);
-              }}
+              onClickOutside={closeDropDown}
               style={{ width: "218px", padding: "14px 12px" }}
             >
               <ColorPicker selectColor={color} handelClick={handelClick} />
