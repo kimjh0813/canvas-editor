@@ -8,9 +8,22 @@ export interface ITextStyle {
   fontFamily: string;
 }
 
+export type TTextStyleKey =
+  | "bold"
+  | "italic"
+  | "underline"
+  | "fontSize"
+  | "color"
+  | "backgroundColor"
+  | "fontFamily";
+
 export interface ILineStyle {
-  align: "left" | "center" | "right";
+  align: TLineAlign;
 }
+
+export type TLineAlign = "left" | "center" | "right";
+
+export type TLineStyleKey = "align";
 
 export type ITextFragment = {
   text: string;

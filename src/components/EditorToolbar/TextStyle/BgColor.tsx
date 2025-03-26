@@ -58,7 +58,7 @@ export function BgColor({ bgColor }: BgColorProps) {
     setIsVisible(false);
   };
 
-  const handelClick = (backgroundColor?: string) => {
+  const handleClick = (backgroundColor?: string) => {
     editorManger.textStyle.updateTextStyle({ backgroundColor });
 
     closeDropDown();
@@ -83,13 +83,13 @@ export function BgColor({ bgColor }: BgColorProps) {
               <S.RemoveBgColorButton
                 onClick={(e) => {
                   e.stopPropagation();
-                  handelClick(undefined);
+                  handleClick(undefined);
                 }}
               >
                 <DropletOff width={16} height={16} />
                 <span style={{ fontSize: 14 }}>없음</span>
               </S.RemoveBgColorButton>
-              <ColorPicker selectColor={bgColor} handelClick={handelClick} />
+              <ColorPicker selectColor={bgColor} handleClick={handleClick} />
             </DropDownContent>
           )}
         </div>

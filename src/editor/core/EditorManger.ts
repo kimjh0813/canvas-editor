@@ -1,6 +1,6 @@
 import { SetterOrUpdater } from "recoil";
 import { ICursor } from "../../recoil";
-import { ILineText, ITextFragment } from "../types/text";
+import { ILineText, ITextFragment, TLineAlign } from "../types/text";
 import { createCanvasElement } from "../utils/ctx";
 import { convertHTMLToText, getFontStyle } from "../utils/text";
 import { CanvasMouseManager } from "./CanvasMouseManager";
@@ -95,9 +95,9 @@ export class EditorManger {
         lineWidth += measureCtx.measureText(fragment.text).width;
       }
 
-      let align;
+      let align: TLineAlign;
       if (_lineText[0]) {
-        align = _lineText[0];
+        align = _lineText[0].align;
       } else {
         align = textFragments[textFragments.length - 1].align;
       }

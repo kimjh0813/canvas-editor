@@ -5,15 +5,15 @@ import { Bold } from "./Bold";
 
 import { cursorState } from "../../../recoil";
 import { useEffect, useState } from "react";
-import { Size } from "./Size";
+import { FontSize } from "./FontSize";
 import { isEqual } from "lodash";
 import { Italic } from "./Italic";
 import { Underline } from "./Underline";
 import { Color } from "./Color";
 import { BgColor } from "./BgColor";
-import { Family } from "./Family";
+import { FontFamily } from "./FontFamily";
 
-export interface CursorStyle {
+export interface CurrentTextStyle {
   bold: boolean;
   italic: boolean;
   underline: boolean;
@@ -23,12 +23,12 @@ export interface CursorStyle {
   backgroundColor?: string;
 }
 
-export function FontStyle() {
+export function TextStyle() {
   const { editorManger } = useEditor();
 
   const [cursor, setCursor] = useRecoilState(cursorState);
 
-  const [cursorStyle, setCursorStyle] = useState<CursorStyle>({
+  const [currentTextStyle, setCurrentTextStyle] = useState<CurrentTextStyle>({
     fontFamily: "Arial",
     fontSize: "",
     bold: false,
@@ -38,30 +38,30 @@ export function FontStyle() {
   });
 
   useEffect(() => {
-    const handleCursorStyleChange = (e: Event) => {
-      const detail = (e as CustomEvent).detail as Partial<CursorStyle>;
+    const handleCurrentTextStyleChange = (e: Event) => {
+      const detail = (e as CustomEvent).detail as Partial<CurrentTextStyle>;
 
-      setCursorStyle((prev) => ({
+      setCurrentTextStyle((prev) => ({
         ...prev,
         ...detail,
       }));
 
       setCursor((prev) => {
-        if (!prev || !prev.isFocusCanvas) return prev;
+        if (!prev || prev.isFocusCanvas) return prev;
 
         return { ...prev, isFocusCanvas: true };
       });
     };
 
     window.addEventListener(
-      "editor:cursorStyleChange",
-      handleCursorStyleChange
+      "editor:currentTextStyleChange",
+      handleCurrentTextStyleChange
     );
 
     return () => {
       window.removeEventListener(
-        "editor:cursorStyleChange",
-        handleCursorStyleChange
+        "editor:currentTextStyleChange",
+        handleCurrentTextStyleChange
       );
     };
   }, [setCursor]);
@@ -69,7 +69,7 @@ export function FontStyle() {
   useEffect(() => {
     if (!cursor) return;
 
-    let newCursorStyle: CursorStyle;
+    let newCursorStyle: CurrentTextStyle;
 
     const selectRange = editorManger.select.selectRange;
 
@@ -102,23 +102,26 @@ export function FontStyle() {
       };
     }
 
-    if (!isEqual(cursorStyle, newCursorStyle)) {
-      setCursorStyle(newCursorStyle);
+    if (!isEqual(currentTextStyle, newCursorStyle)) {
+      setCurrentTextStyle(newCursorStyle);
     }
   }, [cursor]);
 
   return (
     <>
       <VerticalDivider />
-      <Family fontFamily={cursorStyle.fontFamily} />
+      <FontFamily fontFamily={currentTextStyle.fontFamily} />
       <VerticalDivider />
-      <Size fontSize={cursorStyle.fontSize} setCursorStyle={setCursorStyle} />
+      <FontSize
+        fontSize={currentTextStyle.fontSize}
+        setCurrentTextStyle={setCurrentTextStyle}
+      />
       <VerticalDivider />
-      <Bold isBold={cursorStyle.bold} />
-      <Italic isItalic={cursorStyle.italic} />
-      <Underline isUnderline={cursorStyle.underline} />
-      <Color color={cursorStyle.color} />
-      <BgColor bgColor={cursorStyle.backgroundColor} />
+      <Bold isBold={currentTextStyle.bold} />
+      <Italic isItalic={currentTextStyle.italic} />
+      <Underline isUnderline={currentTextStyle.underline} />
+      <Color color={currentTextStyle.color} />
+      <BgColor bgColor={currentTextStyle.backgroundColor} />
       <VerticalDivider />
     </>
   );

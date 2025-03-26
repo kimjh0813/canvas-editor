@@ -3,7 +3,7 @@ import { cursorState } from "../../recoil";
 import { useCallback } from "react";
 import { useSetRecoilState } from "recoil";
 import { useEditor } from "../../context/EditorContext";
-import { FontStyle } from "./FontStyle";
+import { TextStyle } from "./TextStyle";
 
 export function EditorToolbar() {
   const { editorManger } = useEditor();
@@ -23,7 +23,7 @@ export function EditorToolbar() {
   return (
     <S.EditorToolbarContainer onClick={toolbarClick}>
       <S.EditorControlWrapper>
-        <FontStyle />
+        <TextStyle />
       </S.EditorControlWrapper>
     </S.EditorToolbarContainer>
   );

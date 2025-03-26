@@ -5,10 +5,10 @@ import { shouldUseWhiteCheck } from "../../utils/color";
 
 interface ColorPickerProps {
   selectColor?: string;
-  handelClick: (color: string) => void;
+  handleClick: (color: string) => void;
 }
 
-export function ColorPicker({ selectColor, handelClick }: ColorPickerProps) {
+export function ColorPicker({ selectColor, handleClick }: ColorPickerProps) {
   return (
     <S.Container>
       {pickColors.map((colors, i) => {
@@ -22,7 +22,7 @@ export function ColorPicker({ selectColor, handelClick }: ColorPickerProps) {
                   $isNeedBorder={needBorderColors.includes(color)}
                   onClick={(e) => {
                     e.stopPropagation();
-                    handelClick(color);
+                    handleClick(color);
                   }}
                 >
                   {selectColor === color && (

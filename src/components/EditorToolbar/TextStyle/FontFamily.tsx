@@ -12,7 +12,7 @@ interface BgColorProps {
   fontFamily: string;
 }
 
-export function Family({ fontFamily }: BgColorProps) {
+export function FontFamily({ fontFamily }: BgColorProps) {
   const { editorManger } = useEditor();
 
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -24,7 +24,7 @@ export function Family({ fontFamily }: BgColorProps) {
     setIsVisible(false);
   };
 
-  const handelClick = (_fontFamily: string) => {
+  const handleClick = (_fontFamily: string) => {
     editorManger.textStyle.updateTextStyle({ fontFamily: _fontFamily });
 
     closeDropDown();
@@ -61,7 +61,7 @@ export function Family({ fontFamily }: BgColorProps) {
                       style={{ fontFamily: f }}
                       onClick={(e) => {
                         e.stopPropagation();
-                        handelClick(f);
+                        handleClick(f);
                       }}
                     >
                       <div className="icon-wrapper">

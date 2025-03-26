@@ -1,11 +1,20 @@
-import { ITextStyle } from "../types/text";
-import { dispatchCursorStyleUpdate } from "../utils/event";
-import { getCurrentStyleValue, isValidFontSize } from "../utils/text";
+import { pick } from "lodash";
+import { ITextStyle, TTextStyleKey } from "../types/text";
+import { dispatchCurrentTextStyleUpdate } from "../utils/event";
+import { isValidFontSize } from "../utils/text";
 import { EditorManger } from "./EditorManger";
 
-import omit from "lodash/omit";
-
 export class TextStyle {
+  textStyleKeys: TTextStyleKey[] = [
+    "bold",
+    "italic",
+    "underline",
+    "fontSize",
+    "color",
+    "backgroundColor",
+    "fontFamily",
+  ];
+
   private _defaultStyle: ITextStyle;
   private _currentStyle: ITextStyle | undefined;
 
@@ -58,9 +67,9 @@ export class TextStyle {
         prevTextFragment &&
         (prevTextFragment.text !== "\n" || !textFragment)
       ) {
-        textStyle = omit(prevTextFragment, "text");
+        textStyle = pick(prevTextFragment, this.textStyleKeys);
       } else if (textFragment) {
-        textStyle = omit(textFragment, "text");
+        textStyle = pick(textFragment, this.textStyleKeys);
       } else {
         textStyle = this._defaultStyle;
       }
@@ -77,7 +86,10 @@ export class TextStyle {
 
     if (textFragments.length === 0) return;
 
-    const baseStyle: Partial<ITextStyle> = omit(textFragments[0], "text");
+    const baseStyle: Partial<ITextStyle> = pick(
+      textFragments[0],
+      this.textStyleKeys
+    );
 
     for (let i = 1; i < textFragments.length; i++) {
       const fragment = textFragments[i];
@@ -112,10 +124,6 @@ export class TextStyle {
     const isAllSelect = this.editor.select.isAllSelect();
     const isTextEmpty = this.editor.text.length() === 0;
 
-    if (isAllSelect || isTextEmpty) {
-      this.editor.textStyle.setDefaultStyle(style);
-    }
-
     if (this.editor.select.selectRange === null) {
       this.editor.textStyle.setCurrentStyle(style);
     } else {
@@ -126,7 +134,7 @@ export class TextStyle {
       this.editor.draw(true);
     }
 
-    dispatchCursorStyleUpdate(style);
+    dispatchCurrentTextStyleUpdate(style);
   }
 
   updateFontSize(fontSize: number) {
@@ -168,7 +176,7 @@ export class TextStyle {
       this.editor.draw(true);
     }
 
-    dispatchCursorStyleUpdate({ fontSize: String(fontSize) });
+    dispatchCurrentTextStyleUpdate({ fontSize: String(fontSize) });
   }
 
   adjustFontSize(type: "plus" | "minus", fontSize?: number) {
@@ -208,7 +216,9 @@ export class TextStyle {
       }
 
       if (newFontSize && isValidFontSize(newFontSize))
-        dispatchCursorStyleUpdate({ fontSize: String(newFontSize + delta) });
+        dispatchCurrentTextStyleUpdate({
+          fontSize: String(newFontSize + delta),
+        });
 
       this.editor.draw(true);
     } else {

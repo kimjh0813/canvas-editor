@@ -11,14 +11,14 @@ interface UnderlineProps {
 export function Underline({ isUnderline }: UnderlineProps) {
   const { editorManger } = useEditor();
 
-  const handelClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
 
     editorManger.keyEvent.underLine();
   };
 
   return (
-    <IconWrapper onClick={handelClick} $isActive={isUnderline}>
+    <IconWrapper onClick={handleClick} $isActive={isUnderline}>
       <UnderlineIcon width={16} height={16} strokeWidth={2} />
     </IconWrapper>
   );

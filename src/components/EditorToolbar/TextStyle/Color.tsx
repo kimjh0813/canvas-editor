@@ -49,7 +49,7 @@ export function Color({ color }: ColorProps) {
     setIsVisible(false);
   };
 
-  const handelClick = (selectColor: string) => {
+  const handleClick = (selectColor: string) => {
     editorManger.textStyle.updateTextStyle({ color: selectColor });
 
     closeDropDown();
@@ -71,7 +71,7 @@ export function Color({ color }: ColorProps) {
               onClickOutside={closeDropDown}
               style={{ width: "218px", padding: "14px 12px" }}
             >
-              <ColorPicker selectColor={color} handelClick={handelClick} />
+              <ColorPicker selectColor={color} handleClick={handleClick} />
             </DropDownContent>
           )}
         </div>

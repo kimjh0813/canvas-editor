@@ -10,14 +10,14 @@ interface BoldProps {
 export function Bold({ isBold }: BoldProps) {
   const { editorManger } = useEditor();
 
-  const handelClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  const handleClick = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
 
     editorManger.keyEvent.bold();
   };
 
   return (
-    <IconWrapper onClick={handelClick} $isActive={isBold}>
+    <IconWrapper onClick={handleClick} $isActive={isBold}>
       <BoldIcon width={16} height={16} strokeWidth={2} />
     </IconWrapper>
   );

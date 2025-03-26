@@ -9,14 +9,14 @@ import { useEditor } from "../../../context/EditorContext";
 import * as S from "./styled";
 import { MinusIcon, PlusIcon } from "lucide-react";
 import { IconWrapper } from "../styled";
-import { CursorStyle } from "./FontStyle";
+import { CurrentTextStyle } from "./TextStyle";
 
 interface SizeProps {
   fontSize: string;
-  setCursorStyle: React.Dispatch<React.SetStateAction<CursorStyle>>;
+  setCurrentTextStyle: React.Dispatch<React.SetStateAction<CurrentTextStyle>>;
 }
 
-export function Size({ fontSize, setCursorStyle }: SizeProps) {
+export function FontSize({ fontSize, setCurrentTextStyle }: SizeProps) {
   const { editorManger } = useEditor();
 
   const triggerRef = useRef<HTMLDivElement>(null);
@@ -34,7 +34,7 @@ export function Size({ fontSize, setCursorStyle }: SizeProps) {
     let _fontSize = size ? size : Number(fontSize);
 
     if (!isValidInteger(_fontSize) || _fontSize < 1) {
-      setCursorStyle((prev) => ({
+      setCurrentTextStyle((prev) => ({
         ...prev,
         fontSize: String(editorManger.textStyle.defaultFontSize),
       }));
@@ -68,7 +68,7 @@ export function Size({ fontSize, setCursorStyle }: SizeProps) {
             ref={inputRef}
             value={fontSize}
             onChange={({ target: { value } }) => {
-              setCursorStyle((prev) => ({
+              setCurrentTextStyle((prev) => ({
                 ...prev,
                 fontSize: value,
               }));
