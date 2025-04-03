@@ -8,7 +8,7 @@ import {
   convertTextToHTML,
   getCurrentStyleValue,
 } from "../utils/text";
-import { ITextFragment } from "../types/text";
+import { ITextFragment, ITextStyle } from "../types/text";
 
 export class KeyEvent {
   constructor(private editor: EditorManger) {}
@@ -65,7 +65,7 @@ export class KeyEvent {
         }
       } else {
         shouldUpdateText = true;
-        this.editor.text.addText(event);
+        this.editor.text.addText(event.key);
         event.preventDefault();
       }
     } else {
@@ -186,6 +186,18 @@ export class KeyEvent {
     const textStyle = this.editor.textStyle.getTextStyle(cursorIndex);
     const lineStyle = this.editor.lineStyle.getLineStyle(cursorIndex);
 
+    if (cursorIndex + 1 === this.editor.text.length()) {
+      const _textStyle: ITextStyle = {
+        ...textStyle,
+        backgroundColor: textStyle.backgroundColor ?? undefined,
+        bold: textStyle.bold ?? undefined,
+        italic: textStyle.italic ?? undefined,
+        underline: textStyle.underline ?? undefined,
+      };
+
+      this.editor.text.setTextFragmentStyle(cursorIndex, _textStyle);
+    }
+
     this.editor.text.insert(cursorIndex, 0, {
       text: "\n",
       ...textStyle,
@@ -226,7 +238,6 @@ export class KeyEvent {
     try {
       let htmlText = "";
       let plainText = "";
-      console.log(event);
 
       if (event?.clipboardData) {
         event.preventDefault();
@@ -346,8 +357,6 @@ export class KeyEvent {
   }
 
   arrowDown(event: KeyboardEvent) {
-    this.editor.textStyle.reset();
-
     const cursorIndex = this.editor.cursor.index;
 
     const isEnd = this.editor.select.arrowClearSelectRange(
@@ -484,7 +493,7 @@ export class KeyEvent {
     } else {
       const result = this.editor.select.clearSelectedRange("end");
 
-      if (result) return;
+      if (result || targetIndex >= this.editor.text.length()) return;
     }
 
     this.editor.cursor.setCursorIndex(targetIndex);
@@ -492,8 +501,6 @@ export class KeyEvent {
 
   selectAll() {
     const textLength = this.editor.text.length();
-
-    if (textLength === 0) return;
 
     this.editor.select.updateSelectedRange(0, textLength);
     this.editor.cursor.setCursorIndex(textLength);

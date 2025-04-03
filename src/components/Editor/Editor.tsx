@@ -51,7 +51,7 @@ export function Editor() {
   }, []);
 
   useEffect(() => {
-    editorManger.cursor.resetCursorToPage();
+    draw(true);
   }, []);
 
   return (

@@ -35,7 +35,7 @@ export class EditorManger {
   ) {
     this._prevRowIndex = null;
 
-    this.text = new TextManager(this);
+    this.text = new TextManager(this, defaultFontSize);
     this.cursor = new Cursor(this, setCursor);
     this.select = new SelectRange(this);
     this.layout = new EditorLayout(marginX, marginY, setPageSize);
@@ -67,6 +67,7 @@ export class EditorManger {
 
     this.text.resetLineTexts();
 
+    const textLength = this.text.length();
     const textFragments = this.text.textFragments;
     const { canvasHeight, canvasWidth, marginX, marginY } = this.layout;
 
@@ -80,9 +81,18 @@ export class EditorManger {
       _lineText: ITextFragment[],
       endIndex: number,
       fontSize: number,
-      shouldReset?: boolean
+      shouldReset?: boolean,
+      isLastLine?: boolean
     ) => {
-      let maxFontSize = _lineText.reduce((acc, cur) => {
+      let __lineText: ITextFragment[];
+
+      if (isLastLine) {
+        __lineText = _lineText.slice(0, -1);
+      } else {
+        __lineText = _lineText;
+      }
+
+      let maxFontSize = __lineText.reduce((acc, cur) => {
         return cur.text === "\n" ? acc : Math.max(acc, cur.fontSize);
       }, 0);
 
@@ -99,7 +109,7 @@ export class EditorManger {
       if (_lineText[0]) {
         align = _lineText[0].align;
       } else {
-        align = textFragments[textFragments.length - 1].align;
+        align = textFragments[textLength - 1].align;
       }
 
       if (align === "center") {
@@ -130,7 +140,7 @@ export class EditorManger {
       }
     };
 
-    for (let i = 0; i < textFragments.length; i++) {
+    for (let i = 0; i < textLength; i++) {
       const textFragment = textFragments[i];
 
       const { text, fontSize } = textFragment;
@@ -139,7 +149,7 @@ export class EditorManger {
 
       const textWidth = ctx.measureText(text).width;
       const currentWidth = x + marginX + textWidth;
-      const isLastText = i === textFragments.length - 1;
+      const isLastText = i === textLength - 1;
 
       let isSpaceLineWrap = false;
 
@@ -181,7 +191,7 @@ export class EditorManger {
       }
 
       if (isLastText) {
-        pushLine(lineText, i, fontSize);
+        pushLine(lineText, i, fontSize, false, true);
       }
     }
 

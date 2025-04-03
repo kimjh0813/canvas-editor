@@ -45,6 +45,8 @@ export function drawTextFragments({
 
       if (!ctx) return;
 
+      const isLastLine = page === lineTexts.size - 1 && i === value.length - 1;
+
       drawLine({
         ctx,
         lineText,
@@ -52,6 +54,7 @@ export function drawTextFragments({
         composingIndex: editorManger.text.isKoreanComposing
           ? editorManger.cursor.index - 1
           : undefined,
+        isLastLine,
       });
     }
   }
@@ -65,6 +68,7 @@ interface DrawLineParams {
   lineText: ILineText;
   selectRange: ISelectRange | null;
   composingIndex?: number;
+  isLastLine?: boolean;
 }
 
 function drawLine({
@@ -72,6 +76,7 @@ function drawLine({
   ctx,
   selectRange,
   composingIndex,
+  isLastLine,
 }: DrawLineParams) {
   let lineX = lineText.x;
   const maxFontSize = lineText.maxFontSize;
@@ -81,15 +86,18 @@ function drawLine({
   let selectStartX: number | null = null;
   let selectWidth = 0;
 
-  for (let i = 0; i < lineText.text.length; i++) {
-    const index = lineText.endIndex - lineText.text.length + 1 + i;
+  const lineTextLength = lineText.text.length;
+  const limit = isLastLine ? lineTextLength - 1 : lineTextLength;
+
+  for (let i = 0; i < lineTextLength; i++) {
+    const index = lineText.endIndex - lineTextLength + 1 + i;
     const { text, underline, backgroundColor, color, fontSize } =
       lineText.text[i];
 
     ctx.font = getFontStyle(lineText.text[i]);
     const textWidth = ctx.measureText(text).width;
 
-    if (backgroundColor && text !== "\n") {
+    if (backgroundColor && text !== "\n" && i < limit) {
       addSegment(bgSegments, ["backgroundColor"], {
         backgroundColor,
         startX: lineX,
@@ -105,7 +113,7 @@ function drawLine({
     const isDrawUnderLine =
       composingIndex === index || (underline && text !== "\n");
 
-    if (isDrawUnderLine) {
+    if (isDrawUnderLine && i < limit) {
       addSegment(ulSegments, ["color", "fontSize"], {
         color,
         fontSize,

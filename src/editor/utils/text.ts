@@ -1,8 +1,16 @@
 import { fontFamilyList } from "../../constants/toolbar";
 import { EditorManger } from "../core/EditorManger";
-import { ITextFragment, ITextStyle } from "../types/text";
+import { ILineStyle, ITextFragment, ITextStyle } from "../types/text";
 
 export const isValidFontSize = (size: number) => size >= 1 && size <= 120;
+
+export function getDefaultTextStyle(defaultFontSize: number): ITextStyle {
+  return { fontSize: defaultFontSize, color: "#000000", fontFamily: "Arial" };
+}
+
+export function getDefaultLineStyle(): ILineStyle {
+  return { align: "left" };
+}
 
 export function getFontStyle(textFragment: ITextFragment) {
   const { fontSize, fontFamily, bold, italic } = textFragment;

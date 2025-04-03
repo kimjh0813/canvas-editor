@@ -1,7 +1,7 @@
 import { pick } from "lodash";
 import { ITextStyle, TTextStyleKey } from "../types/text";
 import { dispatchCurrentTextStyleUpdate } from "../utils/event";
-import { isValidFontSize } from "../utils/text";
+import { getDefaultTextStyle, isValidFontSize } from "../utils/text";
 import { EditorManger } from "./EditorManger";
 
 export class TextStyle {
@@ -19,11 +19,7 @@ export class TextStyle {
   private _currentStyle: ITextStyle | undefined;
 
   constructor(private editor: EditorManger, defaultFontSize: number) {
-    this._defaultStyle = {
-      fontSize: defaultFontSize,
-      fontFamily: "Arial",
-      color: "#000000",
-    };
+    this._defaultStyle = getDefaultTextStyle(defaultFontSize);
     this._currentStyle = undefined;
   }
 
@@ -36,6 +32,8 @@ export class TextStyle {
   }
 
   reset() {
+    if (!this._currentStyle) return;
+
     this._currentStyle = undefined;
   }
 
@@ -111,7 +109,10 @@ export class TextStyle {
   ) {
     const textFragment = this.editor.text.getTextFragment(endIndex);
 
-    if (textFragment?.text === "\n") {
+    if (
+      textFragment?.text === "\n" ||
+      endIndex + 1 === this.editor.text.length()
+    ) {
       endIndex++;
     }
 
@@ -121,11 +122,25 @@ export class TextStyle {
   }
 
   updateTextStyle(style: Omit<Partial<ITextStyle>, "fontSize">) {
+    const cursorIndex = this.editor.cursor.index;
+    const textLength = this.editor.text.length();
     const isAllSelect = this.editor.select.isAllSelect();
-    const isTextEmpty = this.editor.text.length() === 0;
+    const isTextEmpty = textLength === 1;
+
+    if (isAllSelect || isTextEmpty) {
+      if (isTextEmpty) {
+        this.editor.text.setTextFragmentStyle(0, style);
+      }
+
+      this.editor.textStyle.setDefaultStyle(style);
+    }
 
     if (this.editor.select.selectRange === null) {
       this.editor.textStyle.setCurrentStyle(style);
+
+      if (cursorIndex >= textLength - 1) {
+        this.editor.text.setTextFragmentStyle(cursorIndex, style);
+      }
     } else {
       const { start, end } = this.editor.select.selectRange;
 
@@ -140,11 +155,18 @@ export class TextStyle {
   updateFontSize(fontSize: number) {
     if (!isValidFontSize(fontSize)) return;
 
+    const cursorIndex = this.editor.cursor.index;
+    const textLength = this.editor.text.length();
     const isAllSelect = this.editor.select.isAllSelect();
-    const isTextEmpty = this.editor.text.length() === 0;
     const selectRange = this.editor.select.selectRange;
+    const isTextEmpty = textLength === 1;
 
     if (isAllSelect || isTextEmpty) {
+      if (isTextEmpty) {
+        this.editor.text.setTextFragmentStyle(0, { fontSize });
+        this.editor.draw(true);
+      }
+
       this.setDefaultStyle({ fontSize });
     }
 
@@ -166,6 +188,11 @@ export class TextStyle {
             }
           : prev
       );
+
+      if (cursorIndex >= textLength - 1) {
+        this.editor.text.setTextFragmentStyle(cursorIndex, { fontSize });
+        this.editor.draw(true);
+      }
     } else {
       const { start, end } = selectRange;
 
@@ -187,7 +214,6 @@ export class TextStyle {
     const isAllSelect = this.editor.select.isAllSelect();
 
     if (selectRange) {
-      // console.log(newFontSize);
       if (isAllSelect && newFontSize && isValidFontSize(newFontSize)) {
         this.setDefaultStyle({
           fontSize: newFontSize,

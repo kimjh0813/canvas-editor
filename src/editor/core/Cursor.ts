@@ -25,17 +25,11 @@ export class Cursor {
       "isFocusCanvas" | "index" | "lineMaxFontSize" | "fontSize"
     >
   ) {
-    this.editor.textStyle.reset();
-
     let lineMaxFontSize;
 
-    if (this.editor.text.length() === 0) {
-      lineMaxFontSize = this.editor.textStyle.defaultFontSize;
-    } else {
-      lineMaxFontSize =
-        this.editor.text.getLineText(this._index)?.maxFontSize ??
-        this.editor.textStyle.defaultFontSize;
-    }
+    lineMaxFontSize =
+      this.editor.text.getLineText(this._index)?.maxFontSize ??
+      this.editor.textStyle.defaultFontSize;
 
     const textStyle = this.editor.textStyle.getTextStyle(this._index);
 
@@ -49,14 +43,15 @@ export class Cursor {
   }
 
   setCursorIndex(cursorIndex: number, shouldUpdatePosition: boolean = true) {
-    if (cursorIndex < 0 || this.editor.text.length() < cursorIndex) return;
+    if (cursorIndex < 0 || cursorIndex > this.editor.text.length()) return;
+
+    const isSameIndex = this._index === cursorIndex;
+    if (!isSameIndex) this.editor.textStyle.reset();
 
     this._index = cursorIndex;
 
     //just update index function because run setCursor from getCanvasData function
     if (!shouldUpdatePosition) return;
-
-    if (cursorIndex === 0) return this.resetCursorToPage();
 
     const ctx = createCanvasElement();
     if (!ctx) return;
@@ -66,7 +61,7 @@ export class Cursor {
     let targetLine: ILineText | null = null;
     let pageIndex = 0;
 
-    if (this._index > this.editor.text.length() - 1) {
+    if (this._index >= this.editor.text.length()) {
       const lastPage = lineTextArr[lineTextArr.length - 1];
       targetLine = lastPage[lastPage.length - 1];
       pageIndex = lineTextArr.length - 1;
@@ -102,14 +97,6 @@ export class Cursor {
       x,
       y: targetLine.y,
       pageIndex,
-    });
-  }
-
-  resetCursorToPage(pageIndex?: number) {
-    this.updateCursorState({
-      x: this.editor.layout.marginX,
-      y: this.editor.layout.marginY,
-      pageIndex: pageIndex ?? 0,
     });
   }
 }

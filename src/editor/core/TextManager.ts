@@ -4,6 +4,7 @@ import { ILineText, ITextFragment } from "../types/text";
 
 import { EditorManger } from "./EditorManger";
 import { isKorean } from "../utils/key";
+import { getDefaultLineStyle, getDefaultTextStyle } from "../utils/text";
 
 export class TextManager {
   private _textFragments: ITextFragment[];
@@ -11,13 +12,19 @@ export class TextManager {
 
   private _isKoreanComposing: boolean;
 
-  constructor(private editor: EditorManger) {
-    this._textFragments = [];
+  constructor(private editor: EditorManger, defaultFontSize: number) {
+    this._textFragments = [
+      {
+        text: " ",
+        ...getDefaultTextStyle(defaultFontSize),
+        ...getDefaultLineStyle(),
+      },
+    ];
     this._isKoreanComposing = false;
     this._lineTexts = new Map();
   }
 
-  public get textFragments() {
+  public get textFragments(): readonly ITextFragment[] {
     return this._textFragments;
   }
 
@@ -68,7 +75,7 @@ export class TextManager {
         const isLastLine = isLeft ? i === 0 : i === lineTextArr.length - 1;
 
         if (isLastLine) {
-          targetIndex = isLeft ? 0 : lineText.endIndex + 1;
+          targetIndex = isLeft ? 0 : lineText.endIndex;
         } else {
           targetIndex = isLeft
             ? lineText.endIndex - lineText.text.length + 1
@@ -84,10 +91,10 @@ export class TextManager {
 
   getRelativeLineTargetIndex(isCommandKey: boolean, type: "up" | "down") {
     const isUp = type === "up";
-    const textLength = this.editor.text.length();
+    const lastTextIndex = this.editor.text.length() - 1;
 
     if (isCommandKey) {
-      return isUp ? 0 : textLength;
+      return isUp ? 0 : lastTextIndex;
     }
 
     const cursorIndex = this.editor.cursor.index;
@@ -107,7 +114,7 @@ export class TextManager {
         const isLastLine = isUp ? i === 0 : i === lineTextArr.length - 1;
 
         if (isLastLine) {
-          targetIndex = isUp ? 0 : textLength;
+          targetIndex = isUp ? 0 : lastTextIndex;
         } else {
           targetLineText = isUp ? lineTextArr[i - 1] : lineTextArr[i + 1];
 
@@ -132,8 +139,11 @@ export class TextManager {
             }
           } else {
             if (targetLineText.endIndex < targetIndex) {
-              if (i === lineTextArr.length - 2 && targetIndex >= textLength) {
-                targetIndex = textLength;
+              if (
+                i === lineTextArr.length - 2 &&
+                targetIndex >= lastTextIndex
+              ) {
+                targetIndex = lastTextIndex;
               } else {
                 targetIndex = targetLineText.endIndex;
               }
@@ -194,13 +204,12 @@ export class TextManager {
     this._isKoreanComposing = false;
   }
 
-  addText(event: KeyboardEvent) {
+  addText(key: string) {
     this.editor.select.deleteSelectedRange();
 
     if (this.editor.prevRowIndex !== null) this.editor.setPrevRowIndex(null);
 
     const cursorIndex = this.editor.cursor.index;
-    const key = event.key;
 
     if (!this._isKoreanComposing || cursorIndex === 0) {
       const fontStyle = this.editor.textStyle.getTextStyle(cursorIndex);
@@ -266,10 +275,6 @@ export class TextManager {
     const cursorIndex = this.editor.cursor.index;
 
     this.remove(cursorIndex - 1, 1);
-
-    if (this._textFragments.length === 0) {
-      this.editor.cursor.resetCursorToPage();
-    }
 
     this.editor.cursor.setCursorIndex(cursorIndex - 1, false);
   }

@@ -1,4 +1,5 @@
 import { ISelectRange } from "../types/selectRange";
+import { ITextStyle } from "../types/text";
 import { EditorManger } from "./EditorManger";
 
 export class SelectRange {
@@ -24,12 +25,16 @@ export class SelectRange {
 
     this.editor.setPrevRowIndex(null);
 
+    const { start, end: _end } = this._selectRange;
+
     if (type === "start") {
-      this.editor.cursor.setCursorIndex(this._selectRange.start);
+      this.editor.cursor.setCursorIndex(start);
     }
 
     if (type === "end") {
-      this.editor.cursor.setCursorIndex(this._selectRange.end);
+      const end = _end === this.editor.text.length() ? _end - 1 : _end;
+
+      this.editor.cursor.setCursorIndex(end);
     }
 
     this._selectRange = null;
@@ -91,17 +96,28 @@ export class SelectRange {
   deleteSelectedRange() {
     if (this._selectRange === null) return false;
 
-    const { start, end } = this._selectRange;
+    const { start, end: _end } = this._selectRange;
+    const end = _end === this.editor.text.length() ? _end - 1 : _end;
+
+    if (this.isAllSelect()) {
+      const defaultStyle = this.editor.textStyle.defaultStyle;
+
+      const textStyle: ITextStyle = {
+        ...defaultStyle,
+        backgroundColor: defaultStyle.backgroundColor ?? undefined,
+        bold: defaultStyle.bold ?? undefined,
+        italic: defaultStyle.italic ?? undefined,
+        underline: defaultStyle.underline ?? undefined,
+      };
+
+      this.editor.text.setTextFragmentStyle(end, textStyle);
+    }
 
     this.editor.text.remove(start, end - start);
 
     this._selectRange = null;
 
     this.editor.cursor.setCursorIndex(start, false);
-
-    if (this.editor.text.length() === 0) {
-      this.editor.cursor.resetCursorToPage();
-    }
 
     return true;
   }

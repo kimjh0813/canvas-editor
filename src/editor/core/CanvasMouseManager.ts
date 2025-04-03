@@ -105,15 +105,17 @@ export class CanvasMouseManager {
     const lineTextArr = this.editor.text.lineTexts.get(pageIndex);
 
     if (!lineTextArr || lineTextArr.length === 0) {
-      this.editor.cursor.resetCursorToPage(pageIndex);
+      this.editor.cursor.setCursorIndex(0);
       return;
     }
 
-    const targetIndex = this.getTargetIndex(mouseX, mouseY, lineTextArr);
+    let targetIndex = this.getTargetIndex(mouseX, mouseY, lineTextArr);
 
     if (targetIndex === undefined) return;
+    if (targetIndex >= this.editor.text.length()) targetIndex--;
 
     this._downIndex = targetIndex;
+
     this.editor.cursor.setCursorIndex(targetIndex);
 
     this.editor.draw(false);
