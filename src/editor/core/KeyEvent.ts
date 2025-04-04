@@ -9,6 +9,7 @@ import {
   getCurrentStyleValue,
 } from "../utils/text";
 import { ITextFragment, ITextStyle } from "../types/text";
+import { omit } from "lodash";
 
 export class KeyEvent {
   constructor(private editor: EditorManger) {}
@@ -178,9 +179,10 @@ export class KeyEvent {
       prevTextFragment.text !== "\n" &&
       textFragment?.text === "\n"
     ) {
-      this.editor.text.setTextFragmentStyle(cursorIndex, {
-        fontSize: prevTextFragment.fontSize,
-      });
+      this.editor.text.setTextFragmentStyle(
+        cursorIndex,
+        omit(prevTextFragment, "text")
+      );
     }
 
     const textStyle = this.editor.textStyle.getTextStyle(cursorIndex);
