@@ -4,6 +4,8 @@ import { useCallback } from "react";
 import { useSetRecoilState } from "recoil";
 import { useEditor } from "../../context/EditorContext";
 import { TextStyle } from "./TextStyle";
+import { LineStyle } from "./LineStyle";
+import { Github } from "lucide-react";
 
 export function EditorToolbar() {
   const { editorManger } = useEditor();
@@ -24,6 +26,13 @@ export function EditorToolbar() {
     <S.EditorToolbarContainer onClick={toolbarClick}>
       <S.EditorControlWrapper>
         <TextStyle />
+        <LineStyle />
+        <S.GithubLinkWrapper
+          to="https://github.com/kimjh0813/canvas-editor"
+          target="_blank"
+        >
+          <Github width={20} height={20} />
+        </S.GithubLinkWrapper>
       </S.EditorControlWrapper>
     </S.EditorToolbarContainer>
   );

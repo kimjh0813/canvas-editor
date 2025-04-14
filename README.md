@@ -18,6 +18,7 @@
 ## Features
 
 - Text Styling & Formatting (Size, Bold, Italic, Underline, Color, BgColor, FontFamily)
+- Line Styling & Formatting (align)
 - Select (Arrow select, All select, mouse drag select)
 - Clipboard (Copy, Cut, Paste) with HTML Formatting
 - Editor Configuration (Editor Margin, Editor Size)

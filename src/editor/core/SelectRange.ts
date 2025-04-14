@@ -1,5 +1,5 @@
 import { ISelectRange } from "../types/selectRange";
-import { ITextStyle } from "../types/text";
+import { ITextFragment, ITextStyle } from "../types/text";
 import { EditorManger } from "./EditorManger";
 
 export class SelectRange {
@@ -100,14 +100,16 @@ export class SelectRange {
     const end = _end === this.editor.text.length() ? _end - 1 : _end;
 
     if (this.isAllSelect()) {
-      const defaultStyle = this.editor.textStyle.defaultStyle;
+      const defaultTextStyle = this.editor.textStyle.defaultStyle;
+      const defaultLineStyle = this.editor.lineStyle.defaultStyle;
 
-      const textStyle: ITextStyle = {
-        ...defaultStyle,
-        backgroundColor: defaultStyle.backgroundColor ?? undefined,
-        bold: defaultStyle.bold ?? undefined,
-        italic: defaultStyle.italic ?? undefined,
-        underline: defaultStyle.underline ?? undefined,
+      const textStyle: Omit<ITextFragment, "text"> = {
+        ...defaultTextStyle,
+        ...defaultLineStyle,
+        backgroundColor: defaultTextStyle.backgroundColor ?? undefined,
+        bold: defaultTextStyle.bold ?? undefined,
+        italic: defaultTextStyle.italic ?? undefined,
+        underline: defaultTextStyle.underline ?? undefined,
       };
 
       this.editor.text.setTextFragmentStyle(end, textStyle);
