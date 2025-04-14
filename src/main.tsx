@@ -3,10 +3,13 @@ import App from "./App.tsx";
 import { RecoilRoot } from "recoil";
 import { Analytics } from "@vercel/analytics/react";
 import "./css.css";
+import { BrowserRouter } from "react-router-dom";
 
 createRoot(document.getElementById("root")!).render(
-  <RecoilRoot>
-    <Analytics />
-    <App />
-  </RecoilRoot>
+  <BrowserRouter>
+    <RecoilRoot>
+      <Analytics />
+      <App />
+    </RecoilRoot>
+  </BrowserRouter>
 );
