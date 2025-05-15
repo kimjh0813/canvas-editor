@@ -5,7 +5,7 @@ const hexToRgb = (hex: string) => {
   return { r, g, b };
 };
 
-//true = white, false = black
+//true = white,false = black
 export const shouldUseWhiteCheck = (hex: string) => {
   const { r, g, b } = hexToRgb(hex);
   const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
