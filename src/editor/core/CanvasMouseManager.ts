@@ -80,7 +80,7 @@ export class CanvasMouseManager {
     }
 
     if (cursorIndex === null) {
-      if (mouseX > this.editor.layout.marginX) {
+      if (mouseX > closestLine.x) {
         // if lastLine +1
         cursorIndex = isLastLine
           ? closestLine.endIndex + 1

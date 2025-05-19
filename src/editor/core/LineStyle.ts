@@ -41,20 +41,15 @@ export class LineStyle {
   updateLineStyle(newStyle: Partial<ILineStyle>) {
     const cursorIndex = this.editor.cursor.index;
 
-    const lineText = this.editor.text.getLineText(cursorIndex);
     const textLength = this.editor.text.length();
     const textFragments = this.editor.text.textFragments;
 
     const isAllSelect = this.editor.select.isAllSelect();
     const isTextEmpty = textLength === 1;
 
-    if (!lineText) {
-      if (isAllSelect || isTextEmpty) {
-        this.setDefaultStyle(newStyle);
-        dispatchCurrentLineStyleUpdate(newStyle);
-      }
-
-      return;
+    if (isAllSelect || isTextEmpty) {
+      this.setDefaultStyle(newStyle);
+      dispatchCurrentLineStyleUpdate(newStyle);
     }
 
     const selectRange = this.editor.select.selectRange;
