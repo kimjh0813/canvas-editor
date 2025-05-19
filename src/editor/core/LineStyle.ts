@@ -59,8 +59,16 @@ export class LineStyle {
 
     const selectRange = this.editor.select.selectRange;
 
-    let startIndex = cursorIndex;
-    let endIndex = cursorIndex;
+    let startIndex;
+    let endIndex;
+
+    if (selectRange) {
+      startIndex = selectRange.start;
+      endIndex = selectRange.end;
+    } else {
+      startIndex = cursorIndex;
+      endIndex = cursorIndex;
+    }
 
     if (isAllSelect && selectRange) {
       startIndex = 0;

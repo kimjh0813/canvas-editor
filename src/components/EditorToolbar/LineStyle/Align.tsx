@@ -5,7 +5,7 @@ import { AlignCenter, AlignLeft, AlignRight } from "lucide-react";
 import { MouseEvent } from "react";
 
 interface ItalicProps {
-  align: TLineAlign;
+  align?: TLineAlign;
 }
 
 export function Align({ align }: ItalicProps) {

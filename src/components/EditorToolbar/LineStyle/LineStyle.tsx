@@ -1,18 +1,22 @@
 import * as S from "./styled";
 import { useEffect, useState } from "react";
 import { useEditor } from "../../../context/EditorContext";
-import { ILineStyle } from "../../../editor/types/text";
+import { ILineStyle, TLineAlign } from "../../../editor/types/text";
 import { useRecoilValue } from "recoil";
 import { cursorState } from "../../../recoil";
 import { isEqual } from "lodash";
 import { Align } from "./Align";
+
+interface ICurrentLineStyle {
+  align?: TLineAlign;
+}
 
 export function LineStyle() {
   const { editorManger } = useEditor();
 
   const cursor = useRecoilValue(cursorState);
 
-  const [currentLineStyle, setCurrentLineStyle] = useState<ILineStyle>({
+  const [currentLineStyle, setCurrentLineStyle] = useState<ICurrentLineStyle>({
     align: editorManger.lineStyle.defaultStyle.align,
   });
 
@@ -42,7 +46,7 @@ export function LineStyle() {
   useEffect(() => {
     if (!cursor) return;
 
-    let newCursorStyle: ILineStyle;
+    let newCursorStyle: ICurrentLineStyle;
 
     const selectRange = editorManger.select.selectRange;
 
@@ -53,7 +57,7 @@ export function LineStyle() {
       );
 
       newCursorStyle = {
-        align: cLineStyle?.align ?? editorManger.lineStyle.defaultStyle.align,
+        align: cLineStyle?.align,
       };
     } else {
       const lineStyle = editorManger.lineStyle.getLineStyle(cursor.index);
