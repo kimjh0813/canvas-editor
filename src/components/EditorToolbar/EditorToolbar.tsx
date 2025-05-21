@@ -5,7 +5,8 @@ import { useSetRecoilState } from "recoil";
 import { useEditor } from "../../context/EditorContext";
 import { TextStyle } from "./TextStyle";
 import { LineStyle } from "./LineStyle";
-import { Github } from "lucide-react";
+import { Github, Redo, Undo } from "lucide-react";
+import { HistoryManager } from "./HistoryManager";
 
 export function EditorToolbar() {
   const { editorManger } = useEditor();
@@ -25,6 +26,7 @@ export function EditorToolbar() {
   return (
     <S.EditorToolbarContainer onClick={toolbarClick}>
       <S.EditorControlWrapper>
+        <HistoryManager />
         <TextStyle />
         <LineStyle />
         <S.GithubLinkWrapper

@@ -2,7 +2,7 @@ import { SetterOrUpdater } from "recoil";
 import { ICursor } from "../../recoil";
 import { ILineText, ITextFragment, TLineAlign } from "../types/text";
 import { createCanvasElement } from "../utils/ctx";
-import { convertHTMLToText, getFontStyle } from "../utils/text";
+import { getFontStyle } from "../utils/text";
 import { CanvasMouseManager } from "./CanvasMouseManager";
 import { Cursor } from "./Cursor";
 import { EditorLayout } from "./EditorLayout";
@@ -11,6 +11,7 @@ import { LineStyle } from "./LineStyle";
 import { SelectRange } from "./SelectRange";
 import { TextManager } from "./TextManager";
 import { TextStyle } from "./TextStyle";
+import { History } from "./History";
 
 export class EditorManger {
   text: TextManager;
@@ -21,6 +22,7 @@ export class EditorManger {
   textStyle: TextStyle;
   canvasMouse: CanvasMouseManager;
   lineStyle: LineStyle;
+  history: History;
 
   private _prevRowIndex: number | null; //TODO:인덱스 말고 넓이 기준으로 바
 
@@ -43,6 +45,7 @@ export class EditorManger {
     this.textStyle = new TextStyle(this, defaultFontSize);
     this.lineStyle = new LineStyle(this);
     this.canvasMouse = new CanvasMouseManager(this, scrollContainerRef);
+    this.history = new History(this);
   }
 
   public get prevRowIndex() {

@@ -1,0 +1,108 @@
+import { ITextFragment } from "../types/text";
+import { EditorManger } from "./EditorManger";
+
+interface ChangeSet {
+  index: number;
+  fragments: ITextFragment[];
+  timestamp: number;
+  type: "insert" | "delete";
+}
+
+export class History {
+  private stack: ChangeSet[] = [];
+  private pointer = -1;
+  private lastPushTime = 0;
+  private historyInterval = 2000;
+
+  constructor(private editor: EditorManger) {}
+
+  pushChange(
+    index: number,
+    fragments: ITextFragment[],
+    type: "insert" | "delete"
+  ) {
+    const lastChange = this.stack[this.pointer];
+    const currentTime = Date.now();
+
+    const isSameType = lastChange && lastChange.type === type;
+    const isMergeTimeCheck =
+      this.stack.length > 0 &&
+      currentTime - this.lastPushTime < this.historyInterval;
+
+    const canMergeType = type === "insert" || type === "delete";
+    const isMerge = isMergeTimeCheck && isSameType && canMergeType;
+
+    if (isMerge) {
+      lastChange.fragments.push(...fragments);
+    } else {
+      // 새로운 ChangeSet 추가
+      if (this.pointer < this.stack.length - 1) {
+        this.stack = this.stack.slice(0, this.pointer + 1);
+      }
+
+      this.stack.push({
+        index,
+        fragments,
+        timestamp: currentTime,
+        type,
+      });
+      this.pointer++;
+
+      this.lastPushTime = currentTime;
+    }
+
+    console.log(this.stack);
+  }
+
+  undo() {
+    if (this.pointer >= 0) {
+      const change = this.stack[this.pointer];
+      this.pointer--;
+
+      console.log(change);
+
+      if (change.type === "insert") {
+        this.editor.text.remove(change.index, change.fragments.length, false);
+        this.editor.cursor.setCursorIndex(change.index, false);
+      } else if (change.type === "delete") {
+        const reversedFragments = [...change.fragments].reverse();
+        const itemLength = change.fragments.length;
+
+        this.editor.text.insert(
+          change.index - itemLength + 1,
+          reversedFragments,
+          false
+        );
+
+        this.editor.cursor.setCursorIndex(change.index + 1, false);
+      }
+
+      this.editor.draw(true);
+    }
+  }
+
+  redo() {
+    if (this.pointer < this.stack.length - 1) {
+      this.pointer++;
+      const change = this.stack[this.pointer];
+      console.log(change);
+
+      const itemLength = change.fragments.length;
+
+      if (change.type === "delete") {
+        this.editor.text.remove(
+          change.index - itemLength + 1,
+          itemLength,
+          false
+        );
+        this.editor.cursor.setCursorIndex(change.index - itemLength + 1, false);
+      } else if (change.type === "insert") {
+        this.editor.text.insert(change.index, change.fragments, false);
+
+        this.editor.cursor.setCursorIndex(change.index + itemLength, false);
+      }
+
+      this.editor.draw(true);
+    }
+  }
+}

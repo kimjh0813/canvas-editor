@@ -150,7 +150,7 @@ export class KeyEvent {
 
         if (decomposed.length > 1) {
           decomposed.pop();
-          this.editor.text.setTextFragment(cursorIndex - 1, {
+          this.editor.text.update(cursorIndex - 1, {
             ...prevTextFragment,
             text: Hangul.a(decomposed),
           });
@@ -200,11 +200,13 @@ export class KeyEvent {
       this.editor.text.setTextFragmentStyle(cursorIndex, _textStyle);
     }
 
-    this.editor.text.insert(cursorIndex, 0, {
-      text: "\n",
-      ...textStyle,
-      ...lineStyle,
-    });
+    this.editor.text.insert(cursorIndex, [
+      {
+        text: "\n",
+        ...textStyle,
+        ...lineStyle,
+      },
+    ]);
 
     this.editor.cursor.setCursorIndex(cursorIndex + 1, false);
   }

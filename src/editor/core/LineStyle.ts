@@ -3,6 +3,7 @@ import { ILineStyle, TLineStyleKey } from "../types/text";
 import { EditorManger } from "./EditorManger";
 import { dispatchCurrentLineStyleUpdate } from "../utils/event";
 import { getDefaultLineStyle } from "../utils/text";
+import { pickDefinedByType } from "../../utils/pick";
 
 export class LineStyle {
   lineStyleKeys: TLineStyleKey[] = ["align"];
@@ -22,20 +23,20 @@ export class LineStyle {
   }
 
   getLineStyle(index: number) {
-    let lineStyle: ILineStyle;
+    const curr = this.editor.text.getTextFragment(index);
+    const prev = this.editor.text.getTextFragment(index - 1);
 
-    const textFragment = this.editor.text.getTextFragment(index);
-    const prevTextFragment = this.editor.text.getTextFragment(index - 1);
-
-    if (textFragment) {
-      lineStyle = pick(textFragment, this.lineStyleKeys);
-    } else if (prevTextFragment) {
-      lineStyle = pick(prevTextFragment, this.lineStyleKeys);
+    if (curr) {
+      return (
+        pickDefinedByType(pick(curr, this.lineStyleKeys)) || this._defaultStyle
+      );
+    } else if (prev) {
+      return (
+        pickDefinedByType(pick(prev, this.lineStyleKeys)) || this._defaultStyle
+      );
     } else {
-      lineStyle = this._defaultStyle;
+      return this._defaultStyle;
     }
-
-    return lineStyle;
   }
 
   updateLineStyle(newStyle: Partial<ILineStyle>) {

@@ -166,24 +166,28 @@ export class TextManager {
     return this._textFragments.length;
   }
 
-  remove(start: number, deleteCount: number) {
-    this._textFragments.splice(start, deleteCount);
+  insert(start: number, items: ITextFragment[], recordHistory: boolean = true) {
+    this._textFragments.splice(start, 0, ...items);
+    recordHistory && this.editor.history.pushChange(start, items, "insert");
   }
 
-  insert(start: number, deleteCount: number, ...items: ITextFragment[]) {
-    this._textFragments.splice(start, deleteCount, ...items);
+  remove(start: number, deleteCount: number, recordHistory: boolean = true) {
+    const items = this._textFragments.slice(start, start + deleteCount);
+
+    this._textFragments.splice(start, deleteCount);
+    recordHistory && this.editor.history.pushChange(start, items, "delete");
+  }
+
+  update(index: number, value: ITextFragment) {
+    if (index < 0) return;
+
+    this._textFragments[index] = value;
   }
 
   getTextFragment(index: number) {
     if (index < 0) return;
 
     return this._textFragments[index];
-  }
-
-  setTextFragment(index: number, value: ITextFragment) {
-    if (index < 0) return;
-
-    this._textFragments[index] = value;
   }
 
   setTextFragmentStyle(
@@ -221,7 +225,7 @@ export class TextManager {
         ...lineStyle,
       };
 
-      this.insert(cursorIndex, 0, newText);
+      this.insert(cursorIndex, [newText]);
 
       this.editor.cursor.setCursorIndex(cursorIndex + 1, false);
     } else {
@@ -236,14 +240,17 @@ export class TextManager {
         this._textFragments[cursorIndex - 1].text = assembleText[0];
 
         const fontStyle = this.editor.textStyle.getTextStyle(cursorIndex);
+
         const lineStyle = this.editor.lineStyle.getLineStyle(cursorIndex);
 
         for (let i = 1; i < assembleText.length; i++) {
-          this.insert(cursorIndex, 0, {
-            text: assembleText[i],
-            ...fontStyle,
-            ...lineStyle,
-          });
+          this.insert(cursorIndex, [
+            {
+              text: assembleText[i],
+              ...fontStyle,
+              ...lineStyle,
+            },
+          ]);
 
           this.editor.cursor.setCursorIndex(cursorIndex + 1, false);
         }
@@ -263,7 +270,7 @@ export class TextManager {
     if (this.editor.prevRowIndex !== null) this.editor.setPrevRowIndex(null);
 
     const cursorIndex = this.editor.cursor.index;
-    this.insert(cursorIndex, 0, ...textFragments);
+    this.insert(cursorIndex, textFragments);
 
     this.editor.cursor.setCursorIndex(
       cursorIndex + textFragments.length,

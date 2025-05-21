@@ -1,8 +1,9 @@
-import { pick } from "lodash";
+import { omit, pick } from "lodash";
 import { ITextStyle, TTextStyleKey } from "../types/text";
 import { dispatchCurrentTextStyleUpdate } from "../utils/event";
 import { getDefaultTextStyle, isValidFontSize } from "../utils/text";
 import { EditorManger } from "./EditorManger";
+import { pickDefinedByType } from "../../utils/pick";
 
 export class TextStyle {
   textStyleKeys: TTextStyleKey[] = [
@@ -53,27 +54,22 @@ export class TextStyle {
   }
 
   getTextStyle(index: number) {
-    let textStyle: ITextStyle;
+    if (this._currentStyle) return this._currentStyle;
 
-    if (this._currentStyle) {
-      textStyle = this._currentStyle;
+    const prev = this.editor.text.getTextFragment(index - 1);
+    const curr = this.editor.text.getTextFragment(index);
+
+    if (prev && (prev.text !== "\n" || !curr)) {
+      return (
+        pickDefinedByType(pick(prev, this.textStyleKeys)) || this._defaultStyle
+      );
+    } else if (curr) {
+      return (
+        pickDefinedByType(pick(curr, this.textStyleKeys)) || this._defaultStyle
+      );
     } else {
-      const prevTextFragment = this.editor.text.getTextFragment(index - 1);
-      const textFragment = this.editor.text.getTextFragment(index);
-
-      if (
-        prevTextFragment &&
-        (prevTextFragment.text !== "\n" || !textFragment)
-      ) {
-        textStyle = pick(prevTextFragment, this.textStyleKeys);
-      } else if (textFragment) {
-        textStyle = pick(textFragment, this.textStyleKeys);
-      } else {
-        textStyle = this._defaultStyle;
-      }
+      return this._defaultStyle;
     }
-
-    return textStyle;
   }
 
   checkTextStyle(startIndex: number, endIndex: number) {
