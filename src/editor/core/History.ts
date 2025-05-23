@@ -24,13 +24,14 @@ export class History {
     const lastChange = this.stack[this.pointer];
     const currentTime = Date.now();
 
+    const isEnter = fragments[0].text === "\n";
     const isSameType = lastChange && lastChange.type === type;
     const isMergeTimeCheck =
       this.stack.length > 0 &&
       currentTime - this.lastPushTime < this.historyInterval;
 
     const canMergeType = type === "insert" || type === "delete";
-    const isMerge = isMergeTimeCheck && isSameType && canMergeType;
+    const isMerge = isMergeTimeCheck && isSameType && canMergeType && !isEnter;
 
     if (isMerge) {
       lastChange.fragments.push(...fragments);

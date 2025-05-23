@@ -167,7 +167,10 @@ export class TextManager {
   }
 
   insert(start: number, items: ITextFragment[], recordHistory: boolean = true) {
+    if (start >= this._textFragments.length) return;
+
     this._textFragments.splice(start, 0, ...items);
+
     recordHistory && this.editor.history.pushChange(start, items, "insert");
   }
 

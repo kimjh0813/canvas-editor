@@ -9,21 +9,20 @@ export function HistoryManager() {
   return (
     <S.Container>
       <IconWrapper
-        onClick={() => {
+        onClick={(e) => {
+          e.stopPropagation();
           editorManger.history.undo();
         }}
       >
         <Undo width={16} height={16} strokeWidth={2} />
       </IconWrapper>
-      <IconWrapper>
-        <Redo
-          onClick={() => {
-            editorManger.history.redo();
-          }}
-          width={16}
-          height={16}
-          strokeWidth={2}
-        />
+      <IconWrapper
+        onClick={(e) => {
+          e.stopPropagation();
+          editorManger.history.redo();
+        }}
+      >
+        <Redo width={16} height={16} strokeWidth={2} />
       </IconWrapper>
     </S.Container>
   );

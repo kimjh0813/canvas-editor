@@ -57,6 +57,13 @@ export class KeyEvent {
             event.preventDefault();
             this.selectAll();
             break;
+          case "KeyZ":
+            this.editor.history.undo();
+            break;
+          case "KeyY":
+            event.preventDefault();
+            this.editor.history.redo();
+            break;
           case "KeyR":
             location.reload();
             break;
