@@ -171,20 +171,32 @@ export class TextManager {
 
     this._textFragments.splice(start, 0, ...items);
 
-    recordHistory && this.editor.history.pushChange(start, items, "insert");
+    recordHistory && this.editor.history.pushTextChange(start, items, "insert");
   }
 
   remove(start: number, deleteCount: number, recordHistory: boolean = true) {
     const items = this._textFragments.slice(start, start + deleteCount);
 
     this._textFragments.splice(start, deleteCount);
-    recordHistory && this.editor.history.pushChange(start, items, "delete");
+    recordHistory && this.editor.history.pushTextChange(start, items, "delete");
   }
 
-  update(index: number, value: ITextFragment) {
+  textUpdate(
+    index: number,
+    text: string,
+    type: "insert" | "delete" = "insert",
+    recordHistory: boolean = false
+  ) {
     if (index < 0) return;
 
-    this._textFragments[index] = value;
+    this._textFragments[index].text = text;
+
+    if (recordHistory) {
+      const textFragment = this.getTextFragment(index);
+
+      textFragment &&
+        this.editor.history.pushTextChange(index, [textFragment], type);
+    }
   }
 
   getTextFragment(index: number) {
@@ -205,10 +217,27 @@ export class TextManager {
     };
   }
 
-  resetKoreanComposing() {
-    if (!this._isKoreanComposing) return;
+  resetKoreanComposing(
+    recordHistory: boolean = true,
+    type: "insert" | "delete" = "insert"
+  ) {
+    if (!this._isKoreanComposing) return false;
+
+    if (recordHistory) {
+      const cursorIndex = this.editor.cursor.index;
+      const textFragment = this.getTextFragment(cursorIndex - 1);
+
+      textFragment &&
+        this.editor.history.pushTextChange(
+          cursorIndex - 1,
+          [textFragment],
+          type
+        );
+    }
 
     this._isKoreanComposing = false;
+
+    return true;
   }
 
   addText(key: string) {
@@ -216,6 +245,7 @@ export class TextManager {
 
     if (this.editor.prevRowIndex !== null) this.editor.setPrevRowIndex(null);
 
+    const isTextKorean = isKorean(key);
     const cursorIndex = this.editor.cursor.index;
 
     if (!this._isKoreanComposing || cursorIndex === 0) {
@@ -228,7 +258,7 @@ export class TextManager {
         ...lineStyle,
       };
 
-      this.insert(cursorIndex, [newText]);
+      this.insert(cursorIndex, [newText], !isTextKorean);
 
       this.editor.cursor.setCursorIndex(cursorIndex + 1, false);
     } else {
@@ -238,32 +268,42 @@ export class TextManager {
       const assembleText = Hangul.a(decomposed);
 
       if (assembleText.length === 1) {
-        this._textFragments[cursorIndex - 1].text = assembleText;
+        this.editor.text.textUpdate(cursorIndex - 1, assembleText);
       } else {
-        this._textFragments[cursorIndex - 1].text = assembleText[0];
+        this.editor.text.textUpdate(
+          cursorIndex - 1,
+          assembleText[0],
+          "insert",
+          true
+        );
 
         const fontStyle = this.editor.textStyle.getTextStyle(cursorIndex);
-
         const lineStyle = this.editor.lineStyle.getLineStyle(cursorIndex);
 
         for (let i = 1; i < assembleText.length; i++) {
-          this.insert(cursorIndex, [
-            {
-              text: assembleText[i],
-              ...fontStyle,
-              ...lineStyle,
-            },
-          ]);
+          this.insert(
+            cursorIndex,
+            [
+              {
+                text: assembleText[i],
+                ...fontStyle,
+                ...lineStyle,
+              },
+            ],
+            !isTextKorean
+          );
 
           this.editor.cursor.setCursorIndex(cursorIndex + 1, false);
         }
       }
     }
 
-    const isTextKorean = isKorean(key);
-
     if (this._isKoreanComposing !== isTextKorean) {
-      this._isKoreanComposing = isTextKorean;
+      if (isTextKorean) {
+        this._isKoreanComposing = isTextKorean;
+      } else {
+        this.resetKoreanComposing(false);
+      }
     }
   }
 
@@ -283,7 +323,6 @@ export class TextManager {
 
   deleteText() {
     const cursorIndex = this.editor.cursor.index;
-
     this.remove(cursorIndex - 1, 1);
 
     this.editor.cursor.setCursorIndex(cursorIndex - 1, false);

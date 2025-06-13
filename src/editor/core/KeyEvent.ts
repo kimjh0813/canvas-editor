@@ -33,7 +33,7 @@ export class KeyEvent {
             return;
         }
       } else if (isCommandKey(event)) {
-        this.editor.text.resetKoreanComposing();
+        const isResetComposing = this.editor.text.resetKoreanComposing();
         switch (event.code) {
           case "KeyB":
             this.bold();
@@ -58,6 +58,11 @@ export class KeyEvent {
             this.selectAll();
             break;
           case "KeyZ":
+            if (isResetComposing) {
+              this.editor.draw(shouldUpdateText);
+              return;
+            }
+            this.editor.select.clearSelectedRange();
             this.editor.history.undo();
             break;
           case "KeyY":
@@ -86,24 +91,24 @@ export class KeyEvent {
           break;
         case "Enter":
           shouldUpdateText = true;
-          this.enter();
           this.editor.text.resetKoreanComposing();
+          this.enter();
           break;
         case "ArrowDown":
-          this.arrowDown(event);
           this.editor.text.resetKoreanComposing();
+          this.arrowDown(event);
           break;
         case "ArrowUp":
-          this.arrowUp(event);
           this.editor.text.resetKoreanComposing();
+          this.arrowUp(event);
           break;
         case "ArrowLeft":
-          this.arrowLeft(event);
           this.editor.text.resetKoreanComposing();
+          this.arrowLeft(event);
           break;
         case "ArrowRight":
-          this.arrowRight(event);
           this.editor.text.resetKoreanComposing();
+          this.arrowRight(event);
           break;
         default:
           console.log(`Unhandled special key: ${event.key}`);
@@ -157,10 +162,7 @@ export class KeyEvent {
 
         if (decomposed.length > 1) {
           decomposed.pop();
-          this.editor.text.update(cursorIndex - 1, {
-            ...prevTextFragment,
-            text: Hangul.a(decomposed),
-          });
+          this.editor.text.textUpdate(cursorIndex - 1, Hangul.a(decomposed));
         } else {
           this.editor.text.resetKoreanComposing();
           this.editor.text.deleteText();

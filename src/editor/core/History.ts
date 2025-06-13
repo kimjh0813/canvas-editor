@@ -16,7 +16,7 @@ export class History {
 
   constructor(private editor: EditorManger) {}
 
-  pushChange(
+  pushTextChange(
     index: number,
     fragments: ITextFragment[],
     type: "insert" | "delete"
