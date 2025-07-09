@@ -66,16 +66,11 @@ export class History {
         this.editor.text.remove(change.index, change.fragments.length, false);
         this.editor.cursor.setCursorIndex(change.index, false);
       } else if (change.type === "delete") {
-        const reversedFragments = [...change.fragments].reverse();
         const itemLength = change.fragments.length;
 
-        this.editor.text.insert(
-          change.index - itemLength + 1,
-          reversedFragments,
-          false
-        );
+        this.editor.text.insert(change.index, change.fragments, false);
 
-        this.editor.cursor.setCursorIndex(change.index + 1, false);
+        this.editor.cursor.setCursorIndex(change.index + itemLength, false);
       }
 
       this.editor.draw(true);
@@ -83,20 +78,18 @@ export class History {
   }
 
   redo() {
+    console.log(this.stack, this.pointer);
     if (this.pointer < this.stack.length - 1) {
       this.pointer++;
       const change = this.stack[this.pointer];
+
       console.log(change);
 
       const itemLength = change.fragments.length;
 
       if (change.type === "delete") {
-        this.editor.text.remove(
-          change.index - itemLength + 1,
-          itemLength,
-          false
-        );
-        this.editor.cursor.setCursorIndex(change.index - itemLength + 1, false);
+        this.editor.text.remove(change.index, itemLength, false);
+        this.editor.cursor.setCursorIndex(change.index, false);
       } else if (change.type === "insert") {
         this.editor.text.insert(change.index, change.fragments, false);
 
