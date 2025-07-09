@@ -2,6 +2,12 @@ import styled from "styled-components";
 
 export const EditorCanvasWrapper = styled.div``;
 
+export const HiddenInput = styled.input`
+  position: absolute;
+  left: -9999px;
+  opacity: 0;
+`;
+
 export const CanvasWrapper = styled.div<{
   $canvasWidth: number;
   $canvasHeight: number;

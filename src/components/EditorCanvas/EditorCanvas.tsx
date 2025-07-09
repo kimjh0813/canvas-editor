@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { useRecoilValue } from "recoil";
 
@@ -16,16 +16,29 @@ interface EditorCanvasProps {
 export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
   const { editorManger, draw } = useEditor();
 
+  const inputRef = useRef<HTMLInputElement>(null);
+
   const isCursor = useRecoilValue(isCursorSelector);
 
   const { handleMouseDown, handleMouseMove, handleMouseUp } =
     useMouseHandlers(editorManger);
 
   useEffect(() => {
+    const input = inputRef.current;
+    if (!input) return;
+
+    if (isCursor) {
+      input.focus();
+    } else {
+      input.blur();
+    }
+  }, [isCursor]);
+
+  useEffect(() => {
     if (!isCursor) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      editorManger.keyEvent.keyDown(event);
+      event.preventDefault();
     };
 
     const handlePaste = (event: ClipboardEvent) => {
@@ -44,13 +57,19 @@ export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
       window.removeEventListener("mouseup", handleMouseUp);
     };
   }, [draw, isCursor]);
-
   useEffect(() => {
     draw(false);
   }, [pageSize, isCursor]);
 
   return (
     <>
+      <S.HiddenInput
+        value={""}
+        onKeyDown={(e) => {
+          editorManger.keyEvent.keyDown(e);
+        }}
+        ref={inputRef}
+      />
       {[...Array(pageSize)].map((_, index) => (
         <S.CanvasWrapper
           key={index}
