@@ -1,6 +1,4 @@
-import { EditorKeyEvent } from "../types/text";
-
-export function isCommandKey(event: EditorKeyEvent): boolean {
+export function isCommandKey(event: KeyboardEvent): boolean {
   const userAgent = navigator.userAgent.toLowerCase();
 
   if (userAgent.includes("mac")) {

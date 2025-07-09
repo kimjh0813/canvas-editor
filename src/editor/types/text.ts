@@ -1,7 +1,3 @@
-import { KeyboardEvent } from "react";
-
-export type EditorKeyEvent = KeyboardEvent<HTMLInputElement>;
-
 export interface ITextStyle {
   bold?: boolean;
   italic?: boolean;

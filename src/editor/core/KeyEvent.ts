@@ -8,20 +8,20 @@ import {
   convertTextToHTML,
   getCurrentStyleValue,
 } from "../utils/text";
-import { EditorKeyEvent, ITextFragment, ITextStyle } from "../types/text";
+import { ITextFragment, ITextStyle } from "../types/text";
 import { omit } from "lodash";
 
 export class KeyEvent {
   constructor(private editor: EditorManger) {}
 
-  async keyDown(event: EditorKeyEvent) {
+  async keyDown(event: KeyboardEvent) {
     // for change textArr
     let shouldUpdateText = false;
 
     if (event.key.length === 1) {
       if (isCommandKey(event) && event.shiftKey) {
         this.editor.text.resetKoreanComposing();
-
+        event.preventDefault();
         switch (event.code) {
           case "Period":
             this.stepFontSize("plus");
@@ -54,6 +54,7 @@ export class KeyEvent {
             await this.cut();
             break;
           case "KeyA":
+            event.preventDefault();
             this.selectAll();
             break;
           case "KeyZ":
@@ -65,19 +66,24 @@ export class KeyEvent {
             this.editor.history.undo();
             break;
           case "KeyY":
+            event.preventDefault();
             this.editor.history.redo();
             break;
           case "KeyR":
             location.reload();
             break;
           default:
+            event.preventDefault();
             return;
         }
       } else {
         shouldUpdateText = true;
         this.editor.text.addText(event.key);
+        event.preventDefault();
       }
     } else {
+      if (!functionKey.includes(event.key)) event.preventDefault();
+
       switch (event.code) {
         case "Backspace":
           shouldUpdateText = true;
@@ -113,7 +119,7 @@ export class KeyEvent {
     this.editor.draw(shouldUpdateText);
   }
 
-  backSpace(event: EditorKeyEvent) {
+  backSpace(event: KeyboardEvent) {
     const result = this.editor.select.deleteSelectedRange();
 
     if (result) return;
@@ -316,7 +322,7 @@ export class KeyEvent {
     this.editor.textStyle.adjustFontSize(type, fontSize);
   }
 
-  arrowUp(event: EditorKeyEvent) {
+  arrowUp(event: KeyboardEvent) {
     const cursorIndex = this.editor.cursor.index;
 
     const isEnd = this.editor.select.arrowClearSelectRange(
@@ -363,7 +369,7 @@ export class KeyEvent {
     this.editor.cursor.setCursorIndex(targetIndex);
   }
 
-  arrowDown(event: EditorKeyEvent) {
+  arrowDown(event: KeyboardEvent) {
     const cursorIndex = this.editor.cursor.index;
 
     const isEnd = this.editor.select.arrowClearSelectRange(
@@ -410,7 +416,7 @@ export class KeyEvent {
     this.editor.cursor.setCursorIndex(targetIndex);
   }
 
-  arrowLeft = (event: EditorKeyEvent) => {
+  arrowLeft = (event: KeyboardEvent) => {
     this.editor.setPrevRowIndex(null);
 
     const cursorIndex = this.editor.cursor.index;
@@ -458,7 +464,7 @@ export class KeyEvent {
     this.editor.cursor.setCursorIndex(targetIndex);
   };
 
-  arrowRight = (event: EditorKeyEvent) => {
+  arrowRight = (event: KeyboardEvent) => {
     this.editor.setPrevRowIndex(null);
 
     const cursorIndex = this.editor.cursor.index;
