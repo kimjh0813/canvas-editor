@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { useRecoilValue } from "recoil";
 
@@ -7,6 +7,8 @@ import { isCursorSelector } from "../../recoil/selector";
 import * as S from "./styled";
 import { useEditor } from "../../context/EditorContext";
 import { useMouseHandlers } from "../../hooks";
+import { isCommandKey } from "../../editor/utils/key";
+import { functionKey } from "../../constants/key";
 
 interface EditorCanvasProps {
   pageSize: number;
@@ -17,15 +19,39 @@ export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
   const { editorManger, draw } = useEditor();
 
   const isCursor = useRecoilValue(isCursorSelector);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const { handleMouseDown, handleMouseMove, handleMouseUp } =
     useMouseHandlers(editorManger);
 
   useEffect(() => {
+    if (isCursor) {
+      inputRef.current?.focus();
+    } else {
+      inputRef.current?.blur();
+    }
+  }, [isCursor]);
+
+  useEffect(() => {
     if (!isCursor) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      editorManger.keyEvent.keyDown(event);
+      if (event.key.length === 1) {
+        if (isCommandKey(event) && event.shiftKey) {
+          event.preventDefault();
+        } else if (isCommandKey(event)) {
+          switch (event.code) {
+            case "KeyR":
+              location.reload();
+              break;
+            default:
+              event.preventDefault();
+              return;
+          }
+        }
+      } else {
+        if (!functionKey.includes(event.key)) event.preventDefault();
+      }
     };
 
     const handlePaste = (event: ClipboardEvent) => {
@@ -51,6 +77,18 @@ export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
 
   return (
     <>
+      <input
+        ref={inputRef}
+        style={{
+          position: "absolute",
+          top: "-10px",
+          width: "400px",
+        }}
+        onKeyDown={(event) => {
+          console.log(event);
+          editorManger.keyEvent.keyDown(event);
+        }}
+      />
       {[...Array(pageSize)].map((_, index) => (
         <S.CanvasWrapper
           key={index}

@@ -1,4 +1,6 @@
-export function isCommandKey(event: KeyboardEvent): boolean {
+export function isCommandKey(
+  event: KeyboardEvent | React.KeyboardEvent<HTMLInputElement>
+): boolean {
   const userAgent = navigator.userAgent.toLowerCase();
 
   if (userAgent.includes("mac")) {
