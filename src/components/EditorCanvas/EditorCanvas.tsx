@@ -85,7 +85,7 @@ export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
           width: "400px",
         }}
         onKeyDown={(event) => {
-          console.log("keydown: ", event.key);
+          console.log("keydown: ", event);
           editorManger.keyEvent.keyDown(event);
         }}
       />
