@@ -76,6 +76,7 @@ export class KeyEvent {
         }
       } else {
         shouldUpdateText = true;
+
         this.editor.text.addText(event.key);
       }
     } else {

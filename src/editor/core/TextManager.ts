@@ -241,6 +241,8 @@ export class TextManager {
   }
 
   addText(key: string) {
+    console.log("Adding text:", key);
+
     this.editor.select.deleteSelectedRange();
 
     if (this.editor.prevRowIndex !== null) this.editor.setPrevRowIndex(null);
