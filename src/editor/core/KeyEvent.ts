@@ -80,8 +80,6 @@ export class KeyEvent {
         this.editor.text.addText(event.key);
       }
     } else {
-      if (!functionKey.includes(event.key)) event.preventDefault();
-
       switch (event.code) {
         case "Backspace":
           shouldUpdateText = true;
@@ -268,6 +266,8 @@ export class KeyEvent {
       }
 
       let textFragments: ITextFragment[];
+
+      console.log(htmlText);
 
       if (htmlText) {
         const defaultStyle = {

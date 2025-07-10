@@ -8,7 +8,7 @@ import * as S from "./styled";
 import { useEditor } from "../../context/EditorContext";
 import { useMouseHandlers } from "../../hooks";
 import { isCommandKey } from "../../editor/utils/key";
-import { functionKey } from "../../constants/key";
+import { codeToHangul, functionKey } from "../../constants/key";
 
 interface EditorCanvasProps {
   pageSize: number;
@@ -43,6 +43,8 @@ export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
           switch (event.code) {
             case "KeyR":
               location.reload();
+              break;
+            case "KeyV":
               break;
             default:
               event.preventDefault();
@@ -81,12 +83,31 @@ export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
         ref={inputRef}
         style={{
           position: "absolute",
-          top: "-10px",
-          width: "400px",
+          pointerEvents: "none",
+          opacity: 0,
+          left: "-9999px",
         }}
-        onKeyDown={(event) => {
-          console.log("keydown: ", event);
-          editorManger.keyEvent.keyDown(event);
+        onKeyDown={(e) => {
+          if (isCommandKey(e) && e.key === "v") {
+            return;
+          }
+
+          e.preventDefault();
+
+          const map = codeToHangul[e.code];
+          let result = "";
+
+          if (e.key === "Process" && map) {
+            result = e.shiftKey ? map.shift : map.normal;
+          } else {
+            result = e.key;
+          }
+          const fakeEvent = {
+            ...e,
+            key: result,
+          } as React.KeyboardEvent<HTMLInputElement>;
+
+          editorManger.keyEvent.keyDown(fakeEvent);
         }}
       />
       {[...Array(pageSize)].map((_, index) => (
