@@ -50,16 +50,22 @@ export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
       editorManger.keyEvent.paste(event);
     };
 
+    const preventFocusOut = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+
     window.addEventListener("keydown", handleKeyDown);
     window.addEventListener("paste", handlePaste);
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
+    document.addEventListener("mousedown", preventFocusOut, true);
 
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("paste", handlePaste);
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
+      document.removeEventListener("mousedown", preventFocusOut, true);
     };
   }, [draw, isCursor]);
 
@@ -109,6 +115,7 @@ export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
             height={editorManger.layout.canvasHeight}
             onMouseDown={(e) => {
               e.preventDefault();
+              inputRef.current?.focus();
               handleMouseDown(e, index);
             }}
             ref={(el) => (canvasRefs.current[index] = el)}
