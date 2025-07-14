@@ -1,3 +1,5 @@
+import { functionKey } from "../../constants/key";
+
 export function isCommandKey(
   event: KeyboardEvent | React.KeyboardEvent<HTMLInputElement>
 ): boolean {
@@ -11,6 +13,17 @@ export function isCommandKey(
 
   return false;
 }
+
+export function isSkipPreventDefault(
+  e: KeyboardEvent | React.KeyboardEvent<HTMLInputElement>
+) {
+  if (isCommandKey(e) && e.code === "KeyV") return true;
+
+  if (functionKey.includes(e.key)) return true;
+
+  return false;
+}
+
 const koreanChars = new Set([
   "ㄱ",
   "ㄴ",

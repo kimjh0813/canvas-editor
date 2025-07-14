@@ -68,9 +68,6 @@ export class KeyEvent {
           case "KeyY":
             this.editor.history.redo();
             break;
-          case "KeyR":
-            location.reload();
-            break;
           default:
             return;
         }
@@ -267,15 +264,15 @@ export class KeyEvent {
 
       let textFragments: ITextFragment[];
 
-      console.log(htmlText);
-
       if (htmlText) {
+        console.log(htmlText);
         const defaultStyle = {
           ...this.editor.textStyle.defaultStyle,
           ...this.editor.lineStyle.defaultStyle,
         };
 
         textFragments = convertHTMLToText(htmlText, defaultStyle);
+        console.log(textFragments);
       } else {
         const textStyle = this.editor.textStyle.getTextStyle(
           this.editor.cursor.index

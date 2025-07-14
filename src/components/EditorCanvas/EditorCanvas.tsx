@@ -7,8 +7,8 @@ import { isCursorSelector } from "../../recoil/selector";
 import * as S from "./styled";
 import { useEditor } from "../../context/EditorContext";
 import { useMouseHandlers } from "../../hooks";
-import { isCommandKey } from "../../editor/utils/key";
-import { codeToHangul, functionKey } from "../../constants/key";
+import { isCommandKey, isSkipPreventDefault } from "../../editor/utils/key";
+import { codeToHangul } from "../../constants/key";
 
 interface EditorCanvasProps {
   pageSize: number;
@@ -35,25 +35,15 @@ export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
   useEffect(() => {
     if (!isCursor) return;
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key.length === 1) {
-        if (isCommandKey(event) && event.shiftKey) {
-          event.preventDefault();
-        } else if (isCommandKey(event)) {
-          switch (event.code) {
-            case "KeyR":
-              location.reload();
-              break;
-            case "KeyV":
-              break;
-            default:
-              event.preventDefault();
-              return;
-          }
-        }
-      } else {
-        if (!functionKey.includes(event.key)) event.preventDefault();
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isSkipPreventDefault(e)) return;
+
+      if (isCommandKey(e) && e.code === "KeyR") {
+        location.reload();
+        return;
       }
+
+      e.preventDefault();
     };
 
     const handlePaste = (event: ClipboardEvent) => {
@@ -88,9 +78,7 @@ export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
           left: "-9999px",
         }}
         onKeyDown={(e) => {
-          if (isCommandKey(e) && e.key === "v") {
-            return;
-          }
+          if (isSkipPreventDefault(e)) return;
 
           e.preventDefault();
 
