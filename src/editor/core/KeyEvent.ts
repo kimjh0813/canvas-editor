@@ -1,5 +1,7 @@
 import Hangul from "hangul-js";
 
+import { KeyboardEvent } from "react";
+
 import { isCommandKey } from "../utils/key";
 import { EditorManger } from "./EditorManger";
 import { functionKey } from "../../constants/key";
@@ -14,14 +16,13 @@ import { omit } from "lodash";
 export class KeyEvent {
   constructor(private editor: EditorManger) {}
 
-  async keyDown(event: KeyboardEvent) {
+  async keyDown(event: KeyboardEvent<HTMLInputElement>) {
     // for change textArr
     let shouldUpdateText = false;
 
     if (event.key.length === 1) {
       if (isCommandKey(event) && event.shiftKey) {
         this.editor.text.resetKoreanComposing();
-        event.preventDefault();
         switch (event.code) {
           case "Period":
             this.stepFontSize("plus");
@@ -54,7 +55,6 @@ export class KeyEvent {
             await this.cut();
             break;
           case "KeyA":
-            event.preventDefault();
             this.selectAll();
             break;
           case "KeyZ":
@@ -66,24 +66,20 @@ export class KeyEvent {
             this.editor.history.undo();
             break;
           case "KeyY":
-            event.preventDefault();
             this.editor.history.redo();
             break;
           case "KeyR":
             location.reload();
             break;
           default:
-            event.preventDefault();
             return;
         }
       } else {
         shouldUpdateText = true;
+
         this.editor.text.addText(event.key);
-        event.preventDefault();
       }
     } else {
-      if (!functionKey.includes(event.key)) event.preventDefault();
-
       switch (event.code) {
         case "Backspace":
           shouldUpdateText = true;
@@ -119,7 +115,7 @@ export class KeyEvent {
     this.editor.draw(shouldUpdateText);
   }
 
-  backSpace(event: KeyboardEvent) {
+  backSpace(event: KeyboardEvent<HTMLInputElement>) {
     const result = this.editor.select.deleteSelectedRange();
 
     if (result) return;
@@ -271,6 +267,8 @@ export class KeyEvent {
 
       let textFragments: ITextFragment[];
 
+      console.log(htmlText);
+
       if (htmlText) {
         const defaultStyle = {
           ...this.editor.textStyle.defaultStyle,
@@ -322,7 +320,7 @@ export class KeyEvent {
     this.editor.textStyle.adjustFontSize(type, fontSize);
   }
 
-  arrowUp(event: KeyboardEvent) {
+  arrowUp(event: KeyboardEvent<HTMLInputElement>) {
     const cursorIndex = this.editor.cursor.index;
 
     const isEnd = this.editor.select.arrowClearSelectRange(
@@ -369,7 +367,7 @@ export class KeyEvent {
     this.editor.cursor.setCursorIndex(targetIndex);
   }
 
-  arrowDown(event: KeyboardEvent) {
+  arrowDown(event: KeyboardEvent<HTMLInputElement>) {
     const cursorIndex = this.editor.cursor.index;
 
     const isEnd = this.editor.select.arrowClearSelectRange(
@@ -416,7 +414,7 @@ export class KeyEvent {
     this.editor.cursor.setCursorIndex(targetIndex);
   }
 
-  arrowLeft = (event: KeyboardEvent) => {
+  arrowLeft = (event: KeyboardEvent<HTMLInputElement>) => {
     this.editor.setPrevRowIndex(null);
 
     const cursorIndex = this.editor.cursor.index;
@@ -464,7 +462,7 @@ export class KeyEvent {
     this.editor.cursor.setCursorIndex(targetIndex);
   };
 
-  arrowRight = (event: KeyboardEvent) => {
+  arrowRight = (event: KeyboardEvent<HTMLInputElement>) => {
     this.editor.setPrevRowIndex(null);
 
     const cursorIndex = this.editor.cursor.index;

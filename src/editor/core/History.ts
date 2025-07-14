@@ -57,8 +57,6 @@ export class History {
 
       this.lastPushTime = currentTime;
     }
-
-    console.log(this.stack);
   }
 
   undo() {
