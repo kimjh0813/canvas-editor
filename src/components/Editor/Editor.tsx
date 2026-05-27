@@ -3,14 +3,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSetRecoilState } from "recoil";
 
 import { cursorState } from "../../recoil";
-import { EditorCanvas } from "../EditorCanvas";
 import { Cursor } from "../Cursor";
+import { EditorCanvas } from "../EditorCanvas";
 
-import * as S from "./styled";
-import { EditorToolbar } from "../EditorToolbar";
+import { EditorContext } from "../../context/EditorContext";
 import { EditorManger } from "../../editor/core/EditorManger";
-import { EditorContext, useEditor } from "../../context/EditorContext";
 import { drawTextFragments } from "../../editor/utils/draw";
+import { EditorToolbar } from "../EditorToolbar";
+import * as S from "./styled";
 
 const defaultFontSize = 16;
 const marginX = 96;
@@ -42,7 +42,7 @@ export function Editor() {
       scrollContainerRef,
       draw,
       setCursor,
-      setPageSize
+      setPageSize,
     );
 
     setPageSize(handler.layout.pageSize);

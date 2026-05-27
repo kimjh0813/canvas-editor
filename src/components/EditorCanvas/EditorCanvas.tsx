@@ -4,11 +4,10 @@ import { useRecoilValue } from "recoil";
 
 import { isCursorSelector } from "../../recoil/selector";
 
-import * as S from "./styled";
 import { useEditor } from "../../context/EditorContext";
-import { useMouseHandlers } from "../../hooks";
 import { isCommandKey, isSkipPreventDefault } from "../../editor/utils/key";
-import { codeToHangul } from "../../constants/key";
+import { useMouseHandlers } from "../../hooks";
+import * as S from "./styled";
 
 interface EditorCanvasProps {
   pageSize: number;
@@ -20,6 +19,8 @@ export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
 
   const isCursor = useRecoilValue(isCursorSelector);
   const inputRef = useRef<HTMLInputElement>(null);
+  const isComposingRef = useRef(false);
+  const ignoreNextInputRef = useRef<string | null>(null);
 
   const { handleMouseDown, handleMouseMove, handleMouseUp } =
     useMouseHandlers(editorManger);
@@ -36,6 +37,7 @@ export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
     if (!isCursor) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.target === inputRef.current) return;
       if (isSkipPreventDefault(e)) return;
 
       if (isCommandKey(e) && e.code === "KeyR") {
@@ -85,23 +87,47 @@ export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
         }}
         onKeyDown={(e) => {
           if (isSkipPreventDefault(e)) return;
+          if (isComposingRef.current || e.nativeEvent.isComposing) return;
+          if (e.key === "Process") return;
+          if (!isCommandKey(e) && e.key.length === 1) return;
 
           e.preventDefault();
+          editorManger.keyEvent.keyDown(e);
+        }}
+        onCompositionStart={() => {
+          isComposingRef.current = true;
+          ignoreNextInputRef.current = null;
+          editorManger.keyEvent.startComposition();
+        }}
+        onCompositionUpdate={(e) => {
+          editorManger.keyEvent.updateComposition(e.data);
+        }}
+        onCompositionEnd={(e) => {
+          isComposingRef.current = false;
 
-          const map = codeToHangul[e.code];
-          let result = "";
+          const text = e.data || e.currentTarget.value;
+          editorManger.keyEvent.endComposition(text);
+          ignoreNextInputRef.current = text || null;
+          e.currentTarget.value = "";
+        }}
+        onInput={(e) => {
+          const text = e.currentTarget.value;
 
-          if (e.key === "Process" && map) {
-            result = e.shiftKey ? map.shift : map.normal;
-          } else {
-            result = e.key;
+          if (isComposingRef.current) return;
+
+          if (
+            ignoreNextInputRef.current &&
+            text === ignoreNextInputRef.current
+          ) {
+            ignoreNextInputRef.current = null;
+            e.currentTarget.value = "";
+            return;
           }
-          const fakeEvent = {
-            ...e,
-            key: result,
-          } as React.KeyboardEvent<HTMLInputElement>;
 
-          editorManger.keyEvent.keyDown(fakeEvent);
+          if (text) {
+            editorManger.keyEvent.insertText(text);
+            e.currentTarget.value = "";
+          }
         }}
       />
       {[...Array(pageSize)].map((_, index) => (

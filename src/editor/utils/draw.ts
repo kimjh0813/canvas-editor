@@ -51,6 +51,7 @@ export function drawTextFragments({
         ctx,
         lineText,
         selectRange: editorManger.select.selectRange,
+        compositionRange: editorManger.keyEvent.compositionRange,
         composingIndex: editorManger.text.isKoreanComposing
           ? editorManger.cursor.index - 1
           : undefined,
@@ -67,6 +68,7 @@ interface DrawLineParams {
   ctx: CanvasRenderingContext2D;
   lineText: ILineText;
   selectRange: ISelectRange | null;
+  compositionRange: { start: number; length: number } | null;
   composingIndex?: number;
   isLastLine?: boolean;
 }
@@ -75,6 +77,7 @@ function drawLine({
   lineText,
   ctx,
   selectRange,
+  compositionRange,
   composingIndex,
   isLastLine,
 }: DrawLineParams) {
@@ -110,8 +113,13 @@ function drawLine({
       selectWidth += textWidth;
     }
 
-    const isDrawUnderLine =
-      composingIndex === index || (underline && text !== "\n");
+    const isComposingText =
+      composingIndex === index ||
+      (!!compositionRange &&
+        index >= compositionRange.start &&
+        index < compositionRange.start + compositionRange.length);
+
+    const isDrawUnderLine = isComposingText || (underline && text !== "\n");
 
     if (isDrawUnderLine && i < limit) {
       addSegment(ulSegments, ["color", "fontSize"], {

@@ -12,7 +12,7 @@ export class CanvasMouseManager {
 
   constructor(
     private editor: EditorManger,
-    scrollContainerRef: React.RefObject<HTMLDivElement>
+    scrollContainerRef: React.RefObject<HTMLDivElement>,
   ) {
     this._downIndex = null;
     this._isDragging = false;
@@ -98,7 +98,7 @@ export class CanvasMouseManager {
     this.editor.select.clearSelectedRange();
     this.editor.text.resetKoreanComposing();
 
-    console.log(this.editor.text.lineTexts);
+    // console.log(this.editor.text.lineTexts);
 
     if (this.editor.prevRowIndex !== null) this.editor.setPrevRowIndex(null);
 
@@ -131,7 +131,7 @@ export class CanvasMouseManager {
     const scrollTop = scrollContainer.scrollTop;
     const containerTop = scrollContainer.getBoundingClientRect().top;
     const paddingTop = parseFloat(
-      window.getComputedStyle(scrollContainer).paddingTop
+      window.getComputedStyle(scrollContainer).paddingTop,
     );
 
     const canvasWidth = this.editor.layout.canvasWidth;

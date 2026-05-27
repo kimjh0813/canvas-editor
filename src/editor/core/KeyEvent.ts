@@ -14,7 +14,95 @@ import { ITextFragment, ITextStyle } from "../types/text";
 import { omit } from "lodash";
 
 export class KeyEvent {
+  private composingRange: { start: number; length: number } | null = null;
+
   constructor(private editor: EditorManger) {}
+
+  public get compositionRange() {
+    return this.composingRange;
+  }
+
+  private createTextFragments(text: string) {
+    const textStyle = this.editor.textStyle.getTextStyle(
+      this.editor.cursor.index
+    );
+    const lineStyle = this.editor.lineStyle.getLineStyle(
+      this.editor.cursor.index
+    );
+
+    return text
+      .split("")
+      .map((char) => ({ text: char, ...textStyle, ...lineStyle }));
+  }
+
+  insertText(text: string) {
+    if (!text) return;
+
+    const textFragments = this.createTextFragments(text);
+
+    this.editor.text.resetKoreanComposing(false);
+    this.editor.text.addTexts(textFragments);
+    this.editor.draw(true);
+  }
+
+  startComposition() {
+    this.editor.text.resetKoreanComposing(false);
+    this.editor.select.deleteSelectedRange();
+
+    if (this.editor.prevRowIndex !== null) this.editor.setPrevRowIndex(null);
+
+    this.composingRange = {
+      start: this.editor.cursor.index,
+      length: 0,
+    };
+  }
+
+  updateComposition(text: string) {
+    if (!this.composingRange) this.startComposition();
+    if (!this.composingRange) return;
+
+    const { start, length } = this.composingRange;
+
+    if (length > 0) {
+      this.editor.text.remove(start, length, false);
+    }
+
+    const textFragments = this.createTextFragments(text);
+
+    if (textFragments.length > 0) {
+      this.editor.text.insert(start, textFragments, false);
+    }
+
+    this.composingRange = {
+      start,
+      length: textFragments.length,
+    };
+
+    this.editor.cursor.setCursorIndex(start + textFragments.length, false);
+    this.editor.draw(true);
+  }
+
+  endComposition(text: string) {
+    if (!this.composingRange) {
+      this.insertText(text);
+      return;
+    }
+
+    this.updateComposition(text);
+
+    const { start, length } = this.composingRange;
+    if (length > 0) {
+      const textFragments = this.editor.text.textFragments.slice(
+        start,
+        start + length
+      );
+
+      this.editor.history.pushTextChange(start, [...textFragments], "insert");
+    }
+
+    this.composingRange = null;
+    this.editor.draw(false);
+  }
 
   async keyDown(event: KeyboardEvent<HTMLInputElement>) {
     // for change textArr
@@ -67,6 +155,9 @@ export class KeyEvent {
             break;
           case "KeyY":
             this.editor.history.redo();
+            break;
+          case "KeyR":
+            location.reload();
             break;
           default:
             return;
