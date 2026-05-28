@@ -142,7 +142,7 @@ function drawLine({
 function addSegment<T extends { endX: number }>(
   segments: T[],
   keys: (keyof T)[],
-  newSegment: T
+  newSegment: T,
 ) {
   if (
     segments.length > 0 &&
@@ -158,7 +158,7 @@ function drawTextBackground(
   ctx: CanvasRenderingContext2D,
   bgSegments: IBgSegment[],
   y: number,
-  maxFontSize: number
+  maxFontSize: number,
 ) {
   if (bgSegments.length < 1) return;
 
@@ -173,7 +173,7 @@ function drawSelection(
   selectStartX: number | null,
   selectWidth: number,
   y: number,
-  maxFontSize: number
+  maxFontSize: number,
 ) {
   if (selectStartX !== null) {
     ctx.fillStyle = "rgba(140, 174, 241, 0.5)";
@@ -184,7 +184,7 @@ function drawSelection(
 function drawText(
   ctx: CanvasRenderingContext2D,
   lineText: ILineText,
-  maxFontSize: number
+  maxFontSize: number,
 ) {
   let lineX = lineText.x;
 
@@ -205,7 +205,7 @@ function drawTextUnderLine(
   ctx: CanvasRenderingContext2D,
   ulSegments: IUlSegment[],
   y: number,
-  maxFontSize: number
+  maxFontSize: number,
 ) {
   if (ulSegments.length < 1) return;
 

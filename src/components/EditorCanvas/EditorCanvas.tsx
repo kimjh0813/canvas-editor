@@ -20,7 +20,6 @@ export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
   const isCursor = useRecoilValue(isCursorSelector);
   const inputRef = useRef<HTMLInputElement>(null);
   const isComposingRef = useRef(false);
-  const ignoreNextInputRef = useRef<string | null>(null);
 
   const { handleMouseDown, handleMouseMove, handleMouseUp } =
     useMouseHandlers(editorManger);
@@ -89,14 +88,12 @@ export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
           if (isSkipPreventDefault(e)) return;
           if (isComposingRef.current || e.nativeEvent.isComposing) return;
           if (e.key === "Process") return;
-          if (!isCommandKey(e) && e.key.length === 1) return;
 
           e.preventDefault();
           editorManger.keyEvent.keyDown(e);
         }}
         onCompositionStart={() => {
           isComposingRef.current = true;
-          ignoreNextInputRef.current = null;
           editorManger.keyEvent.startComposition();
         }}
         onCompositionUpdate={(e) => {
@@ -107,27 +104,7 @@ export function EditorCanvas({ canvasRefs, pageSize }: EditorCanvasProps) {
 
           const text = e.data || e.currentTarget.value;
           editorManger.keyEvent.endComposition(text);
-          ignoreNextInputRef.current = text || null;
           e.currentTarget.value = "";
-        }}
-        onInput={(e) => {
-          const text = e.currentTarget.value;
-
-          if (isComposingRef.current) return;
-
-          if (
-            ignoreNextInputRef.current &&
-            text === ignoreNextInputRef.current
-          ) {
-            ignoreNextInputRef.current = null;
-            e.currentTarget.value = "";
-            return;
-          }
-
-          if (text) {
-            editorManger.keyEvent.insertText(text);
-            e.currentTarget.value = "";
-          }
         }}
       />
       {[...Array(pageSize)].map((_, index) => (
